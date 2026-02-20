@@ -20,3 +20,6 @@ def require_admin_key(label: str = "Admin key"):
         st.stop()
 
     st.success("Admin unlocked")
+
+# Backward-compatible alias
+require_admin = require_admin_key
