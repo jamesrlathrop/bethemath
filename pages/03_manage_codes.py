@@ -55,7 +55,7 @@ def get_codes():
     return out
 
 def main():
-    require_admin_key()
+    require_admin()
     st.title("Codes (admin)")
 
     codes = get_codes()
