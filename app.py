@@ -1,7 +1,5 @@
+import os
 import streamlit as st
-
-# Import your access gate
-from btm_access import require_access
 
 
 # -----------------------------
@@ -16,29 +14,56 @@ st.set_page_config(
 
 
 # -----------------------------
-# Header
+# Access Code System
 # -----------------------------
 
-st.title("🧠 BeTheMath — Error Detective")
-st.caption("Fix mistakes fast. Learn why. Build confidence.")
+def get_codes():
+    raw = os.getenv("ACCESS_CODES") or ""
+    parts = raw.replace(",", "\n").splitlines()
+    codes = [p.strip() for p in parts if p.strip()]
+    return codes
+
+
+def require_access():
+    if st.session_state.get("access_granted", False):
+        return
+
+    codes = get_codes()
+
+    st.title("🧠 BeTheMath — Error Detective")
+    st.caption("Fix mistakes fast. Learn why. Build confidence.")
+
+    st.info(
+        "Enter your BeTheMath access code to unlock the app. "
+        "Codes look like **BTM-XXXX**. If you have trouble, double-check for spaces."
+    )
+
+    code_input = st.text_input("Access code", type="password")
+
+    if st.button("Unlock"):
+
+        if code_input in codes:
+            st.session_state["access_granted"] = True
+            st.success("Access granted. Welcome!")
+            st.rerun()
+        else:
+            st.error("Invalid access code")
+
+    st.stop()
 
 
 # -----------------------------
-# Access Gate
+# Require Access Before App
 # -----------------------------
 
-st.info(
-    "Enter your BeTheMath access code to unlock the app. "
-    "Codes look like **BTM-XXXX**. If you have trouble, double-check for spaces."
-)
-
-# This will stop execution until valid
 require_access()
 
 
 # -----------------------------
-# App Content (after unlock)
+# App Content
 # -----------------------------
+
+st.title("🧠 BeTheMath — Error Detective")
 
 st.success("Access granted. Welcome!")
 
