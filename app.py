@@ -1,28 +1,16 @@
 import os
 import streamlit as st
 
-
-# -----------------------------
-# Page Config
-# -----------------------------
-
 st.set_page_config(
     page_title="BeTheMath — Error Detective",
     page_icon="🧠",
     layout="centered",
 )
 
-
-# -----------------------------
-# Access Code System
-# -----------------------------
-
 def get_codes():
     raw = os.getenv("ACCESS_CODES") or ""
     parts = raw.replace(",", "\n").splitlines()
-    codes = [p.strip() for p in parts if p.strip()]
-    return codes
-
+    return [p.strip() for p in parts if p.strip()]
 
 def require_access():
     if st.session_state.get("access_granted", False):
@@ -41,7 +29,6 @@ def require_access():
     code_input = st.text_input("Access code", type="password")
 
     if st.button("Unlock"):
-
         if code_input in codes:
             st.session_state["access_granted"] = True
             st.success("Access granted. Welcome!")
@@ -51,27 +38,13 @@ def require_access():
 
     st.stop()
 
-
-# -----------------------------
-# Require Access Before App
-# -----------------------------
-
 require_access()
 
-
-# -----------------------------
-# App Content
-# -----------------------------
-
 st.title("🧠 BeTheMath — Error Detective")
-
 st.success("Access granted. Welcome!")
-
-st.subheader("Player")
 
 st.subheader("Student Work")
 st.write("5(x + 1) = 5x + 1")
-
 st.write("Pick the best explanation:")
 
 options = [
