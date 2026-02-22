@@ -1,88 +1,65 @@
 import streamlit as st
-import random
-import os
 
-st.set_page_config(page_title="BeTheMath", layout="wide")
+# Import your access gate
+from btm_access import require_access
+
+
+# -----------------------------
+# Page Config
+# -----------------------------
+
+st.set_page_config(
+    page_title="BeTheMath — Error Detective",
+    page_icon="🧠",
+    layout="centered",
+)
+
+
+# -----------------------------
+# Header
+# -----------------------------
 
 st.title("🧠 BeTheMath — Error Detective")
-st.write("Fix mistakes fast. Learn why. Build confidence.")
+st.caption("Fix mistakes fast. Learn why. Build confidence.")
 
-def _parse_codes(raw):
-    if not raw:
-        return []
-    if isinstance(raw, (list, tuple)):
-        return [str(c).strip().upper() for c in raw if str(c).strip()]
-    return [c.strip().upper() for c in str(raw).split(",") if c.strip()]
 
-def get_access_codes():
-    codes = _parse_codes(os.getenv("ACCESS_CODES"))
-    if not codes and "ACCESS_CODES" in st.secrets:
-        codes = _parse_codes(st.secrets["ACCESS_CODES"])
-    if not codes:
-        codes = ["DEMO-000"]
-    return codes
+# -----------------------------
+# Access Gate
+# -----------------------------
 
-def require_access_code():
-    if st.session_state.get("access_granted"):
-        return
+st.info(
+    "Enter your BeTheMath access code to unlock the app. "
+    "Codes look like **BTM-XXXX**. If you have trouble, double-check for spaces."
+)
 
-    with st.form("access"):
-        code = st.text_input("Access code", type="password")
-        submitted = st.form_submit_button("Unlock")
+# This will stop execution until valid
+require_access()
 
-    if submitted:
-        if code.strip().upper() in get_access_codes():
-            st.session_state["access_granted"] = True
-            st.success("Access granted. Welcome!")
-        else:
-            st.error("Invalid code. Double-check and try again.")
 
-    if not st.session_state.get("access_granted"):
-        st.stop()
+# -----------------------------
+# App Content (after unlock)
+# -----------------------------
 
-require_access_code()
+st.success("Access granted. Welcome!")
 
-# Player name
-player = st.text_input("Player")
-if player:
-    st.caption(f"Player: {player}")
-
-# Simple problem generator
-def generate_problem():
-    a = random.randint(2, 9)
-    b = random.randint(1, 9)
-
-    student = f"{a}(x + {b}) = {a}x + {b}"
-    correct = f"They forgot to multiply {b} by {a}. Correct: {a}x + {a*b}"
-
-    choices = [
-        correct,
-        "They added incorrectly",
-        "They divided incorrectly",
-        "They changed the sign",
-    ]
-
-    random.shuffle(choices)
-
-    return student, correct, choices
-
-if "problem" not in st.session_state:
-    st.session_state.problem = generate_problem()
-
-student, correct, choices = st.session_state.problem
+st.subheader("Player")
 
 st.subheader("Student Work")
-st.write(student)
+st.write("5(x + 1) = 5x + 1")
 
-choice = st.radio("Pick the best explanation:", choices)
+st.write("Pick the best explanation:")
 
-if st.button("Check"):
-    if choice == correct:
-        st.success("Nice catch!")
+options = [
+    "They divided incorrectly",
+    "They added incorrectly",
+    "They forgot to multiply 1 by 5. Correct: 5x + 5",
+    "They changed the sign",
+]
+
+choice = st.radio("Select an answer:", options)
+
+if st.button("Submit"):
+    if choice == options[2]:
+        st.success("Correct! The distributive property requires multiplying both terms.")
     else:
-        st.error("Not quite.")
-        st.info(correct)
-
-if st.button("Next Problem"):
-    st.session_state.problem = generate_problem()
-    st.rerun()
+        st.error("Not quite. Remember to distribute 5 to both x and 1.")
