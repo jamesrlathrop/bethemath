@@ -1,70 +1,104 @@
+# pages/03_manage_codes.py
 import os
+import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
-def _is_admin() -> bool:
+from btm_admin import require_admin
+
+
+def _get_access_codes_raw() -> str:
     """
-    Admin gate for Streamlit pages.
-    Admin can be enabled by:
-      - st.session_state["is_admin"] == True, OR
-      - entering an admin code that matches ADMIN_CODE env var.
+    ACCESS_CODES source of truth:
+      1) Railway env var ACCESS_CODES
+      2) Streamlit secrets ACCESS_CODES
     """
-    return bool(st.session_state.get("is_admin", False))
+    return os.getenv("ACCESS_CODES") or st.secrets.get("ACCESS_CODES", "") or ""
 
 
-def require_admin() -> bool:
+def _parse_codes(raw: str) -> list[str]:
     """
-    Call at the top of any admin-only Streamlit page.
-    Returns True if access is granted; otherwise renders a login UI and stops.
+    Accepts codes separated by commas, whitespace, or newlines.
+    Returns a clean, unique, stable-ordered list.
     """
-    # Already approved this session
-    if _is_admin():
-        return True
+    # Normalize separators to newlines
+    raw = raw.replace(",", "\n").replace(";", "\n")
+    parts = [p.strip() for p in raw.splitlines()]
+    parts = [p for p in parts if p]
 
-    st.title("Admin Access")
-
-    # Optional: env-based admin code
-    admin_code_env = os.getenv("ADMIN_CODE", "").strip()
-
-    if not admin_code_env:
-        st.info("Admin access is not configured. Set ADMIN_CODE in your environment.")
-        st.stop()
-
-    code = st.text_input("Enter admin code", type="password")
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        if st.button("Unlock", use_container_width=True):
-            if code.strip() == admin_code_env:
-                st.session_state["is_admin"] = True
-                st.success("Admin unlocked.")
-                st.rerun()
-            else:
-                st.error("Incorrect code.")
-
-    with col2:
-        st.caption("Tip: Set ADMIN_CODE in Railway/Streamlit secrets.")
-
-    st.stop()
-def get_codes():
-    raw = os.environ.get("ACCESS_CODES", "")
+    # Keep stable order but remove duplicates
+    seen = set()
     out = []
-    for part in raw.split(","):
-        t = part.strip()
-        if t:
-            out.append(t.upper())
+    for c in parts:
+        if c not in seen:
+            seen.add(c)
+            out.append(c)
     return out
+
+
+def clipboard_button(label: str, text_to_copy: str, key: str):
+    """
+    Streamlit-safe 'Copy' button using tiny JS.
+    Copies only the provided text.
+    """
+    safe_text = text_to_copy.replace("\\", "\\\\").replace("'", "\\'")
+    html = f"""
+    <button style="
+        padding: 0.35rem 0.6rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(49, 51, 63, 0.2);
+        background: white;
+        cursor: pointer;
+        font-size: 0.9rem;
+        width: 100%;
+    " onclick="navigator.clipboard.writeText('{safe_text}');">
+      {label}
+    </button>
+    """
+    components.html(html, height=42, key=key)
+
 
 def main():
     require_admin()
+
     st.title("Codes (admin)")
 
-    codes = get_codes()
-    st.write("Codes configured:", len(codes))
+    raw = _get_access_codes_raw()
+    codes = _parse_codes(raw)
+
+    st.caption(f"Codes configured: {len(codes)}")
+
+    # --- Export ---
+    st.divider()
+    st.subheader("Export & Tools")
 
     if codes:
-        st.code("\n".join(codes))
+        df = pd.DataFrame({"code": codes})
+        csv_bytes = df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "Download codes as CSV",
+            data=csv_bytes,
+            file_name="bethemath_access_codes.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
     else:
-        st.warning("No access codes found (ENV ACCESS_CODES).")
+        st.info("No codes found yet. Use the **generate codes** page to create some.")
+
+    # --- List + Copy ---
+    st.divider()
+    st.subheader("Codes (click Copy)")
+
+    if not codes:
+        st.stop()
+
+    for i, code in enumerate(codes):
+        c1, c2 = st.columns([3, 1], vertical_alignment="center")
+        with c1:
+            st.code(code, language=None)
+        with c2:
+            clipboard_button("Copy", code, key=f"copy_{i}")
+
 
 if __name__ == "__main__":
     main()
