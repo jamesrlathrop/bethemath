@@ -3,6 +3,7 @@ import random
 import string
 
 from btm_admin import require_admin_key
+from btm_db import add_access_codes
 
 ALPHABET = string.ascii_uppercase + string.digits
 
@@ -24,5 +25,9 @@ if st.button("Generate codes"):
     for _ in range(count):
         code = generate_code(prefix=prefix, length=length)
         codes.append(code)
+
+    # Save to Postgres
+    add_access_codes(codes)
+
+    st.success("Codes generated and saved to database.")
     st.code("\n".join(codes))
-    st.write("Copy codes into ACCESS_CODES in Railway.")
