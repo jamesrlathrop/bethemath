@@ -1,23 +1,23 @@
 import os
-from urllib.parse import urlparse
 import psycopg2
 
 
 def _connect():
-    """Connect using Railway DATABASE_URL."""
+    """Connect to Postgres using Railway DATABASE_URL."""
     dsn = os.environ.get("DATABASE_URL")
     if not dsn:
         raise RuntimeError("DATABASE_URL is not set")
 
-    # psycopg2 expects 'postgresql://' (both often work, but normalize)
+    # Normalize scheme for psycopg2 compatibility
     if dsn.startswith("postgres://"):
         dsn = dsn.replace("postgres://", "postgresql://", 1)
 
-    return psycopg2.connect(dsn, sslmode=os.environ.get("PGSSLMODE", "require"))
+    # Railway-managed Postgres typically works without forcing sslmode here
+    return psycopg2.connect(dsn)
 
 
 def ensure_tables():
-    """Create tables if they don't exist."""
+    """Create required tables if they don't exist."""
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -33,10 +33,20 @@ def ensure_tables():
 
 
 def add_access_codes(codes):
-    """Insert codes (idempotent)."""
+    """Insert or reactivate codes (idempotent)."""
     if not codes:
         return
+
     ensure_tables()
+
+    normalized = []
+    for c in codes:
+        if c and str(c).strip():
+            normalized.append((str(c).strip().upper(),))
+
+    if not normalized:
+        return
+
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.executemany(
@@ -45,25 +55,34 @@ def add_access_codes(codes):
                 VALUES (%s, TRUE)
                 ON CONFLICT (code) DO UPDATE SET is_active = EXCLUDED.is_active;
                 """,
-                [(c.strip().upper(),) for c in codes if c and c.strip()],
+                normalized,
             )
         conn.commit()
 
 
 def is_valid_access_code(code: str) -> bool:
-    """Check if a code exists and is active."""
-    if not code:
+    """Return True if the code exists and is active."""
+    if not code or not str(code).strip():
         return False
+
     ensure_tables()
-    code = code.strip().upper()
+    code = str(code).strip().upper()
+
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT 1 FROM access_codes WHERE code = %s AND is_active = TRUE LIMIT 1;",
+                """
+                SELECT 1
+                FROM access_codes
+                WHERE code = %s AND is_active = TRUE
+                LIMIT 1;
+                """,
                 (code,),
             )
             return cur.fetchone() is not None
-            def db_healthcheck() -> str:
+
+
+def db_healthcheck() -> str:
     """Returns Postgres version if connected."""
     ensure_tables()
     with _connect() as conn:
@@ -73,7 +92,7 @@ def is_valid_access_code(code: str) -> bool:
 
 
 def list_access_codes(limit: int = 25):
-    """Return latest active codes."""
+    """Return latest active codes (most recent first)."""
     ensure_tables()
     with _connect() as conn:
         with conn.cursor() as cur:
