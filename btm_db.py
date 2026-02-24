@@ -8,11 +8,9 @@ def _connect():
     if not dsn:
         raise RuntimeError("DATABASE_URL is not set")
 
-    # Normalize scheme for psycopg2 compatibility
     if dsn.startswith("postgres://"):
         dsn = dsn.replace("postgres://", "postgresql://", 1)
 
-    # Railway-managed Postgres typically works without forcing sslmode here
     return psycopg2.connect(dsn)
 
 
@@ -39,12 +37,13 @@ def add_access_codes(codes):
 
     ensure_tables()
 
-    normalized = []
+    rows = []
     for c in codes:
-        if c and str(c).strip():
-            normalized.append((str(c).strip().upper(),))
+        c = str(c).strip().upper()
+        if c:
+            rows.append((c,))
 
-    if not normalized:
+    if not rows:
         return
 
     with _connect() as conn:
@@ -55,28 +54,25 @@ def add_access_codes(codes):
                 VALUES (%s, TRUE)
                 ON CONFLICT (code) DO UPDATE SET is_active = EXCLUDED.is_active;
                 """,
-                normalized,
+                rows,
             )
         conn.commit()
 
 
 def is_valid_access_code(code: str) -> bool:
     """Return True if the code exists and is active."""
-    if not code or not str(code).strip():
+    if not code:
         return False
 
     ensure_tables()
     code = str(code).strip().upper()
+    if not code:
+        return False
 
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """
-                SELECT 1
-                FROM access_codes
-                WHERE code = %s AND is_active = TRUE
-                LIMIT 1;
-                """,
+                "SELECT 1 FROM access_codes WHERE code = %s AND is_active = TRUE LIMIT 1;",
                 (code,),
             )
             return cur.fetchone() is not None
