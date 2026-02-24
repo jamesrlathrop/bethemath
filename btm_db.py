@@ -63,3 +63,28 @@ def is_valid_access_code(code: str) -> bool:
                 (code,),
             )
             return cur.fetchone() is not None
+            def db_healthcheck() -> str:
+    """Returns Postgres version if connected."""
+    ensure_tables()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT version();")
+            return cur.fetchone()[0]
+
+
+def list_access_codes(limit: int = 25):
+    """Return latest active codes."""
+    ensure_tables()
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT code
+                FROM access_codes
+                WHERE is_active = TRUE
+                ORDER BY created_at DESC
+                LIMIT %s;
+                """,
+                (limit,),
+            )
+            return [row[0] for row in cur.fetchall()]
