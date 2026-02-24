@@ -24,10 +24,10 @@ def require_access_code(label: str = "Access code"):
         # 1) Check DB first (real customer benefit)
         ok = False
         try:
-            ok = is_valid_access_code(entered)
-        except Exception:
-            # If DB is temporarily unavailable, allow env fallback
-            ok = False
+    ok = is_valid_access_code(entered)
+except Exception as e:
+    st.error(f"Database error: {e}")
+    ok = False
 
         # 2) Fallback to env codes (optional)
         if not ok and entered in get_access_codes():
