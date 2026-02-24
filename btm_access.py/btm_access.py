@@ -38,6 +38,12 @@ except Exception as e:
             st.success("Access granted")
         else:
             st.error("Invalid access code")
+# DEBUG: show latest DB codes on invalid entry
+import os
+from btm_db import list_access_codes
 
+if os.environ.get("DEBUG_ACCESS") == "1":
+    st.warning("DEBUG: showing latest DB codes")
+    st.write(list_access_codes(10))
     if not st.session_state.get("access_granted"):
         st.stop()
