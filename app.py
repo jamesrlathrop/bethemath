@@ -1,6 +1,6 @@
-import os
-import random
 import streamlit as st
+
+from btm_access import require_access_code
 
 # =========================
 # Config
@@ -15,121 +15,58 @@ APP_TITLE = "🧠 BeTheMath — Error Detective"
 APP_TAGLINE = "Fix mistakes fast. Learn why. Build confidence."
 
 # =========================
-# Access Gate (BTM codes)
+# Session Design (v1: 5-question arc)
 # =========================
-def _get_codes() -> set[str]:
-    raw = os.getenv("ACCESS_CODES") or ""
-    parts = raw.replace(",", "\n").replace(";", "\n").splitlines()
-    return {p.strip() for p in parts if p.strip()}
-
-def require_access():
-    if st.session_state.get("access_granted", False):
-        return
-
-    st.title(APP_TITLE)
-    st.caption(APP_TAGLINE)
-
-    st.info(
-        "Enter your BeTheMath access code to unlock the app. "
-        "Customer codes look like **BTM-XXXX**. "
-        "Tip: double-check for spaces at the start/end."
-    )
-
-    code_input = st.text_input("Access code", type="password", placeholder="BTM-XXXX")
-
-    cols = st.columns([1, 2, 1])
-    with cols[0]:
-        unlock = st.button("Unlock", use_container_width=True)
-    with cols[1]:
-        st.caption("If you’re the owner: admin tools are at /manage_codes (admin code won’t work here).")
-    with cols[2]:
-        st.caption("")
-
-    if unlock:
-        if code_input.strip() in _get_codes():
-            st.session_state["access_granted"] = True
-            st.success("Access granted. Welcome!")
-            st.rerun()
-        else:
-            st.error("Invalid access code.")
-
-    st.stop()
-
-# =========================
-# Problem Bank
-# =========================
-PROBLEMS = [
+SESSION_V1 = [
     {
-        "topic": "Distributive Property",
-        "prompt": "Student Work: 5(x + 1) = 5x + 1",
-        "question": "Pick the best explanation:",
-        "choices": [
-            "They divided incorrectly",
-            "They added incorrectly",
-            "They forgot to multiply 1 by 5. Correct: 5x + 5",
-            "They changed the sign",
-        ],
-        "answer_index": 2,
-        "explain_correct": "Correct: distribute 5 to BOTH terms inside parentheses: 5·x + 5·1 = 5x + 5.",
-        "explain_wrong": "Not quite. When distributing, multiply the outside number by every term inside the parentheses.",
-        "level": "Algebra",
+        "id": "q1_confidence_anchor",
+        "topic": "Mental math",
+        "prompt": "Compute: **8 + 15 − 9**",
+        "answer": 14,
+        "hint": "Try grouping: (8 + 15) − 9.",
+        "explain": "Group numbers to reduce load: 8 + 15 = 23, then 23 − 9 = 14.",
+        "mistake_tag": "Skipped regrouping",
     },
     {
-        "topic": "Combining Like Terms",
-        "prompt": "Student Work: 3x + 2x = 3x",
-        "question": "What mistake happened?",
-        "choices": [
-            "They subtracted instead of adding",
-            "They forgot to combine the x-terms: 3x + 2x = 5x",
-            "They divided both sides by x",
-            "They changed x into a number",
-        ],
-        "answer_index": 1,
-        "explain_correct": "Correct: like terms add: 3x + 2x = (3+2)x = 5x.",
-        "explain_wrong": "Remember: you can combine terms only if the variable part matches exactly.",
-        "level": "Algebra",
+        "id": "q2_sign_awareness",
+        "topic": "Signs & integers",
+        "prompt": "Compute: **−6 + 14 − 5**",
+        "answer": 3,
+        "hint": "Think number line: start at −6, move right 14, then left 5.",
+        "explain": "−6 + 14 = 8, then 8 − 5 = 3. Watch the direction changes.",
+        "mistake_tag": "Sign slip",
     },
     {
-        "topic": "Integer Signs",
-        "prompt": "Student Work: −4 − 6 = 2",
-        "question": "What is the correct result?",
-        "choices": [
-            "−10",
-            "10",
-            "2",
-            "−2",
-        ],
-        "answer_index": 0,
-        "explain_correct": "Correct: moving left 6 more from −4 gives −10.",
-        "explain_wrong": "Subtracting a positive moves left on the number line.",
-        "level": "Arithmetic",
+        "id": "q3_structure_oOO",
+        "topic": "Order of operations",
+        "prompt": "Compute: **3 + 2 × 4**",
+        "answer": 11,
+        "hint": "Multiplication happens before addition.",
+        "explain": "2 × 4 = 8 first, then 3 + 8 = 11. Structure beats speed.",
+        "mistake_tag": "Order of operations",
     },
     {
-        "topic": "One-Step Equations",
-        "prompt": "Student Work: x + 7 = 12 → x = 19",
-        "question": "What should they do instead?",
-        "choices": [
-            "Add 7 to both sides",
-            "Subtract 7 from both sides: x = 5",
-            "Multiply both sides by 7",
-            "Divide both sides by 7",
-        ],
-        "answer_index": 1,
-        "explain_correct": "Correct: undo +7 by subtracting 7. So x = 12 − 7 = 5.",
-        "explain_wrong": "To isolate x, undo the operation attached to it.",
-        "level": "Pre-Algebra",
+        "id": "q4_parentheses_focus",
+        "topic": "Parentheses",
+        "prompt": "Compute: **(12 − 3) ÷ 3**",
+        "answer": 3,
+        "hint": "Do the parentheses first: 12 − 3.",
+        "explain": "(12 − 3) = 9, then 9 ÷ 3 = 3. Break it into steps.",
+        "mistake_tag": "Missed parentheses",
+    },
+    {
+        "id": "q5_distribution_recognition",
+        "topic": "Structure (distribution)",
+        "prompt": "Compute: **2(3 + 5) − 4**",
+        "answer": 12,
+        "hint": "2( … ) means multiply the parentheses by 2.",
+        "explain": "(3 + 5) = 8, then 2 × 8 = 16, then 16 − 4 = 12.",
+        "mistake_tag": "Distribution/structure",
     },
 ]
 
-LEVELS = ["Mixed", "Arithmetic", "Pre-Algebra", "Algebra"]
-
-def _filtered_problem_indices(level: str) -> list[int]:
-    if level == "Mixed":
-        return list(range(len(PROBLEMS)))
-    return [i for i, p in enumerate(PROBLEMS) if p["level"] == level]
-
 # =========================
-# Session State Defaults
+# State
 # =========================
 def init_state():
     st.session_state.setdefault("profile_name", "")
@@ -137,19 +74,90 @@ def init_state():
     st.session_state.setdefault("profile_level", "Mixed")
 
     st.session_state.setdefault("nav", "Home")
-    st.session_state.setdefault("current_idx", None)
-    st.session_state.setdefault("answered", [])  # list of dicts
-    st.session_state.setdefault("score_correct", 0)
-    st.session_state.setdefault("score_total", 0)
 
-def reset_session():
-    for k in ["current_idx", "answered", "score_correct", "score_total"]:
-        if k in st.session_state:
-            del st.session_state[k]
+    # session engine
+    st.session_state.setdefault("active_session", None)  # dict or None
+    st.session_state.setdefault("session_history", [])   # list of past sessions (summaries)
+
+
+def start_new_session():
+    st.session_state["active_session"] = {
+        "session_id": "v1",
+        "index": 0,
+        "items": [
+            {
+                "qid": q["id"],
+                "topic": q["topic"],
+                "prompt": q["prompt"],
+                "answer": q["answer"],
+                "hint": q["hint"],
+                "explain": q["explain"],
+                "mistake_tag": q["mistake_tag"],
+                "attempts": 0,
+                "status": "unanswered",  # unanswered | correct | incorrect
+                "user_answers": [],
+                "revealed": False,       # whether we revealed full explanation/correct
+            }
+            for q in SESSION_V1
+        ],
+        "completed": False,
+    }
+    st.session_state["nav"] = "Practice"
     st.rerun()
 
+
+def _active():
+    return st.session_state.get("active_session")
+
+
+def _is_session_active():
+    s = _active()
+    return bool(s) and not s.get("completed", False)
+
+
+def _current_item():
+    s = _active()
+    if not s:
+        return None
+    idx = s.get("index", 0)
+    items = s.get("items", [])
+    if idx < 0 or idx >= len(items):
+        return None
+    return items[idx]
+
+
+def _finalize_session():
+    s = _active()
+    if not s:
+        return
+
+    items = s["items"]
+    correct = sum(1 for it in items if it["status"] == "correct")
+    total = len(items)
+
+    # simple mistake pattern rollup
+    mistake_tags = [it["mistake_tag"] for it in items if it["status"] != "correct"]
+    pattern_note = "No major patterns detected."
+    if mistake_tags:
+        # pick most common tag
+        most = max(set(mistake_tags), key=mistake_tags.count)
+        pattern_note = f"Watch for: **{most}**."
+
+    summary = {
+        "session_id": s.get("session_id", "v1"),
+        "correct": correct,
+        "total": total,
+        "pattern_note": pattern_note,
+        "items": items,
+    }
+    st.session_state["session_history"].append(summary)
+
+    s["completed"] = True
+    st.session_state["active_session"] = s
+
+
 # =========================
-# UI: Sidebar (Profile + Nav)
+# UI: Sidebar
 # =========================
 def sidebar():
     with st.sidebar:
@@ -162,12 +170,15 @@ def sidebar():
         st.session_state["profile_role"] = st.selectbox(
             "Role",
             ["Student", "Parent/Grandparent", "Teacher"],
-            index=["Student", "Parent/Grandparent", "Teacher"].index(st.session_state.get("profile_role", "Student")),
+            index=["Student", "Parent/Grandparent", "Teacher"].index(
+                st.session_state.get("profile_role", "Student")
+            ),
         )
         st.session_state["profile_level"] = st.selectbox(
             "Level",
-            LEVELS,
-            index=LEVELS.index(st.session_state.get("profile_level", "Mixed")),
+            ["Mixed"],
+            index=0,
+            help="(v1) Session is a carefully designed 5-question mix. More levels coming next.",
         )
 
         st.markdown("---")
@@ -179,29 +190,15 @@ def sidebar():
         )
 
         st.markdown("---")
-        st.caption("Owner/Admin: manage codes at /manage_codes")
-        if st.button("Reset this session", use_container_width=True):
-            reset_session()
+        if st.button("Start a new session", use_container_width=True):
+            start_new_session()
 
-# =========================
-# Logic: choose next problem
-# =========================
-def pick_next_problem():
-    level = st.session_state.get("profile_level", "Mixed")
-    pool = _filtered_problem_indices(level)
-    if not pool:
-        pool = list(range(len(PROBLEMS)))
+        if st.button("Reset active session", use_container_width=True):
+            st.session_state["active_session"] = None
+            st.rerun()
 
-    # Avoid repeating until necessary
-    seen = {a["problem_index"] for a in st.session_state.get("answered", [])}
-    remaining = [i for i in pool if i not in seen]
-    choice_pool = remaining if remaining else pool
-    st.session_state["current_idx"] = random.choice(choice_pool)
+        st.caption("Owner/Admin tools are in the sidebar pages (admin/manage/generate).")
 
-def get_current_problem():
-    if st.session_state.get("current_idx") is None:
-        pick_next_problem()
-    return PROBLEMS[st.session_state["current_idx"]], st.session_state["current_idx"]
 
 # =========================
 # Pages
@@ -212,120 +209,183 @@ def page_home():
 
     name = st.session_state.get("profile_name") or "there"
     st.markdown(f"#### Welcome, **{name}** 👋")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.metric("Answered", st.session_state.get("score_total", 0))
-    with c2:
-        correct = st.session_state.get("score_correct", 0)
-        total = st.session_state.get("score_total", 0)
-        pct = int((correct / total) * 100) if total else 0
-        st.metric("Accuracy", f"{pct}%")
-    with c3:
-        st.metric("Level", st.session_state.get("profile_level", "Mixed"))
-
-    st.markdown("---")
-    st.markdown("### What you can do")
     st.markdown(
-        "- **Practice**: solve problems and learn from mistakes\n"
-        "- **Progress**: review answers and explanations\n"
-        "- **Profile**: change level anytime (sidebar)\n"
+        "This is a guided session designed to help you build skill without panic:\n"
+        "- **Hint → Retry → Explain**\n"
+        "- Mistakes are treated as patterns, not failures\n"
+        "- Results appear **at the end** (so you can focus while working)\n"
     )
 
-    if st.button("Start Practice", use_container_width=True):
-        st.session_state["nav"] = "Practice"
-        st.rerun()
+    st.markdown("---")
+
+    if _is_session_active():
+        st.info("You have an active session in progress.")
+        c1, c2 = st.columns([1, 1])
+        if c1.button("Continue session", use_container_width=True):
+            st.session_state["nav"] = "Practice"
+            st.rerun()
+        if c2.button("Start over (new session)", use_container_width=True):
+            start_new_session()
+    else:
+        if st.button("Start Session (5 questions)", use_container_width=True):
+            start_new_session()
+
 
 def page_practice():
-    st.title("Practice")
-    st.caption("Choose the best explanation and learn the clean fix.")
+    st.title("Practice Session")
+    st.caption("Pause → think structurally → answer. Hint and one retry are available.")
 
-    p, idx = get_current_problem()
+    s = _active()
+    if not s:
+        st.info("No active session. Start one from Home or the sidebar.")
+        if st.button("Start Session (5 questions)", use_container_width=True):
+            start_new_session()
+        return
 
-    st.markdown(f"**Topic:** {p['topic']}  \n**Level:** {p['level']}")
+    if s.get("completed", False):
+        st.success("Session complete.")
+        page_session_complete()
+        return
+
+    item = _current_item()
+    if not item:
+        st.error("Session state is out of range. Start a new session.")
+        return
+
+    idx = s["index"]
+    total = len(s["items"])
+
+    st.markdown(f"**Question {idx + 1} of {total}**  \n**Topic:** {item['topic']}")
     st.markdown("---")
-    st.markdown(f"### {p['prompt']}")
-    st.markdown(p["question"])
+    st.markdown(f"### {item['prompt']}")
 
-    choice = st.radio("Select an answer:", p["choices"], key=f"choice_{idx}")
+    # numeric answer input
+    key = f"ans_{item['qid']}_{idx}"
+    user_in = st.text_input("Your answer", key=key, placeholder="Type a number, e.g. 12")
 
-    cols = st.columns([1, 1, 2])
-    submit = cols[0].button("Submit", use_container_width=True)
-    next_btn = cols[1].button("Next Problem", use_container_width=True)
+    colA, colB, colC = st.columns([1, 1, 2])
+    submit = colA.button("Submit", use_container_width=True)
+    show_hint = colB.button("Hint", use_container_width=True)
 
-    if next_btn:
-        pick_next_problem()
-        st.rerun()
+    if show_hint and item["status"] == "unanswered":
+        st.info(item["hint"])
 
-    if submit:
-        selected_index = p["choices"].index(choice)
-        is_correct = selected_index == p["answer_index"]
+    if submit and item["status"] == "unanswered":
+        raw = (user_in or "").strip()
+        # basic parse
+        try:
+            val = int(raw)
+        except Exception:
+            st.error("Please enter a whole number (e.g., 12).")
+            return
 
-        st.session_state["score_total"] = st.session_state.get("score_total", 0) + 1
-        if is_correct:
-            st.session_state["score_correct"] = st.session_state.get("score_correct", 0) + 1
+        item["attempts"] += 1
+        item["user_answers"].append(val)
 
-        st.session_state["answered"].append(
-            {
-                "problem_index": idx,
-                "topic": p["topic"],
-                "level": p["level"],
-                "prompt": p["prompt"],
-                "selected": choice,
-                "correct": p["choices"][p["answer_index"]],
-                "is_correct": is_correct,
-                "explain_correct": p["explain_correct"],
-                "explain_wrong": p["explain_wrong"],
-            }
-        )
-
-        st.markdown("---")
-        if is_correct:
-            st.success(p["explain_correct"])
+        if val == item["answer"]:
+            item["status"] = "correct"
+            item["revealed"] = True
+            st.success("Correct.")
+            st.write(item["explain"])
         else:
-            st.error("Not quite.")
-            st.info(p["explain_wrong"])
-            st.write("✅ **Correct answer:**")
-            st.write(p["choices"][p["answer_index"]])
+            # first miss: hint + retry
+            if item["attempts"] == 1:
+                st.error("Not quite.")
+                st.info(item["hint"])
+                st.caption("Try once more. If it’s still off, I’ll show the clean solution.")
+            else:
+                # second miss: reveal
+                item["status"] = "incorrect"
+                item["revealed"] = True
+                st.error("Not quite — here’s the clean solution.")
+                st.write(f"✅ **Correct answer:** {item['answer']}")
+                st.write(item["explain"])
+                st.caption(f"Common pattern: **{item['mistake_tag']}**")
 
-        st.markdown("---")
+        # persist back
+        s["items"][idx] = item
+        st.session_state["active_session"] = s
+
+    st.markdown("---")
+    # Continue button appears once answered/revealed
+    if item["revealed"]:
         if st.button("Continue", use_container_width=True):
-            pick_next_problem()
-            st.rerun()
+            if idx + 1 < total:
+                s["index"] = idx + 1
+                st.session_state["active_session"] = s
+                st.rerun()
+            else:
+                _finalize_session()
+                st.rerun()
+
+
+def page_session_complete():
+    # Shows end-of-session summary for the active session or latest history
+    s = _active()
+    history = st.session_state.get("session_history", [])
+
+    # Prefer current completed session summary if present in history
+    summary = history[-1] if history else None
+    if not summary:
+        st.info("No session summary found yet.")
+        return
+
+    correct = summary["correct"]
+    total = summary["total"]
+    pattern_note = summary["pattern_note"]
+
+    st.markdown("## Session Complete")
+    st.markdown(f"**Accuracy:** {correct} / {total}")
+    st.markdown(pattern_note)
+
+    st.markdown("---")
+    c1, c2 = st.columns([1, 1])
+    if c1.button("Review this session", use_container_width=True):
+        st.session_state["nav"] = "Progress"
+        st.rerun()
+    if c2.button("Start next session", use_container_width=True):
+        start_new_session()
+
 
 def page_progress():
     st.title("Progress")
-    correct = st.session_state.get("score_correct", 0)
-    total = st.session_state.get("score_total", 0)
-    pct = int((correct / total) * 100) if total else 0
+    st.caption("Review explanations and patterns. This is where learning consolidates.")
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Correct", correct)
-    c2.metric("Total", total)
-    c3.metric("Accuracy", f"{pct}%")
-
-    st.markdown("---")
-
-    answered = st.session_state.get("answered", [])
-    if not answered:
-        st.info("No answers yet. Go to **Practice** to start.")
+    history = st.session_state.get("session_history", [])
+    if not history:
+        st.info("No sessions yet. Start a session from Home.")
         return
 
-    st.markdown("### Review")
-    for i, a in enumerate(reversed(answered), start=1):
-        status = "✅ Correct" if a["is_correct"] else "❌ Incorrect"
-        with st.expander(f"{status} — {a['topic']} ({a['level']})"):
-            st.write(a["prompt"])
-            st.write(f"**Your answer:** {a['selected']}")
-            st.write(f"**Correct answer:** {a['correct']}")
+    latest = history[-1]
+    st.metric("Latest session accuracy", f"{latest['correct']} / {latest['total']}")
+
+    st.markdown("---")
+    st.markdown("### Latest Session Review")
+
+    for i, it in enumerate(latest["items"], start=1):
+        status = "✅ Correct" if it["status"] == "correct" else "❌ Incorrect"
+        with st.expander(f"{status} — Q{i} ({it['topic']})"):
+            st.write(it["prompt"])
+            if it["user_answers"]:
+                st.write(f"**Your answers:** {it['user_answers']}")
+            st.write(f"**Correct answer:** {it['answer']}")
             st.markdown("---")
             st.write("**Explanation:**")
-            st.write(a["explain_correct"] if a["is_correct"] else a["explain_wrong"])
+            st.write(it["explain"])
+            if it["status"] != "correct":
+                st.caption(f"Common pattern: **{it['mistake_tag']}**")
+
+    st.markdown("---")
+    if st.button("Start another session", use_container_width=True):
+        start_new_session()
+
 
 # =========================
 # Run
 # =========================
-require_access()
+# Use DB-backed access gate (and env fallback if your btm_access.py supports it)
+require_access_code(label="Access code")
+
 init_state()
 sidebar()
 
