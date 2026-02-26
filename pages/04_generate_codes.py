@@ -1,6 +1,6 @@
-import streamlit as st
 import random
 import string
+import streamlit as st
 
 from btm_admin import require_admin_key
 from btm_db import add_access_codes, db_healthcheck, list_access_codes
@@ -8,17 +8,14 @@ from btm_db import add_access_codes, db_healthcheck, list_access_codes
 ALPHABET = string.ascii_uppercase + string.digits
 
 
-def generate_code(prefix="BTM", length=6):
-    chars = []
-    for _ in range(length):
-        chars.append(random.choice(ALPHABET))
-    return prefix + "-" + "".join(chars)
+def generate_code(prefix="BTM", length=4):
+    return f"{prefix}-" + "".join(random.choice(ALPHABET) for _ in range(length))
 
 
 require_admin_key()
 st.title("Generate access codes")
 
-# --- DB status (truth lights) ---
+# DB truth light
 try:
     v = db_healthcheck()
     st.success("✅ Database connected")
@@ -26,23 +23,24 @@ try:
         st.write(v)
 except Exception as e:
     st.error(f"❌ Database not connected: {e}")
+    st.stop()
 
-count = int(st.number_input("How many codes?", min_value=1))
+count = int(st.number_input("How many codes?", min_value=1, value=1))
 prefix = st.text_input("Prefix", value="BTM")
-length = int(st.number_input("Code length", min_value=4))
+length = int(st.number_input("Code length", min_value=4, max_value=12, value=4))
+note = st.text_input("Optional note (e.g., cohort name)", value="")
 
 if st.button("Generate codes"):
-    codes = []
-    for _ in range(count):
-        code = generate_code(prefix=prefix, length=length)
-        codes.append(code)
+    codes = [generate_code(prefix=prefix.strip().upper(), length=length) for _ in range(count)]
 
-    # Save to Postgres
-    add_access_codes(codes)
+    inserted = add_access_codes(codes, note=(note.strip() or None))
 
-    # Read-back proof
-    saved = list_access_codes(10)
-
-    st.success("✅ Codes generated and saved to database.")
-    st.info(f"Latest codes in DB (up to 10): {', '.join(saved) if saved else 'NONE'}")
+    st.success(f"✅ Generated {len(codes)} codes. Inserted {inserted} new into DB.")
     st.code("\n".join(codes))
+
+    st.markdown("---")
+    st.subheader("Latest codes in DB")
+    rows = list_access_codes(25, include_revoked=True)
+    for r in rows:
+        status = "✅ active" if r["revoked_at"] is None else "🛑 revoked"
+        st.write(f"{r['code']} — {status}")
