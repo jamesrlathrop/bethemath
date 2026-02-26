@@ -19,7 +19,7 @@ if not st.session_state.get("admin_ok"):
 
 st.title("Generate Access Codes")
 
-# --- DB truth light ---
+# DB truth light
 try:
     v = db_healthcheck()
     st.success("✅ Database connected")
