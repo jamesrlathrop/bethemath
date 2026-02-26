@@ -1,20 +1,13 @@
 import random
 import string
 import streamlit as st
-
 from btm_admin import require_admin_key
-from btm_db import add_access_codes, db_healthcheck, list_access_codes
 
-ALPHABET = string.ascii_uppercase + string.digits
+# If already unlocked, don't ask again
+if not st.session_state.get("admin_ok"):
+    require_admin_key()
 
-
-def generate_code(prefix="BTM", length=4):
-    return f"{prefix}-" + "".join(random.choice(ALPHABET) for _ in range(length))
-
-
-require_admin_key()
-st.title("Generate access codes")
-
+st.title("Generate Access Codes")
 # DB truth light
 try:
     v = db_healthcheck()
