@@ -1,9 +1,16 @@
 import importlib.util
 from pathlib import Path
 
+# =========================================================
+# Robust loader for btm_access.py (avoids ModuleNotFoundError)
+# =========================================================
 _btm_access_path = Path(__file__).with_name("btm_access.py")
 if not _btm_access_path.exists():
-    raise FileNotFoundError(f"Missing {_btm_access_path}. Check the repo is deployed correctly.")
+    raise FileNotFoundError(
+        f"Missing {_btm_access_path}. "
+        "This deployment does not include btm_access.py. "
+        "Confirm it's in the repo root next to app.py and redeploy."
+    )
 
 _spec = importlib.util.spec_from_file_location("btm_access", _btm_access_path)
 _btm_access = importlib.util.module_from_spec(_spec)
@@ -13,21 +20,6 @@ _spec.loader.exec_module(_btm_access)
 require_access_code = _btm_access.require_access_code
 
 import streamlit as st
-
-import importlib.util
-from pathlib import Path
-
-# Load btm_access.py reliably (avoids ModuleNotFoundError in some Railway builds)
-_btm_access_path = Path(__file__).with_name("btm_access.py")
-if not _btm_access_path.exists():
-    raise FileNotFoundError(f"Missing {_btm_access_path}. Check the repo is deployed correctly.")
-
-_spec = importlib.util.spec_from_file_location("btm_access", _btm_access_path)
-_btm_access = importlib.util.module_from_spec(_spec)
-assert _spec and _spec.loader
-_spec.loader.exec_module(_btm_access)
-
-require_access_code = _btm_access.require_access_code
 
 # =========================
 # Config
@@ -99,7 +91,6 @@ def init_state():
     st.session_state.setdefault("profile_name", "")
     st.session_state.setdefault("profile_role", "Student")
     st.session_state.setdefault("profile_level", "Mixed")
-
     st.session_state.setdefault("nav", "Home")
 
     # session engine
@@ -166,7 +157,6 @@ def _finalize_session():
     mistake_tags = [it["mistake_tag"] for it in items if it["status"] != "correct"]
     pattern_note = "No major patterns detected."
     if mistake_tags:
-        # pick most common tag
         most = max(set(mistake_tags), key=mistake_tags.count)
         pattern_note = f"Watch for: **{most}**."
 
@@ -286,11 +276,10 @@ def page_practice():
     st.markdown("---")
     st.markdown(f"### {item['prompt']}")
 
-    # numeric answer input
     key = f"ans_{item['qid']}_{idx}"
     user_in = st.text_input("Your answer", key=key, placeholder="Type a number, e.g. 12")
 
-    colA, colB, colC = st.columns([1, 1, 2])
+    colA, colB, _ = st.columns([1, 1, 2])
     submit = colA.button("Submit", use_container_width=True)
     show_hint = colB.button("Hint", use_container_width=True)
 
@@ -299,7 +288,6 @@ def page_practice():
 
     if submit and item["status"] == "unanswered":
         raw = (user_in or "").strip()
-        # basic parse
         try:
             val = int(raw)
         except Exception:
@@ -315,13 +303,11 @@ def page_practice():
             st.success("Correct.")
             st.write(item["explain"])
         else:
-            # first miss: hint + retry
             if item["attempts"] == 1:
                 st.error("Not quite.")
                 st.info(item["hint"])
                 st.caption("Try once more. If it’s still off, I’ll show the clean solution.")
             else:
-                # second miss: reveal
                 item["status"] = "incorrect"
                 item["revealed"] = True
                 st.error("Not quite — here’s the clean solution.")
@@ -329,12 +315,10 @@ def page_practice():
                 st.write(item["explain"])
                 st.caption(f"Common pattern: **{item['mistake_tag']}**")
 
-        # persist back
         s["items"][idx] = item
         st.session_state["active_session"] = s
 
     st.markdown("---")
-    # Continue button appears once answered/revealed
     if item["revealed"]:
         if st.button("Continue", use_container_width=True):
             if idx + 1 < total:
@@ -347,11 +331,7 @@ def page_practice():
 
 
 def page_session_complete():
-    # Shows end-of-session summary for the active session or latest history
-    s = _active()
     history = st.session_state.get("session_history", [])
-
-    # Prefer current completed session summary if present in history
     summary = history[-1] if history else None
     if not summary:
         st.info("No session summary found yet.")
@@ -410,7 +390,6 @@ def page_progress():
 # =========================
 # Run
 # =========================
-# Use DB-backed access gate (and env fallback if your btm_access.py supports it)
 require_access_code(label="Access code")
 
 init_state()
