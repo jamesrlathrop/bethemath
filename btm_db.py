@@ -1,209 +1,131 @@
 import os
-from contextlib import contextmanager
-from datetime import datetime, timezone
+import psycopg2
+import psycopg2.extras
 
-# Prefer psycopg2, but allow psycopg (v3) if that's what's installed.
-try:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
-    _USING_PSYCOPG2 = True
-except Exception:
-    psycopg2 = None
-    RealDictCursor = None
-    _USING_PSYCOPG2 = False
-
-try:
-    import psycopg  # type: ignore
-    _USING_PSYCOPG3 = True
-except Exception:
-    psycopg = None
-    _USING_PSYCOPG3 = False
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 
-def _db_url() -> str:
-    url = os.getenv("DATABASE_URL") or ""
-    if not url:
-        raise RuntimeError("DATABASE_URL is not set in environment variables.")
-    return url
+def _conn():
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is not set")
+    return psycopg2.connect(DATABASE_URL)
 
 
-@contextmanager
-def get_conn():
+def ensure_schema():
     """
-    Context manager returning a DB connection that is always closed.
-    Works with either psycopg2 or psycopg (v3).
+    Idempotent schema setup:
+    - creates access_codes table if missing
+    - adds missing columns (like note) safely
     """
-    url = _db_url()
-
-    if _USING_PSYCOPG2:
-        conn = psycopg2.connect(url)
-        try:
-            yield conn
-        finally:
-            conn.close()
-        return
-
-    if _USING_PSYCOPG3:
-        conn = psycopg.connect(url)
-        try:
-            yield conn
-        finally:
-            conn.close()
-        return
-
-    raise RuntimeError(
-        "No Postgres driver found. Install psycopg2-binary or psycopg."
-    )
-
-
-def ensure_tables():
-    """
-    Creates the access_codes table if it doesn't exist.
-    This IS the 'codes table' you're asking about.
-    """
-    sql = """
-    CREATE TABLE IF NOT EXISTS access_codes (
-        code TEXT PRIMARY KEY,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        revoked_at TIMESTAMPTZ NULL,
-        note TEXT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_access_codes_created_at
-      ON access_codes(created_at DESC);
-    """
-
-    with get_conn() as conn:
+    with _conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS access_codes (
+                    id SERIAL PRIMARY KEY,
+                    code TEXT UNIQUE NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    revoked_at TIMESTAMPTZ NULL
+                );
+                """
+            )
+            cur.execute(
+                """
+                ALTER TABLE access_codes
+                ADD COLUMN IF NOT EXISTS note TEXT NULL;
+                """
+            )
         conn.commit()
 
 
-def db_healthcheck() -> dict:
-    """Returns Postgres version if connected."""
-    ensure_tables()
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT version()")
-            v = cur.fetchone()
-    return {"ok": True, "version": v[0] if v else None}
+def db_healthcheck():
+    ensure_schema()
+    with _conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT NOW() as now;")
+            return cur.fetchone()
 
 
-def add_access_codes(codes: list[str], note: str | None = None) -> int:
-    """
-    Inserts new codes. Ignores duplicates.
-    Returns number inserted (best-effort).
-    """
-    ensure_tables()
-    cleaned = []
-    for c in codes:
-        c2 = (c or "").strip().upper()
-        if c2:
-            cleaned.append(c2)
+def generate_code(prefix="BTM", length=4):
+    import random
+    import string
 
-    if not cleaned:
-        return 0
+    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
+    return f"{prefix}-{suffix}"
 
+
+def add_access_codes(codes, note=None):
+    ensure_schema()
     inserted = 0
-    with get_conn() as conn:
+    with _conn() as conn:
         with conn.cursor() as cur:
-            for c in cleaned:
+            for c in codes:
+                c = (c or "").strip().upper()
+                if not c:
+                    continue
                 cur.execute(
                     """
                     INSERT INTO access_codes (code, note)
                     VALUES (%s, %s)
-                    ON CONFLICT (code) DO NOTHING
+                    ON CONFLICT (code) DO NOTHING;
                     """,
                     (c, note),
                 )
-                # rowcount is 1 if inserted, 0 if conflict
-                try:
-                    inserted += int(cur.rowcount or 0)
-                except Exception:
-                    pass
+                inserted += cur.rowcount
         conn.commit()
     return inserted
 
 
-def list_access_codes(limit: int = 50, include_revoked: bool = True) -> list[dict]:
-    """
-    Returns list of dict rows: {code, created_at, revoked_at, note}
-    """
-    ensure_tables()
-    limit = max(1, min(int(limit), 500))
-
-    where = "" if include_revoked else "WHERE revoked_at IS NULL"
-    sql = f"""
-      SELECT code, created_at, revoked_at, note
-      FROM access_codes
-      {where}
-      ORDER BY created_at DESC
-      LIMIT %s
-    """
-
-    with get_conn() as conn:
-        # dict cursor for psycopg2, normal for psycopg3
-        if _USING_PSYCOPG2 and RealDictCursor is not None:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(sql, (limit,))
-                rows = cur.fetchall()
-            return [dict(r) for r in rows]
-
-        with conn.cursor() as cur:
-            cur.execute(sql, (limit,))
-            rows = cur.fetchall()
-        out = []
-        for r in rows:
-            out.append(
-                {"code": r[0], "created_at": r[1], "revoked_at": r[2], "note": r[3]}
-            )
-        return out
+def list_access_codes(limit=25, include_revoked=False):
+    ensure_schema()
+    with _conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if include_revoked:
+                cur.execute(
+                    """
+                    SELECT code, created_at, revoked_at, note
+                    FROM access_codes
+                    ORDER BY created_at DESC
+                    LIMIT %s;
+                    """,
+                    (limit,),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT code, created_at, revoked_at, note
+                    FROM access_codes
+                    WHERE revoked_at IS NULL
+                    ORDER BY created_at DESC
+                    LIMIT %s;
+                    """,
+                    (limit,),
+                )
+            return list(cur.fetchall())
 
 
 def is_valid_access_code(code: str) -> bool:
-    """
-    True if code exists and is not revoked.
-    """
-    ensure_tables()
+    ensure_schema()
     c = (code or "").strip().upper()
     if not c:
         return False
-
-    with get_conn() as conn:
+    with _conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """
-                SELECT 1
-                FROM access_codes
-                WHERE code = %s AND revoked_at IS NULL
-                """,
+                "SELECT 1 FROM access_codes WHERE code=%s AND revoked_at IS NULL LIMIT 1;",
                 (c,),
             )
-            row = cur.fetchone()
-    return bool(row)
+            return cur.fetchone() is not None
 
 
-def revoke_access_code(code: str) -> bool:
-    """
-    Marks a code as revoked (does not delete).
-    Returns True if it existed and is now revoked.
-    """
-    ensure_tables()
+def revoke_code(code: str):
+    ensure_schema()
     c = (code or "").strip().upper()
-    if not c:
-        return False
-
-    now = datetime.now(timezone.utc)
-    with get_conn() as conn:
+    with _conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """
-                UPDATE access_codes
-                SET revoked_at = %s
-                WHERE code = %s AND revoked_at IS NULL
-                """,
-                (now, c),
+                "UPDATE access_codes SET revoked_at = NOW() WHERE code=%s AND revoked_at IS NULL;",
+                (c,),
             )
-            ok = (cur.rowcount or 0) > 0
-        conn.commit()
-    return ok
+            conn.commit()
+            return cur.rowcount
