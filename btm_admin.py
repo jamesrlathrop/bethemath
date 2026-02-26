@@ -1,35 +1,30 @@
 import os
 import streamlit as st
 
-def get_admin_key() -> str | None:
-    # Railway env vars first, then Streamlit secrets as fallback
-    return (
-        os.getenv("ADMIN_CODE")
-        or os.getenv("ADMIN_KEY")
-        or st.secrets.get("ADMIN_CODE")
-        or st.secrets.get("ADMIN_KEY")
-    )
 
-def require_admin() -> None:
-    admin_key = get_admin_key()
-    if not admin_key:
-        st.error("Admin access is not configured. Set ADMIN_CODE in your environment.")
-        st.stop()
+def require_admin_key(label: str = "Enter admin code"):
+    """
+    Checks ADMIN_CODE env var.
+    """
+    if st.session_state.get("admin_ok"):
+        return True
 
-    if st.session_state.get("is_admin", False):
-        return
+    st.title("Admin Access")
+    admin = st.text_input(label, type="password")
 
-    st.subheader("Admin Access")
-    entered = st.text_input("Enter admin code", type="password")
     if st.button("Unlock"):
-        if entered == admin_key:
-            st.session_state["is_admin"] = True
-            st.success("Unlocked.")
+        entered = (admin or "").strip()
+        expected = (os.getenv("ADMIN_CODE") or "").strip()
+
+        if not expected:
+            st.error("ADMIN_CODE is not set in Railway Variables.")
+            st.stop()
+
+        if entered == expected:
+            st.session_state["admin_ok"] = True
+            st.success("Admin OK")
             st.rerun()
         else:
-            st.error("Invalid admin key")
-    st.stop()
+            st.error("Invalid admin code.")
 
-# Keep backward compatibility if other pages import the old name
-def require_admin_key() -> None:
-    require_admin()
+    st.stop()
