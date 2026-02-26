@@ -1,3 +1,17 @@
+import importlib.util
+from pathlib import Path
+
+_btm_access_path = Path(__file__).with_name("btm_access.py")
+if not _btm_access_path.exists():
+    raise FileNotFoundError(f"Missing {_btm_access_path}. Check the repo is deployed correctly.")
+
+_spec = importlib.util.spec_from_file_location("btm_access", _btm_access_path)
+_btm_access = importlib.util.module_from_spec(_spec)
+assert _spec and _spec.loader
+_spec.loader.exec_module(_btm_access)
+
+require_access_code = _btm_access.require_access_code
+
 import streamlit as st
 
 import importlib.util
