@@ -1,45 +1,47 @@
 import streamlit as st
-
 from btm_admin import require_admin_key
-from btm_db import list_access_codes, revoke_access_code, db_healthcheck
-
+from btm_db import db_healthcheck, list_access_codes, revoke_access_code, reactivate_access_code
 
 require_admin_key()
-st.title("Manage codes")
+
+st.title("Manage Codes")
 
 try:
-    db_healthcheck()
+    v = db_healthcheck()
+    st.success("✅ Database connected")
+    with st.expander("DB details"):
+        st.write(v)
 except Exception as e:
-    st.error(f"Database not connected: {e}")
+    st.error(f"❌ Database not connected: {e}")
     st.stop()
 
-show_revoked = st.checkbox("Show revoked codes", value=True)
-limit = int(st.number_input("How many to show", min_value=10, max_value=200, value=50))
+st.markdown("---")
 
-rows = list_access_codes(limit=limit, include_revoked=show_revoked)
+limit = st.number_input("Show how many?", min_value=10, max_value=500, value=50, step=10)
+rows = list_access_codes(int(limit), include_revoked=True)
 
 if not rows:
-    st.info("No codes in database yet. Go to **generate codes** and create some.")
+    st.info("No codes found.")
     st.stop()
-
-st.caption("Tip: Click a code field to copy it (browser copy).")
 
 for r in rows:
     code = r["code"]
-    revoked = r["revoked_at"] is not None
-    status = "🛑 revoked" if revoked else "✅ active"
+    note = r.get("note")
+    active = bool(r.get("is_active", True))
+    status = "✅ active" if active else "🛑 inactive"
 
-    cols = st.columns([3, 1, 1])
-    cols[0].text_input(status, value=code, key=f"code_{code}", disabled=False)
+    cols = st.columns([2, 3, 2, 2])
+    cols[0].markdown(f"**`{code}`**")
+    cols[1].write(note or "—")
+    cols[2].write(status)
 
-    if revoked:
-        cols[1].write("")
-        cols[2].write("")
+    if active:
+        if cols[3].button("Revoke", key=f"rev_{code}", use_container_width=True):
+            revoke_access_code(code)
+            st.toast("Revoked ✅")
+            st.rerun()
     else:
-        if cols[1].button("Revoke", key=f"rev_{code}"):
-            ok = revoke_access_code(code)
-            if ok:
-                st.success(f"Revoked {code}")
-            else:
-                st.warning(f"Could not revoke {code} (maybe already revoked).")
+        if cols[3].button("Reactivate", key=f"rea_{code}", use_container_width=True):
+            reactivate_access_code(code)
+            st.toast("Reactivated ✅")
             st.rerun()
