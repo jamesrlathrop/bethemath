@@ -1,29 +1,9 @@
-import importlib.util
-from pathlib import Path
-
-# =========================================================
-# Robust loader for btm_access.py (avoids ModuleNotFoundError)
-# =========================================================
-_btm_access_path = Path(__file__).with_name("btm_access.py")
-if not _btm_access_path.exists():
-    raise FileNotFoundError(
-        f"Missing {_btm_access_path}. "
-        "This deployment does not include btm_access.py. "
-        "Confirm it's in the repo root next to app.py and redeploy."
-    )
-
-_spec = importlib.util.spec_from_file_location("btm_access", _btm_access_path)
-_btm_access = importlib.util.module_from_spec(_spec)
-assert _spec and _spec.loader
-_spec.loader.exec_module(_btm_access)
-
-require_access_code = _btm_access.require_access_code
-
 import streamlit as st
+from btm_access import require_access_code
 
-# =========================
-# Config
-# =========================
+# Gate first
+require_access_code(label="Access code")
+
 st.set_page_config(
     page_title="BeTheMath — Error Detective",
     page_icon="🧠",
@@ -33,9 +13,6 @@ st.set_page_config(
 APP_TITLE = "🧠 BeTheMath — Error Detective"
 APP_TAGLINE = "Fix mistakes fast. Learn why. Build confidence."
 
-# =========================
-# Session Design (v1: 5-question arc)
-# =========================
 SESSION_V1 = [
     {
         "id": "q1_confidence_anchor",
@@ -84,18 +61,14 @@ SESSION_V1 = [
     },
 ]
 
-# =========================
-# State
-# =========================
+
 def init_state():
     st.session_state.setdefault("profile_name", "")
     st.session_state.setdefault("profile_role", "Student")
     st.session_state.setdefault("profile_level", "Mixed")
     st.session_state.setdefault("nav", "Home")
-
-    # session engine
-    st.session_state.setdefault("active_session", None)  # dict or None
-    st.session_state.setdefault("session_history", [])   # list of past sessions (summaries)
+    st.session_state.setdefault("active_session", None)
+    st.session_state.setdefault("session_history", [])
 
 
 def start_new_session():
@@ -112,9 +85,9 @@ def start_new_session():
                 "explain": q["explain"],
                 "mistake_tag": q["mistake_tag"],
                 "attempts": 0,
-                "status": "unanswered",  # unanswered | correct | incorrect
+                "status": "unanswered",
                 "user_answers": [],
-                "revealed": False,       # whether we revealed full explanation/correct
+                "revealed": False,
             }
             for q in SESSION_V1
         ],
@@ -153,7 +126,6 @@ def _finalize_session():
     correct = sum(1 for it in items if it["status"] == "correct")
     total = len(items)
 
-    # simple mistake pattern rollup
     mistake_tags = [it["mistake_tag"] for it in items if it["status"] != "correct"]
     pattern_note = "No major patterns detected."
     if mistake_tags:
@@ -173,9 +145,6 @@ def _finalize_session():
     st.session_state["active_session"] = s
 
 
-# =========================
-# UI: Sidebar
-# =========================
 def sidebar():
     with st.sidebar:
         st.markdown("### Profile")
@@ -195,7 +164,6 @@ def sidebar():
             "Level",
             ["Mixed"],
             index=0,
-            help="(v1) Session is a carefully designed 5-question mix. More levels coming next.",
         )
 
         st.markdown("---")
@@ -214,12 +182,7 @@ def sidebar():
             st.session_state["active_session"] = None
             st.rerun()
 
-        st.caption("Owner/Admin tools are in the sidebar pages (admin/manage/generate).")
 
-
-# =========================
-# Pages
-# =========================
 def page_home():
     st.title(APP_TITLE)
     st.caption(APP_TAGLINE)
@@ -230,7 +193,7 @@ def page_home():
         "This is a guided session designed to help you build skill without panic:\n"
         "- **Hint → Retry → Explain**\n"
         "- Mistakes are treated as patterns, not failures\n"
-        "- Results appear **at the end** (so you can focus while working)\n"
+        "- Results appear **at the end**\n"
     )
 
     st.markdown("---")
@@ -277,7 +240,7 @@ def page_practice():
     st.markdown(f"### {item['prompt']}")
 
     key = f"ans_{item['qid']}_{idx}"
-    user_in = st.text_input("Your answer", key=key, placeholder="Type a number, e.g. 12")
+    user_in = st.text_input("Your answer", key=key, placeholder="Type a whole number, e.g. 12")
 
     colA, colB, _ = st.columns([1, 1, 2])
     submit = colA.button("Submit", use_container_width=True)
@@ -337,13 +300,9 @@ def page_session_complete():
         st.info("No session summary found yet.")
         return
 
-    correct = summary["correct"]
-    total = summary["total"]
-    pattern_note = summary["pattern_note"]
-
     st.markdown("## Session Complete")
-    st.markdown(f"**Accuracy:** {correct} / {total}")
-    st.markdown(pattern_note)
+    st.markdown(f"**Accuracy:** {summary['correct']} / {summary['total']}")
+    st.markdown(summary["pattern_note"])
 
     st.markdown("---")
     c1, c2 = st.columns([1, 1])
@@ -387,11 +346,7 @@ def page_progress():
         start_new_session()
 
 
-# =========================
 # Run
-# =========================
-require_access_code(label="Access code")
-
 init_state()
 sidebar()
 
