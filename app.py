@@ -1,14 +1,15 @@
 import streamlit as st
 from btm_access import require_access_code
 
-# Gate first
-require_access_code(label="Access code")
-
+# Streamlit config MUST be first
 st.set_page_config(
     page_title="BeTheMath — Error Detective",
     page_icon="🧠",
     layout="wide",
 )
+
+# Then enforce gate
+require_access_code(label="Access code")
 
 APP_TITLE = "🧠 BeTheMath — Error Detective"
 APP_TAGLINE = "Fix mistakes fast. Learn why. Build confidence."
