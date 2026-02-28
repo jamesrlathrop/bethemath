@@ -1,40 +1,78 @@
-import uuid
 import streamlit as st
 
-from btm_db import consume_access_code
-
-
-def _ensure_session_id():
-    st.session_state.setdefault("session_id", str(uuid.uuid4()))
+from btm_db import consume_access_code, fulfill_stripe_lifetime
+from btm_stripe import create_checkout_session, verify_paid_session
 
 
 def require_access_code(label: str = "Access code") -> bool:
     """
     Student gate:
-    - DB consume ONLY (enforces max_uses, logs events)
+    - Enter access code (consumes 1 use)
+    - OR buy lifetime access via Stripe checkout
+    - After Stripe success redirect, verify payment and issue a lifetime code
     """
+
+    # Already granted this session?
     if st.session_state.get("access_granted"):
         return True
 
-    _ensure_session_id()
-
     st.subheader("Access required")
-    code = st.text_input(label, type="password", placeholder="BTM-XXXX")
+
+    # --- Handle Stripe return (success redirect) ---
+    qp = st.query_params
+    session_id = qp.get("session_id")
+    paid_flag = qp.get("paid")
+
+    if paid_flag and session_id:
+        # Avoid re-verifying on every rerun in the same browser session
+        if st.session_state.get("stripe_session_fulfilled") != session_id:
+            with st.spinner("Verifying payment..."):
+                try:
+                    v = verify_paid_session(session_id)
+                    if v["paid"]:
+                        code = fulfill_stripe_lifetime(v["session_id"], v["email"])
+                        st.session_state["stripe_session_fulfilled"] = session_id
+
+                        st.success("Payment verified ✅")
+                        st.markdown("### Your lifetime access code")
+                        st.code(code)
+                        st.caption("Save this code somewhere safe. You can use it anytime to unlock the app.")
+                    else:
+                        st.error("Payment not verified yet. If you just paid, wait a moment and refresh.")
+                except Exception as e:
+                    st.error(f"Could not verify payment: {e}")
+
+        st.markdown("---")
+
+    # --- Code entry ---
+    code_in = st.text_input(label, type="password", placeholder="BTM-XXXX")
 
     if st.button("Unlock"):
-        entered = (code or "").strip().upper()
-
-        try:
-            ok, msg = consume_access_code(entered, session_id=st.session_state["session_id"])
-        except Exception as e:
-            st.error(f"Database error: {e}")
-            st.stop()
-
+        entered = (code_in or "").strip().upper()
+        ok, msg = consume_access_code(entered)
         if ok:
             st.session_state["access_granted"] = True
             st.success(msg)
             st.rerun()
         else:
             st.error(msg)
+
+    st.markdown("---")
+
+    # --- Buy button ---
+    st.markdown("### Prefer to buy lifetime access?")
+    st.caption("One-time purchase. You’ll receive a lifetime access code after payment.")
+
+    email = st.text_input("Email for receipt", placeholder="you@example.com")
+
+    if st.button("Buy Lifetime Access ($49)"):
+        if not email or "@" not in email:
+            st.warning("Please enter a valid email.")
+        else:
+            try:
+                url = create_checkout_session(email.strip())
+                st.link_button("Continue to secure payment", url)
+            except Exception as e:
+                st.error(f"Could not start checkout: {e}")
 
     st.stop()
