@@ -1,33 +1,31 @@
 import os
+import json
 import streamlit as st
+import streamlit.components.v1 as components
 
 from btm_access import require_access_code
 
-# -----------------------------
-# Page config
-# -----------------------------
-st.set_page_config(
-    page_title="BeTheMath — Access",
-    page_icon="🧠",
-    layout="wide",
-)
+st.set_page_config(page_title="BeTheMath", page_icon="🧠", layout="centered")
 
-# Where the beautiful app lives
 BEAUTIFUL_APP_URL = os.getenv(
     "BEAUTIFUL_APP_URL",
     "https://jamesrlathrop.github.io/mathquest-errors-to-insight/",
-)
+).strip()
 
-# -----------------------------
-# Access gate (Stripe or code)
-# -----------------------------
-unlocked = require_access_code(label="Access code")
+# Gate renders only when locked
+if not require_access_code(label="Access code"):
+    st.stop()
 
-# -----------------------------
-# If unlocked → show ONE button
-# -----------------------------
-if unlocked:
-    st.success("✅ You’re unlocked.")
-    st.markdown("### Open BeTheMath")
-    st.link_button("Open BeTheMath", BEAUTIFUL_APP_URL)
-    st.caption("Tip: Bookmark BeTheMath after you open it.")
+# One-time alert for purchasers (delivers access code without adding page UI)
+code = st.session_state.get("lifetime_code")
+if code and not st.session_state.get("lifetime_code_shown"):
+    st.session_state["lifetime_code_shown"] = True
+    msg = f"Payment verified ✅\n\nYour lifetime access code is:\n{code}\n\nPlease save it somewhere safe."
+    # Use JSON encoding to safely escape text
+    components.html(
+        f"<script>(function(){{alert({json.dumps(msg)});}})();</script>",
+        height=0,
+    )
+
+# Post-unlock: EXACTLY ONE button
+st.link_button("Open BeTheMath", BEAUTIFUL_APP_URL, use_container_width=True)
