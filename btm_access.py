@@ -19,24 +19,11 @@ def _get_session_id():
         return raw[0] if isinstance(raw, list) and raw else None
 
 def require_access_code(label: str = "Access code") -> bool:
-    """
-    Access gate:
-      - Buy lifetime access via Stripe (direct redirect)
-      - OR enter access code (consumes 1 use)
-    After payment return, we verify session_id, issue lifetime code in DB, unlock session.
-    IMPORTANT UX:
-      - No email field before Stripe (Stripe collects email)
-      - No extra "Continue to secure payment" step
-      - No duplicate post-unlock UI here (app.py controls the single Open button)
-    """
-
-    # Already unlocked this session → return silently (no UI)
+    # already unlocked in this session
     if st.session_state.get("access_granted"):
         return True
 
-    # -----------------------------
-    # Stripe success return
-    # -----------------------------
+    # Stripe return
     session_id = _get_session_id()
     if session_id:
         if st.session_state.get("stripe_session_fulfilled") != session_id:
@@ -44,7 +31,6 @@ def require_access_code(label: str = "Access code") -> bool:
                 v = verify_paid_session(session_id)
 
             if v.get("paid"):
-                # Issue lifetime access code (idempotent) and store in session for one-time alert
                 code = fulfill_stripe_lifetime(v["session_id"], v.get("email"))
                 st.session_state["stripe_session_fulfilled"] = session_id
                 st.session_state["lifetime_code"] = code
@@ -55,16 +41,13 @@ def require_access_code(label: str = "Access code") -> bool:
                 st.error("Payment not verified yet. If you just paid, wait a moment and refresh.")
                 st.stop()
 
-    # -----------------------------
-    # Gate UI (minimal + confident)
-    # -----------------------------
+    # Gate UI (Apple-clean + trust polish)
     st.markdown(
         """
         <style>
           .btm-wrap {max-width: 760px; margin: 0 auto;}
           .btm-card {border: 1px solid rgba(255,255,255,0.10); border-radius: 18px; padding: 18px; background: rgba(255,255,255,0.03);}
           .btm-muted {opacity: 0.82;}
-          .btm-fine {font-size: 0.95rem; opacity: 0.78;}
           .btm-check {line-height: 1.65;}
         </style>
         """,
@@ -91,17 +74,11 @@ def require_access_code(label: str = "Access code") -> bool:
         unsafe_allow_html=True,
     )
 
-    buy = st.button("Buy lifetime access — $49", type="primary", use_container_width=True)
-    if buy:
-        try:
-            url = create_checkout_session()
-            # Direct to Stripe (no intermediate “Continue…” step)
-            components.html(f"<script>window.location.href='{url}';</script>", height=0)
-            # fallback link (not a second button)
-            st.markdown(f"[If you weren’t redirected, click here to pay securely.]({url})")
-            st.stop()
-        except Exception as e:
-            st.error(f"Could not start checkout: {e}")
+    if st.button("Buy lifetime access — $49", type="primary", use_container_width=True):
+        url = create_checkout_session()
+        components.html(f"<script>window.location.href='{url}';</script>", height=0)
+        st.markdown(f"[If you weren’t redirected, click here to pay securely.]({url})")
+        st.stop()
 
     st.markdown("</div>", unsafe_allow_html=True)
 

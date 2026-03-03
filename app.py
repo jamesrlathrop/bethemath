@@ -16,16 +16,12 @@ BEAUTIFUL_APP_URL = os.getenv(
 if not require_access_code(label="Access code"):
     st.stop()
 
-# One-time alert for purchasers (delivers access code without adding page UI)
+# One-time popup to deliver lifetime code without adding page UI clutter
 code = st.session_state.get("lifetime_code")
 if code and not st.session_state.get("lifetime_code_shown"):
     st.session_state["lifetime_code_shown"] = True
     msg = f"Payment verified ✅\n\nYour lifetime access code is:\n{code}\n\nPlease save it somewhere safe."
-    # Use JSON encoding to safely escape text
-    components.html(
-        f"<script>(function(){{alert({json.dumps(msg)});}})();</script>",
-        height=0,
-    )
+    components.html(f"<script>alert({json.dumps(msg)});</script>", height=0)
 
 # Post-unlock: EXACTLY ONE button
 st.link_button("Open BeTheMath", BEAUTIFUL_APP_URL, use_container_width=True)
