@@ -19,7 +19,7 @@ def _get_session_id():
         return raw[0] if isinstance(raw, list) and raw else None
 
 def require_access_code(label: str = "Access code") -> bool:
-    # already unlocked in this session
+    # Already unlocked in this session
     if st.session_state.get("access_granted"):
         return True
 
@@ -41,7 +41,7 @@ def require_access_code(label: str = "Access code") -> bool:
                 st.error("Payment not verified yet. If you just paid, wait a moment and refresh.")
                 st.stop()
 
-    # Gate UI (Apple-clean + trust polish)
+    # Gate UI (minimal + confident)
     st.markdown(
         """
         <style>
@@ -74,7 +74,7 @@ def require_access_code(label: str = "Access code") -> bool:
         unsafe_allow_html=True,
     )
 
-    # Start checkout on click (stores URL so the fallback button appears reliably)
+    # Start checkout on click (stores URL so fallback button appears reliably)
     if st.button("Buy lifetime access — $49", type="primary", use_container_width=True):
         st.session_state["checkout_url"] = create_checkout_session()
 
