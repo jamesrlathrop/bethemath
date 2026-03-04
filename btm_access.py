@@ -74,10 +74,16 @@ def require_access_code(label: str = "Access code") -> bool:
         unsafe_allow_html=True,
     )
 
+    # Start checkout on click (stores URL so the fallback button appears reliably)
     if st.button("Buy lifetime access — $49", type="primary", use_container_width=True):
-        url = create_checkout_session()
-        components.html(f"<script>window.location.href='{url}';</script>", height=0)
-        st.markdown(f"[If you weren’t redirected, click here to pay securely.]({url})")
+        st.session_state["checkout_url"] = create_checkout_session()
+
+    checkout_url = st.session_state.get("checkout_url")
+    if checkout_url:
+        st.info("Redirecting to Stripe… If nothing happens (Brave Private can block redirects), click the button below.")
+        st.link_button("Open secure Stripe checkout", checkout_url, use_container_width=True)
+        # Best-effort auto-redirect
+        components.html(f"<script>window.location.href='{checkout_url}';</script>", height=0)
         st.stop()
 
     st.markdown("</div>", unsafe_allow_html=True)
