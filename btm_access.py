@@ -1,8 +1,11 @@
+import os
 import streamlit as st
 import streamlit.components.v1 as components
 
 from btm_db import consume_access_code, fulfill_stripe_lifetime
 from btm_stripe import create_checkout_session, verify_paid_session
+
+SUPPORT_EMAIL = os.getenv("BTM_SUPPORT_EMAIL", "support@matesuite.ai").strip()
 
 def _clear_query_params():
     try:
@@ -35,6 +38,7 @@ def require_access_code(label: str = "Access code") -> bool:
                 st.session_state["stripe_session_fulfilled"] = session_id
                 st.session_state["lifetime_code"] = code
                 st.session_state["access_granted"] = True
+                st.session_state.pop("checkout_url", None)  # cleanup
                 _clear_query_params()
                 st.rerun()
             else:
@@ -49,6 +53,7 @@ def require_access_code(label: str = "Access code") -> bool:
           .btm-card {border: 1px solid rgba(255,255,255,0.10); border-radius: 18px; padding: 18px; background: rgba(255,255,255,0.03);}
           .btm-muted {opacity: 0.82;}
           .btm-check {line-height: 1.65;}
+          .btm-foot {margin-top: 10px; opacity: 0.78; font-size: 0.95rem;}
         </style>
         """,
         unsafe_allow_html=True,
@@ -80,11 +85,18 @@ def require_access_code(label: str = "Access code") -> bool:
 
     checkout_url = st.session_state.get("checkout_url")
     if checkout_url:
-        st.info("Redirecting to Stripe… If nothing happens (Brave Private can block redirects), click the button below.")
+        st.info("Redirecting to Stripe… If nothing happens (Brave Private can block redirects), click below.")
         st.link_button("Open secure Stripe checkout", checkout_url, use_container_width=True)
-        # Best-effort auto-redirect
         components.html(f"<script>window.location.href='{checkout_url}';</script>", height=0)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
+
+    # Subtle footer (trust + support) — no clutter
+    st.markdown(
+        f"<div class='btm-foot'>Questions? Email <a href='mailto:{SUPPORT_EMAIL}'>{SUPPORT_EMAIL}</a><br/>Tip: Save your lifetime access code — it unlocks BeTheMath on any device.</div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -95,6 +107,7 @@ def require_access_code(label: str = "Access code") -> bool:
             ok, msg = consume_access_code(entered)
             if ok:
                 st.session_state["access_granted"] = True
+                st.session_state.pop("checkout_url", None)  # cleanup
                 st.rerun()
             else:
                 st.error(msg)
