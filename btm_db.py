@@ -383,4 +383,26 @@ def fulfill_stripe_lifetime(session_id: str, email: str | None) -> str:
             conn.commit()
 
     _log_event("stripe_fulfilled", code=lifetime_code, detail=f"session_id={session_id} email={email or ''}")
-    return lifetime_code
+    return lifetime_code\n
+
+# -----------------------
+# Export
+# -----------------------
+def export_access_codes(include_revoked: bool = True) -> list[dict]:
+    """
+    Returns access codes as a list of dicts for CSV export.
+    """
+    rows = list_access_codes(limit=1000000, include_revoked=include_revoked)
+    out = []
+    for r in rows:
+        d = dict(r)
+        for k, v in list(d.items()):
+            # Convert datetimes (and similar objects) to strings for CSV/DataFrame safety
+            if hasattr(v, "isoformat"):
+                try:
+                    d[k] = v.isoformat()
+                except Exception:
+                    d[k] = str(v)
+        out.append(d)
+    return out
+\n
