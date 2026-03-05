@@ -383,7 +383,7 @@ def fulfill_stripe_lifetime(session_id: str, email: str | None) -> str:
             conn.commit()
 
     _log_event("stripe_fulfilled", code=lifetime_code, detail=f"session_id={session_id} email={email or ''}")
-    return lifetime_code\n
+    return lifetime_code
 
 # -----------------------
 # Export
@@ -405,4 +405,3 @@ def export_access_codes(include_revoked: bool = True) -> list[dict]:
                     d[k] = str(v)
         out.append(d)
     return out
-\n
