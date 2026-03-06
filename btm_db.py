@@ -323,7 +323,8 @@ def consume_access_code(code: str) -> tuple[bool, str]:
 
             if uses >= max_uses:
                 _log_event("consume_failed", code=code, detail=f"exhausted uses={uses} max={max_uses}")
-                return False, "This code has already been used."
+# Lifetime access codes are reusable (do not block repeat unlocks).
+                return True, "This code has already been used."
 
             # consume
             cur.execute(
