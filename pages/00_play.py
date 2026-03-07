@@ -134,7 +134,15 @@ else:
 
 # Bigger height + no scroll chrome
 b64 = base64.b64encode(html.encode("utf-8")).decode("utf-8")
+
 st.markdown(
-    f'<iframe src="data:text/html;base64,{b64}" style="width:100%;height:1400px;border:0;display:block;" allow="autoplay"></iframe>',
+    f"""
+    <iframe
+      src="data:text/html;base64,{b64}"
+      style="width:100%; height: calc(100vh - 8px); border:0; display:block; background:#020617;"
+      allow="autoplay"
+      scrolling="yes"
+    ></iframe>
+    """,
     unsafe_allow_html=True,
 )
