@@ -96,4 +96,39 @@ def repl_img(m):
 
 html = re.sub(r'<img[^>]+src="([^"]+)"[^>]*>', repl_img, html, flags=re.IGNORECASE)
 
-components.html(html, height=1000, scrolling=True)
+# --- Force the embedded game to fill the available frame (kills side margins in many builds) ---
+FULLSCREEN_PATCH = """
+<style>
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  /* Common root/container ids/classes used by web builds */
+  #root, #app, .app, .container, .main, .game {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Canvas-based games often need this */
+  canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+</style>
+"""
+
+# Insert into <head> if present, otherwise prepend
+if re.search(r"</head>", html, flags=re.IGNORECASE):
+    html = re.sub(r"</head>", FULLSCREEN_PATCH + "\n</head>", html, count=1, flags=re.IGNORECASE)
+else:
+    html = FULLSCREEN_PATCH + html
+
+# Bigger height + no scroll chrome
+components.html(html, height=1400, scrolling=False)
