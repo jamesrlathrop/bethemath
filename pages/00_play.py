@@ -7,6 +7,26 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="BeTheMath — Error Detective", page_icon="🧠", layout="wide")
 
+st.markdown(
+    """
+    <style>
+      /* Make the main content use the full browser width */
+      .main .block-container {
+        max-width: 100% !important;
+        padding-top: 0.25rem;
+        padding-bottom: 0;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+
+      /* Optional: hide Streamlit header/footer chrome */
+      header[data-testid="stHeader"] { display: none; }
+      footer { display: none; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # (Gate in app.py already ran, so user is unlocked)
 st.title("BeTheMath — Error Detective")
 

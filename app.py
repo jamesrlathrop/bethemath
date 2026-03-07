@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 
 from btm_access import require_access_code
 
-st.set_page_config(page_title="BeTheMath", page_icon="🧠", layout="centered")
+st.set_page_config(page_title="BeTheMath", page_icon="🧠", layout="wide", initial_sidebar_state="collapsed")
 
 # Gate renders only when locked
 if not require_access_code(label="Access code"):
