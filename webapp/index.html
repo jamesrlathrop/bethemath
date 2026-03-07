@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BeTheMath — Error Detective</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root{
+      --mq-bg:#020617;
+      --mq-panel:#0b1226;
+      --mq-accent:#22c55e;
+      --mq-accent-soft:rgba(34,197,94,.12);
+      --mq-border:#1f2937;
+      --mq-text:#e5e7eb;
+      --mq-muted:#9ca3af;
+      --mq-warn:#facc15;
+      --mq-scale:1;
+      .mq-study-card{
+        min-height: 520px;
+}
+
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at top,var(--mq-bg) 0,var(--mq-bg) 55%,#000 100%);
+      color:var(--mq-text);
+    }
+
+    /* High contrast */
+    body.mq-high-contrast{background:#000!important;color:#fff!important}
+    body.mq-high-contrast .mq-topbar,
+    body.mq-high-contrast .mq-shell{background:#000!important}
+    body.mq-high-contrast .mq-panel,
+    body.mq-high-contrast .mq-game-card{background:#000!important;border-color:#fff!important;box-shadow:none!important}
+    body.mq-high-contrast .mq-question-text,
+    body.mq-high-contrast .mq-work,
+    body.mq-high-contrast .mq-panel-title,
+    body.mq-high-contrast .mq-panel-sub,
+    body.mq-high-contrast .mq-stat-pill,
+    body.mq-high-contrast .mq-stat-value,
+    body.mq-high-contrast .mq-badge-chip,
+    body.mq-high-contrast .mq-footer-note,
+    body.mq-high-contrast #mq-queue-note,
+    body.mq-high-contrast #mq-scoreboard,
+    body.mq-high-contrast #mq-about{color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-option-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-option-btn.mq-correct{background:#00ff00!important;color:#000!important;border-color:#00ff00!important}
+    body.mq-high-contrast .mq-option-btn.mq-incorrect{background:#ff0033!important;color:#fff!important;border-color:#ff0033!important}
+    body.mq-high-contrast .mq-small-btn,
+    body.mq-high-contrast .mq-reset-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-modebar{border-color:#fff!important}
+    body.mq-high-contrast .mq-mode-btn{color:#fff!important}
+    body.mq-high-contrast .mq-mode-btn-active{background:#fff!important;color:#000!important}
+
+    /* Dyslexic mode */
+    body.mq-dyslexic{
+      font-family:"OpenDyslexic","Comic Sans MS","Arial Rounded MT Bold",
+        system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      line-height:1.5;
+    }
+    body.mq-dyslexic #mq-root{letter-spacing:.02em}
+
+    #mq-root{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      transform-origin:top center;
+      transform:scale(var(--mq-scale));
+    }
+
+    .mq-topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 16px;
+      border-bottom:1px solid var(--mq-border);
+      background:var(--mq-bg);
+      position:sticky;top:0;z-index:20;
+      gap:10px;
+    }
+    .mq-topbar-title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .mq-topbar-title strong{
+      font-size:15px;
+      letter-spacing:.04em;
+      font-weight:700;
+      color:var(--mq-text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .mq-topbar-title span{
+      font-size:11px;
+      color:var(--mq-muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .mq-buy-btn{
+      text-decoration:none;
+      border-radius:999px;
+      border:1px solid rgba(34,197,94,.45);
+      padding:7px 12px;
+      background:rgba(34,197,94,.12);
+      color:#bbf7d0;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.06em;
+      flex:0 0 auto;
+    }
+    .mq-buy-btn:hover{background:rgba(34,197,94,.18)}
+
+    .mq-modebar{
+      display:inline-flex;
+      gap:4px;
+      border-radius:999px;
+      padding:2px;
+      background:var(--mq-bg);
+      border:1px solid var(--mq-border);
+      flex:0 0 auto;
+    }
+    .mq-mode-btn{
+      border:none;
+      background:transparent;
+      color:var(--mq-muted);
+      font-size:12px;
+      padding:5px 12px;
+      border-radius:999px;
+      cursor:default;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .mq-mode-btn-active{
+      background:var(--mq-accent-soft);
+      color:#bbf7d0;
+      font-weight:700;
+    }
+
+    /* ✅ 4 columns in your requested order:
+       Session Settings | Current Challenge | Study | Session Stats
+    */
+    .mq-shell{
+      display:grid;
+      flex:1;
+      padding:12px;
+      gap:12px;
+      align-items:start;
+      grid-template-columns: 270px minmax(360px, 1fr) 320px 270px;
+      grid-template-areas: "left center study right";
+    }
+    .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .mq-column-left{grid-area:left}
+    .mq-column-center{grid-area:center}
+    .mq-column-study{grid-area:study}
+    .mq-column-right{grid-area:right}
+
+    /* Medium screens: keep Settings + Challenge + Stats, move Study below */
+    @media(max-width:1200px){
+      .mq-shell{
+        grid-template-columns: 270px 1fr 270px;
+        grid-template-areas:
+          "left center right"
+          "study study study";
+      }
+    }
+
+    /* Small screens: stack (Study stays right after the Challenge) */
+    @media(max-width:900px){
+      .mq-shell{
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "left"
+          "center"
+          "study"
+          "right";
+      }
+    }
+
+    .mq-panel{
+      background:rgba(15,23,42,.92);
+      border-radius:16px;
+      border:1px solid rgba(148,163,184,.22);
+      padding:10px 12px;
+      box-shadow:0 18px 40px rgba(15,23,42,.7);
+    }
+    .mq-panel-title{
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--mq-muted);
+      margin-bottom:6px;
+    }
+    .mq-panel-sub{
+      font-size:11px;
+      color:#6b7280;
+      margin-bottom:8px;
+      line-height:1.35;
+    }
+
+    .mq-field{margin-bottom:8px;display:flex;flex-direction:column;gap:3px}
+    .mq-label{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--mq-muted);
+    }
+    .mq-player-row{display:flex;gap:6px;align-items:center}
+    .mq-player-row select{flex:1}
+
+    select,input[type="range"], textarea, input[type="text"]{
+      width:100%;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid var(--mq-border);
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:13px;
+    }
+    textarea{min-height:76px;resize:vertical;line-height:1.35}
+
+    .mq-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .mq-toggle-row label{font-size:12px;color:var(--mq-muted)}
+    .mq-toggle-row input[type="checkbox"]{transform:scale(1.1)}
+
+    .mq-game-card{
+      background:rgba(15,23,42,.92);
+      border-radius:20px;
+      border:1px solid rgba(148,163,184,.25);
+      padding:14px 16px 16px;
+      box-shadow:0 22px 50px rgba(15,23,42,.8);
+    }
+    .mq-game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
+    .mq-game-title{
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:var(--mq-muted);
+    }
+    #game-container{
+      width:100%;
+      height:70px;
+      border-radius:16px;
+      border:1px solid var(--mq-border);
+      background:linear-gradient(135deg, rgba(34,197,94,.10), rgba(2,6,23,.9));
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      gap:10px;
+    }
+    #game-container .mq-mini-stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+    #game-container .mq-mini-stat strong{font-size:12px;color:var(--mq-text)}
+    #game-container .mq-mini-stat span{font-size:10px;color:var(--mq-muted)}
+
+    .mq-question-text{font-size:14px;margin-bottom:6px;color:var(--mq-text)}
+    .mq-work{
+      font-family:"SF Mono",ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:13px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:var(--mq-bg);
+      border:1px solid #111827;
+      color:var(--mq-text);
+      margin-bottom:6px;
+      white-space:pre-wrap;
+    }
+    .mq-options{display:flex;flex-direction:column;gap:8px;margin-top:8px;margin-bottom:8px}
+    .mq-option-btn{
+      text-align:left;
+      border-radius:12px;
+      border:1px solid var(--mq-border);
+      padding:10px 12px;
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:13px;
+      cursor:pointer;
+      transition:transform .07s ease, border-color .14s ease;
+    }
+    .mq-option-btn:hover:not(:disabled){border-color:#334155;transform:translateY(-1px)}
+    .mq-option-btn:disabled{opacity:.86;cursor:default}
+    .mq-option-btn.mq-correct{background:rgba(34,197,94,.12);border-color:var(--mq-accent)}
+    .mq-option-btn.mq-incorrect{background:rgba(239,68,68,.12);border-color:#f97373}
+
+    .mq-feedback{font-size:12px;color:var(--mq-muted);min-height:18px;line-height:1.35}
+    .mq-feedback-correct{color:#bbf7d0}
+    .mq-feedback-encouraging{color:var(--mq-warn)}
+    .mq-queue-note{font-size:11px;color:#6b7280;margin-top:2px}
+
+    .mq-insight-log{font-size:11px;color:var(--mq-muted);max-height:140px;overflow-y:auto;padding-right:4px;line-height:1.35}
+    .mq-badges-row{display:flex;flex-wrap:wrap;gap:6px}
+    .mq-badge-chip{
+      font-size:10px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid var(--mq-border);
+      color:var(--mq-muted);
+      background:var(--mq-bg);
+      white-space:nowrap;
+    }
+    .mq-badge-earned{background:rgba(34,197,94,.16);color:#bbf7d0;border-color:var(--mq-accent)}
+
+    .mq-stat-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+    .mq-stat-pill{
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:var(--mq-bg);
+      border:1px solid var(--mq-border);
+      color:var(--mq-muted);
+    }
+    .mq-stat-value{color:var(--mq-text);font-weight:700;margin-left:6px}
+
+    .mq-reset-btn,.mq-small-btn{
+      border-radius:999px;
+      border:1px solid var(--mq-border);
+      padding:6px 10px;
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:11px;
+      cursor:pointer;
+    }
+    .mq-reset-btn:hover,.mq-small-btn:hover{background:#111827}
+    .mq-reset-btn{border-color:#f97373;color:#fecaca}
+    .mq-sfx-on{border-color:var(--mq-accent);color:#bbf7d0}
+
+    .mq-footer-note{font-size:10px;color:#6b7280;margin-top:6px;line-height:1.35}
+    #mq-about{font-size:11px;color:var(--mq-muted);line-height:1.45}
+    #mq-about ul{margin:6px 0 0;padding-left:18px}
+
+    .mq-divider{height:1px;background:rgba(148,163,184,.18);margin:10px 0}
+    .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap}
+    .mq-inline-row > *{flex:1}
+    .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
+  </style>
+</head>
+
+<body>
+  <div id="mq-root">
+    <div class="mq-topbar">
+      <div class="mq-topbar-title">
+        <strong>BeTheMath — Error Detective</strong>
+        <span>Fix mistakes fast • Learn why • Stored only on your device</span>
+      </div>
+
+      <a class="mq-buy-btn" href="#download" id="mq-buy-link">Download</a>
+
+      <div class="mq-modebar" aria-label="Mode">
+        <div class="mq-mode-btn mq-mode-btn-active">🧠 Math</div>
+      </div>
+    </div>
+
+    <div class="mq-shell">
+      <!-- 1) Session Settings -->
+      <div class="mq-column mq-column-left">
+        <div class="mq-game-card mq-study-card">
+
+          <div class="mq-panel-title">Session Settings</div>
+          <div class="mq-panel-sub">Choose player, level, track, and accessibility options.</div>
+
+          <div class="mq-field">
+            <span class="mq-label">Player</span>
+            <div class="mq-player-row">
+              <select id="mq-player"></select>
+              <button id="mq-player-add" type="button" class="mq-small-btn" title="Add player">+</button>
+              <button id="mq-player-delete" type="button" class="mq-small-btn" title="Delete player">–</button>
+            </div>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Grade Band</span>
+            <select id="mq-grade">
+              <option value="K-2">K–2</option>
+              <option value="3-5">3–5</option>
+              <option value="6-8">6–8</option>
+              <option value="Alg1">Algebra I</option>
+              <option value="Geo">Geometry</option>
+              <option value="Alg2">Algebra II</option>
+              <option value="Trig">Trigonometry</option>
+              <option value="PreCalc">Pre-Calculus</option>
+              <option value="Calc">Calculus</option>
+            </select>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Track</span>
+            <select id="mq-track">
+              <option value="operations">Operations</option>
+              <option value="reasoning">Reasoning</option>
+              <option value="logic">Logic &amp; Patterns</option>
+            </select>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Auto-advance (seconds)</span>
+            <input id="mq-delay" type="range" min="3" max="20" value="5" />
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">UI Scale</span>
+            <input id="mq-scale" type="range" min="80" max="130" value="100" />
+          </div>
+
+          <div class="mq-panel-sub" style="margin-top:8px;">Accessibility</div>
+          <div class="mq-toggle-row">
+            <label for="mq-high-contrast">High contrast</label>
+            <input id="mq-high-contrast" type="checkbox" />
+          </div>
+          <div class="mq-toggle-row">
+            <label for="mq-dyslexic">Dyslexic-friendly font</label>
+            <input id="mq-dyslexic" type="checkbox" />
+          </div>
+
+          <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="mq-sfx-toggle" type="button" class="mq-small-btn">SFX: ON</button>
+            <button id="mq-reset" type="button" class="mq-reset-btn">Reset Progress</button>
+          </div>
+
+          <div class="mq-footer-note" id="mq-autosave">Ready.</div>
+          <div class="mq-footer-note">Player profiles and progress are stored only on this device (localStorage).</div>
+        </div>
+
+        <div class="mq-panel">
+          <div class="mq-panel-title">About</div>
+          <div class="mq-panel-sub">Customer-first, calm, and private by design.</div>
+          <div id="mq-about">
+            <strong>BeTheMath</strong> helps learners become “error detectives”: spot the mistaken idea, then apply the clean fix.
+            <ul>
+              <li><strong>Practice tool</strong> — not a test, no grades, no pressure.</li>
+              <li><strong>Private by default</strong> — no accounts, no tracking, no uploads.</li>
+              <li><strong>Local-only progress</strong> — stored in your browser on this device.</li>
+              <li><strong>Explain → Fix → Repeat</strong> — each item includes the misconception, the principle, and the corrected work.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2) Current Challenge -->
+      <div class="mq-column mq-column-center">
+        <div class="mq-game-card">
+          <div class="mq-game-header">
+            <div class="mq-game-title">Current Challenge</div>
+            <div style="font-size:11px;color:#6b7280;" id="mq-queue-note">Loading your first item…</div>
+          </div>
+
+          <div id="game-container">
+            <div class="mq-mini-stat">
+              <strong id="mq-mini-focus">6–8 • Operations</strong>
+              <span id="mq-mini-type">Focus: common errors &amp; clean fixes</span>
+            </div>
+            <div class="mq-mini-stat" style="text-align:right;">
+              <strong>XP <span id="mq-mini-xp">0</span></strong>
+              <span>Streak <span id="mq-mini-streak">0</span></span>
+            </div>
+          </div>
+
+          <div class="mq-question-text" id="mq-question">Loading…</div>
+          <div class="mq-work" id="mq-work">Student work will appear here.</div>
+
+          <div class="mq-options" id="mq-options"></div>
+
+          <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix for the student's work.</div>
+
+          <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+            <button id="mq-next" type="button" class="mq-small-btn" disabled>Next ▶</button>
+          </div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Insights</div>
+          <div class="mq-panel-sub">Each time you fix an error, a short insight appears here for quick review.</div>
+          <div class="mq-insight-log" id="mq-insight-log"></div>
+        </div>
+      </div>
+
+      <!-- 3) Study A Specific Problem -->
+      <div class="mq-column mq-column-study">
+        <div class="mq-panel">
+          <div class="mq-panel-title">Study A Specific Problem</div>
+          <div class="mq-panel-sub">Teacher/parent/student: create a custom practice item from a real mistake.</div>
+
+          <div class="mq-field">
+            <span class="mq-label">Problem (what was asked?)</span>
+            <textarea id="mq-custom-problem" placeholder="Example: Simplify 3(x − 4)"></textarea>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Student work (incorrect)</span>
+            <textarea id="mq-custom-work" placeholder="Example: 3(x − 4) = 3x − 4"></textarea>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Clean fix / explanation (the correct idea)</span>
+            <textarea id="mq-custom-fix" placeholder="Example: Distribute 3 to BOTH terms: 3x − 12."></textarea>
+          </div>
+
+          <div class="mq-inline-row">
+            <div class="mq-field">
+              <span class="mq-label">Error type (optional)</span>
+              <select id="mq-custom-errortype">
+                <option value="custom">Custom</option>
+                <option value="distribution">Distribution</option>
+                <option value="fraction-addition">Fraction Addition</option>
+                <option value="integer-sign">Integer Sign</option>
+                <option value="place-value">Place Value</option>
+                <option value="proportion">Proportion</option>
+                <option value="combine-like-terms">Combine Like Terms</option>
+                <option value="order-of-operations">Order of Operations</option>
+              </select>
+            </div>
+            <div class="mq-field">
+              <span class="mq-label">Difficulty</span>
+              <select id="mq-custom-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <button id="mq-custom-add" type="button" class="mq-small-btn">Add to Practice</button>
+            <button id="mq-custom-practice-now" type="button" class="mq-small-btn">Practice Now</button>
+            <button id="mq-custom-clear" type="button" class="mq-reset-btn">Clear</button>
+          </div>
+
+          <div class="mq-note" id="mq-custom-status" style="margin-top:8px;">
+            Custom items are stored only in this browser on this device.
+          </div>
+
+          <div class="mq-divider"></div>
+
+          <div class="mq-panel-sub" style="margin-bottom:6px;">Saved custom items (this device)</div>
+          <div class="mq-field">
+            <select id="mq-custom-list"></select>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="mq-custom-use" type="button" class="mq-small-btn">Practice Selected</button>
+            <button id="mq-custom-delete" type="button" class="mq-reset-btn">Delete Selected</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4) Session Stats -->
+      <div class="mq-column mq-column-right">
+        <div class="mq-panel">
+          <div class="mq-panel-title">Session Stats</div>
+          <div class="mq-stat-row">
+            <div class="mq-stat-pill">XP <span class="mq-stat-value" id="mq-xp">0</span></div>
+            <div class="mq-stat-pill">Coins <span class="mq-stat-value" id="mq-coins">0</span></div>
+            <div class="mq-stat-pill">Streak <span class="mq-stat-value" id="mq-streak">0</span></div>
+            <div class="mq-stat-pill">Played <span class="mq-stat-value" id="mq-played">0</span></div>
+          </div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Badges</div>
+          <div class="mq-panel-sub">Earn badges for streaks, XP milestones, and returning to your Fix-It Queue.</div>
+          <div class="mq-badges-row" id="mq-badges"></div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Scoreboard</div>
+          <div class="mq-panel-sub">Local players on this device, sorted by XP.</div>
+          <div id="mq-scoreboard" style="font-size:11px;color:var(--mq-muted);line-height:1.4;">No players yet.</div>
+          <div class="mq-footer-note">This scoreboard never leaves this browser. It is not shared online.</div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Teacher / Parent Notes</div>
+          <div class="mq-panel-sub">Simple, ethical use: low-pressure practice + clear feedback.</div>
+          <div style="font-size:11px;color:var(--mq-muted);line-height:1.4;">
+            <ul style="padding-left:18px;margin:0;">
+              <li>Use 5–10 minutes as a warm-up (same band + track).</li>
+              <li>Ask: “What mistaken idea caused this?” then “What’s the clean fix?”</li>
+              <li>If a learner misses an item, read the hint together before the next one.</li>
+              <li>Rotate tracks: Operations → Reasoning → Logic &amp; Patterns.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // -----------------------------
+      // Content: Items (errors + fixes)
+      // -----------------------------
+      var ITEMS = [
+        // K–2
+        {
+          id:"k2-op-1", gradeBand:"K-2", track:"operations", difficulty:"easy",
+          errorType:"digit-append", inattention:false,
+          prompt:"A student writes 7 + 5 = 75. What went wrong?",
+          work:"Student work: 7 + 5 = 75",
+          options:[
+            "They stuck the digits together instead of adding. 7 + 5 is 12.",
+            "They subtracted 5 from 7.",
+            "They multiplied 7 × 5.",
+            "They turned 5 into 50."
+          ],
+          correctIndex:0,
+          hint:"First ask: what is 7 + 5 really equal to?",
+          insight:"Misconception: “addition means stick digits together.” Principle: addition combines quantities. Correct work: 7 + 5 = 12."
+        },
+
+        // 3–5
+        {
+          id:"35-op-1", gradeBand:"3-5", track:"operations", difficulty:"medium",
+          errorType:"carry-borrow", inattention:false,
+          prompt:"A student solves 27 + 38 and writes 55.",
+          work:"Student work: 27 + 38 = 55",
+          options:[
+            "They added tens but didn’t carry from 7 + 8 = 15. The correct sum is 65.",
+            "They subtracted 27 from 38.",
+            "They multiplied digits instead of adding.",
+            "They rounded and forgot to adjust."
+          ],
+          correctIndex:0,
+          hint:"Add ones first: 7 + 8 = 15. What happens to the 1?",
+          insight:"Misconception: “ignore the carry.” Principle: place value requires regrouping. Correct: 7+8=15 → write 5 carry 1 → 2+3+1=6 → 65."
+        },
+
+        // 6–8
+        {
+          id:"68-op-1", gradeBand:"6-8", track:"operations", difficulty:"medium",
+          errorType:"fraction-addition", inattention:false,
+          prompt:"A student adds fractions and gets 1/4 + 1/2 = 2/6.",
+          work:"Student work: 1/4 + 1/2 = 2/6",
+          options:[
+            "They added numerators and denominators straight across. Use a common denominator: 1/4 + 2/4 = 3/4.",
+            "They multiplied instead of adding.",
+            "They subtracted one fraction from the other.",
+            "They simplified using the wrong numbers."
+          ],
+          correctIndex:0,
+          hint:"Rewrite both fractions with the same denominator.",
+          insight:"Misconception: “add across.” Principle: fraction addition needs a common unit. Correct: 1/4 + 1/2 = 1/4 + 2/4 = 3/4."
+        },
+        {
+          id:"68-op-2", gradeBand:"6-8", track:"operations", difficulty:"medium",
+          errorType:"integer-sign", inattention:true,
+          prompt:"A student computes −8 + 5 and writes −13.",
+          work:"Student work: −8 + 5 = −13",
+          options:[
+            "They treated both numbers as negative. Correct: the negative is stronger by 3, so −8 + 5 = −3.",
+            "They subtracted 5 from 8 but lost the sign.",
+            "They multiplied −8 by 5.",
+            "They changed −8 into +8."
+          ],
+          correctIndex:0,
+          hint:"Which absolute value is bigger: 8 or 5?",
+          insight:"Misconception: “keep the minus and add.” Principle: compare absolute values. Correct: −8 + 5 = −3."
+        },
+        {
+          id:"68-op-3", gradeBand:"6-8", track:"operations", difficulty:"medium",
+          errorType:"distribution", inattention:false,
+          prompt:"A student simplifies 3(x − 4) and writes 3x − 4.",
+          work:"Student work: 3(x − 4) = 3x − 4",
+          options:[
+            "They forgot to multiply 3 by −4. Correct: 3(x − 4) = 3x − 12.",
+            "They subtracted 4 from 3x incorrectly.",
+            "They added 4 to both sides.",
+            "They distributed the wrong number."
+          ],
+          correctIndex:0,
+          hint:"Distribution must touch every term inside the parentheses.",
+          insight:"Misconception: “distribute only to x.” Principle: multiply each term. Correct: 3x − 12."
+        },
+
+        // Algebra I
+        {
+          id:"alg1-op-1", gradeBand:"Alg1", track:"operations", difficulty:"medium",
+          errorType:"distribution", inattention:false,
+          prompt:"A student expands 2(x + 3) as 2x + 3.",
+          work:"Student work: 2(x + 3) = 2x + 3",
+          options:[
+            "They distributed 2 to x but forgot 2·3. Correct: 2x + 6.",
+            "They subtracted 3.",
+            "They divided by 2.",
+            "They turned x into x²."
+          ],
+          correctIndex:0,
+          hint:"How many terms are inside the parentheses?",
+          insight:"Misconception: “multiply only the variable.” Principle: distribute to every term. Correct: 2x+6."
+        }
+      ];
+
+      // -----------------------------
+      // Custom items (Study A Specific Problem)
+      // -----------------------------
+      var CUSTOM_KEY = "bethemath_custom_items_v1";
+
+      function safeText(s){
+        return (s == null) ? "" : String(s).replace(/\r\n/g,"\n");
+      }
+
+      function loadCustomItems(){
+        try{
+          var raw = localStorage.getItem(CUSTOM_KEY);
+          if(!raw) return [];
+          var arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        }catch(e){
+          return [];
+        }
+      }
+
+      function saveCustomItems(arr){
+        try{
+          localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr || []));
+          return true;
+        }catch(e){
+          return false;
+        }
+      }
+
+      var customItems = loadCustomItems();
+      // merge custom items into main pool
+      if(customItems.length){
+        customItems.forEach(function(ci){
+          if(ci && ci.id) ITEMS.push(ci);
+        });
+      }
+
+      // -----------------------------
+      // State & storage (players)
+      // -----------------------------
+      function makeEmptyState(){
+        return {
+          xp:0, coins:0, streak:0, played:0,
+          gradeBand:"6-8",        // ✅ default start at 6–8
+          track:"operations",
+          missed:[],
+          errorWeakness:{}
+        };
+      }
+
+      var STORAGE_KEYS = ["bethemath_players_v1","mathquest_players_v1"];
+      var SAVE_KEY = STORAGE_KEYS[0];
+
+      function isInattentionItem(item){ return !!(item && item.inattention); }
+      var state = makeEmptyState();
+      var players = {};
+      var activePlayerId = null;
+      var lastItemId = null;
+
+      function $(id){ return document.getElementById(id); }
+
+      var els = {
+        grade:$("mq-grade"),
+        track:$("mq-track"),
+        question:$("mq-question"),
+        work:$("mq-work"),
+        options:$("mq-options"),
+        feedback:$("mq-feedback"),
+        queueNote:$("mq-queue-note"),
+        xp:$("mq-xp"),
+        coins:$("mq-coins"),
+        streak:$("mq-streak"),
+        played:$("mq-played"),
+        badges:$("mq-badges"),
+        autosave:$("mq-autosave"),
+        highContrast:$("mq-high-contrast"),
+        dyslexic:$("mq-dyslexic"),
+        reset:$("mq-reset"),
+        insightLog:$("mq-insight-log"),
+        scoreboard:$("mq-scoreboard"),
+        miniXP:$("mq-mini-xp"),
+        miniStreak:$("mq-mini-streak"),
+        miniFocus:$("mq-mini-focus"),
+        miniType:$("mq-mini-type"),
+
+        // Study panel
+        customProblem:$("mq-custom-problem"),
+        customWork:$("mq-custom-work"),
+        customFix:$("mq-custom-fix"),
+        customErrorType:$("mq-custom-errortype"),
+        customDifficulty:$("mq-custom-difficulty"),
+        customAdd:$("mq-custom-add"),
+        customPracticeNow:$("mq-custom-practice-now"),
+        customClear:$("mq-custom-clear"),
+        customStatus:$("mq-custom-status"),
+        customList:$("mq-custom-list"),
+        customUse:$("mq-custom-use"),
+        customDelete:$("mq-custom-delete")
+      };
+
+      var scaleSlider = $("mq-scale");
+      var delaySlider = $("mq-delay");
+      var sfxButton = $("mq-sfx-toggle");
+      var nextButton = $("mq-next");
+
+      var sfxOn = true;
+      var audioCtx = null;
+      var nextTimer = null;
+      var autoAdvanceDelayMs = 5000;
+
+      function loadFromKey(key){
+        try{
+          var raw = localStorage.getItem(key);
+          if(!raw) return null;
+          var parsed = JSON.parse(raw);
+          if(parsed && typeof parsed === "object" && parsed.players) return parsed;
+          return null;
+        }catch(e){ return null; }
+      }
+
+      function loadPlayers(){
+        players = {};
+        activePlayerId = null;
+
+        var parsed = null;
+        for(var i=0;i<STORAGE_KEYS.length;i++){
+          parsed = loadFromKey(STORAGE_KEYS[i]);
+          if(parsed){ break; }
+        }
+
+        if(parsed){
+          players = parsed.players || {};
+          activePlayerId = parsed.activeId || null;
+        }
+
+        if(!players || Object.keys(players).length === 0){
+          var id = "p1";
+          players = {};
+          players[id] = { name:"Player 1", state: makeEmptyState() };
+          activePlayerId = id;
+        }
+
+        var active = players[activePlayerId];
+        if(active && active.state){
+          state = Object.assign(makeEmptyState(), active.state);
+          if(!state.errorWeakness) state.errorWeakness = {};
+        }else{
+          state = makeEmptyState();
+        }
+      }
+
+      function savePlayers(){
+        if(!activePlayerId || !players[activePlayerId]) return;
+        players[activePlayerId].state = state;
+
+        try{
+          localStorage.setItem(
+            SAVE_KEY,
+            JSON.stringify({ activeId: activePlayerId, players: players })
+          );
+          if(els.autosave && players[activePlayerId]){
+            els.autosave.textContent = "Saved for " + (players[activePlayerId].name || "player") + ".";
+          }
+        }catch(e){
+          if(els.autosave) els.autosave.textContent = "Autosave skipped (storage unavailable).";
+        }
+      }
+
+      function refreshPlayerSelect(){
+        var select = $("mq-player");
+        if(!select) return;
+        select.innerHTML = "";
+
+        Object.keys(players).forEach(function(id){
+          var opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = players[id].name || id;
+          if(id === activePlayerId) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+
+      function syncSelectorsFromState(){
+        if(els.grade) els.grade.value = state.gradeBand;
+        if(els.track) els.track.value = state.track;
+        updateMiniHeader();
+      }
+
+      function updateMiniHeader(){
+        if(els.miniXP) els.miniXP.textContent = state.xp || 0;
+        if(els.miniStreak) els.miniStreak.textContent = state.streak || 0;
+        if(els.miniFocus){
+          var gb = (state.gradeBand || "6-8")
+            .replace("Alg1","Algebra I").replace("Alg2","Algebra II")
+            .replace("Geo","Geometry").replace("Trig","Trigonometry")
+            .replace("PreCalc","Pre-Calculus").replace("Calc","Calculus");
+          var tr = state.track === "logic" ? "Logic & Patterns" : (state.track === "reasoning" ? "Reasoning" : "Operations");
+          els.miniFocus.textContent = gb + " • " + tr;
+        }
+        if(els.miniType){
+          els.miniType.textContent = "Focus: common errors & clean fixes";
+        }
+      }
+
+      function updateScoreboard(){
+        if(!els.scoreboard) return;
+
+        var ids = Object.keys(players);
+        if(ids.length === 0){
+          els.scoreboard.textContent = "No players yet.";
+          return;
+        }
+
+        var summary = ids.map(function(id){
+          var p = players[id];
+          var st = p.state || makeEmptyState();
+          return { name: p.name || id, xp: st.xp || 0, coins: st.coins || 0 };
+        });
+
+        summary.sort(function(a,b){
+          if(b.xp !== a.xp) return b.xp - a.xp;
+          if(b.coins !== a.coins) return b.coins - a.coins;
+          return a.name.localeCompare(b.name);
+        });
+
+        var ol = document.createElement("ol");
+        ol.style.paddingLeft = "18px";
+        ol.style.margin = "0";
+        summary.forEach(function(p){
+          var li = document.createElement("li");
+          li.textContent = p.name + " — XP " + p.xp + ", Coins " + p.coins;
+          ol.appendChild(li);
+        });
+
+        els.scoreboard.innerHTML = "";
+        els.scoreboard.appendChild(ol);
+      }
+
+      function updateStats(){
+        if(els.xp) els.xp.textContent = state.xp;
+        if(els.coins) els.coins.textContent = state.coins;
+        if(els.streak) els.streak.textContent = state.streak;
+        if(els.played) els.played.textContent = state.played;
+        updateMiniHeader();
+        savePlayers();
+        updateScoreboard();
+      }
+
+      function updateBadges(){
+        if(!els.badges) return;
+        els.badges.innerHTML = "";
+        var list = [];
+        if(state.played >= 1) list.push("First Fix");
+        if(state.streak >= 3) list.push("Streak 3+");
+        if(state.streak >= 5) list.push("Streak 5+");
+        if(state.xp >= 25) list.push("25+ XP");
+        if(state.xp >= 60) list.push("60+ XP");
+        if(state.missed && state.missed.length >= 3) list.push("Fix-It Queue");
+
+        list.forEach(function(label){
+          var chip = document.createElement("div");
+          chip.className = "mq-badge-chip mq-badge-earned";
+          chip.textContent = "★ " + label;
+          els.badges.appendChild(chip);
+        });
+      }
+
+      function getPool(){
+        return ITEMS.filter(function(item){
+          return item.gradeBand === state.gradeBand && item.track === state.track;
+        });
+      }
+
+      function getTopWeakErrorTypes(){
+        var map = state.errorWeakness || {};
+        var types = Object.keys(map);
+        if(types.length === 0) return [];
+        var entries = types.map(function(t){ return { type:t, score: map[t] }; });
+        entries.sort(function(a,b){ return b.score - a.score; });
+        var filtered = entries.filter(function(e){ return e.score >= 2; });
+        if(filtered.length === 0) return [];
+        return filtered.map(function(e){ return e.type; });
+      }
+
+      function pickDifficultyFromPool(pool){
+        if(!pool || pool.length === 0) return null;
+
+        var present = { easy:false, medium:false, hard:false };
+        pool.forEach(function(item){
+          if(item.difficulty && present.hasOwnProperty(item.difficulty)) present[item.difficulty] = true;
+        });
+
+        var streak = state.streak || 0;
+        var weights = { easy:0, medium:0, hard:0 };
+
+        if(streak <= 1){ weights.easy=.7; weights.medium=.25; weights.hard=.05; }
+        else if(streak <= 4){ weights.easy=.4; weights.medium=.4; weights.hard=.2; }
+        else { weights.easy=.2; weights.medium=.4; weights.hard=.4; }
+
+        var available = [];
+        ["easy","medium","hard"].forEach(function(d){
+          if(present[d] && weights[d] > 0) available.push({ difficulty:d, weight:weights[d] });
+        });
+
+        if(available.length === 0){
+          var fallback = [];
+          pool.forEach(function(item){
+            if(item.difficulty && present.hasOwnProperty(item.difficulty) && fallback.indexOf(item.difficulty) === -1){
+              fallback.push(item.difficulty);
+            }
+          });
+          if(fallback.length === 0) return null;
+          return fallback[Math.floor(Math.random()*fallback.length)];
+        }
+
+        var total = available.reduce(function(sum,d){ return sum + d.weight; }, 0);
+        var r = Math.random()*total;
+        var acc = 0;
+        for(var i=0;i<available.length;i++){
+          acc += available[i].weight;
+          if(r <= acc) return available[i].difficulty;
+        }
+        return available[available.length - 1].difficulty;
+      }
+
+      function chooseAdaptiveFromPool(pool){
+        if(!pool || pool.length === 0) return null;
+
+        var difficulty = pickDifficultyFromPool(pool);
+        var candidates = pool;
+
+        if(difficulty){
+          var filtered = pool.filter(function(item){ return item.difficulty === difficulty; });
+          if(filtered.length > 0) candidates = filtered;
+        }
+
+        var weakTypes = getTopWeakErrorTypes();
+        if(weakTypes.length > 0 && Math.random() < 0.5){
+          var focusType = weakTypes[0];
+          var typeFiltered = candidates.filter(function(item){ return item.errorType === focusType; });
+          if(typeFiltered.length > 0) candidates = typeFiltered;
+        }
+
+        if(candidates.length > 1 && lastItemId){
+          var diffCandidates = candidates.filter(function(item){ return item.id !== lastItemId; });
+          if(diffCandidates.length > 0) candidates = diffCandidates;
+        }
+
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+
+      function getNextItem(){
+        var fromMissed = false;
+        var item = null;
+
+        // retention loop: revisit missed items sometimes
+        if(state.missed && state.missed.length > 0 && Math.random() < 0.4){
+          var idx = Math.floor(Math.random()*state.missed.length);
+          item = state.missed[idx];
+          fromMissed = true;
+          state.missed.splice(idx, 1);
+        }else{
+          var pool = getPool();
+          if(pool.length === 0) return { item:null, fromMissed:false };
+          item = chooseAdaptiveFromPool(pool) || pool[Math.floor(Math.random()*pool.length)];
+        }
+        return { item:item, fromMissed:fromMissed };
+      }
+
+      var currentItem = null;
+
+      function appendInsightLog(item, correct){
+        if(!els.insightLog || !item) return;
+        var div = document.createElement("div");
+        div.style.marginBottom = "6px";
+
+        var strong = document.createElement("strong");
+        strong.textContent = correct ? "✔️ Insight: " : "🔁 Fix-It insight: ";
+        div.appendChild(strong);
+
+        var span = document.createElement("span");
+        span.textContent = safeText(item.insight || "");
+        div.appendChild(span);
+
+        els.insightLog.prepend(div);
+      }
+
+      function renderItem(next){
+        currentItem = next.item;
+
+        if(nextTimer){ clearTimeout(nextTimer); nextTimer = null; }
+        if(nextButton) nextButton.disabled = false;
+
+        if(!currentItem){
+          if(els.question) els.question.textContent = "No items for this grade band + track yet.";
+          if(els.work) els.work.textContent = "";
+          if(els.options) els.options.innerHTML = "";
+          if(els.feedback){
+            els.feedback.textContent = "Try another grade band or track.";
+            els.feedback.className = "mq-feedback";
+          }
+          if(els.queueNote) els.queueNote.textContent = "";
+          return;
+        }
+
+        lastItemId = currentItem.id;
+
+        if(els.question) els.question.textContent = currentItem.prompt;
+        if(els.work) els.work.textContent = currentItem.work || "";
+        if(els.feedback){
+          els.feedback.textContent = "Pick the best explanation or fix for this student's work.";
+          els.feedback.className = "mq-feedback";
+        }
+
+        if(els.queueNote){
+          var inattentionLabel = isInattentionItem(currentItem)
+            ? " ⚠ Inattention focus"
+            : "";
+          els.queueNote.textContent = (next.fromMissed ? "🔁 Fix-It Queue: back for another try." : "✨ New item from this grade band + track.") + inattentionLabel;
+        }
+
+        if(!els.options) return;
+        els.options.innerHTML = "";
+
+        currentItem.options.forEach(function(optText, index){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mq-option-btn";
+          btn.textContent = optText;
+          btn.addEventListener("click", function(){ handleAnswer(index); });
+          els.options.appendChild(btn);
+        });
+      }
+
+      function playBeep(correct){
+        if(!sfxOn) return;
+        try{
+          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+
+          osc.type = "square";
+          osc.frequency.value = correct ? 1200 : 400;
+
+          var now = audioCtx.currentTime;
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
+
+          osc.start(now);
+          osc.stop(now + 0.32);
+        }catch(e){}
+      }
+
+      function scheduleNextItem(){
+        if(nextTimer){ clearTimeout(nextTimer); nextTimer = null; }
+        nextTimer = setTimeout(function(){
+          renderItem(getNextItem());
+        }, autoAdvanceDelayMs);
+      }
+
+      function handleAnswer(selectedIndex){
+        if(!currentItem) return;
+
+        var buttons = els.options
+          ? Array.prototype.slice.call(els.options.querySelectorAll(".mq-option-btn"))
+          : [];
+
+        var correct = selectedIndex === currentItem.correctIndex;
+
+        buttons.forEach(function(btn, index){
+          btn.disabled = true;
+          btn.classList.remove("mq-correct","mq-incorrect");
+          if(index === currentItem.correctIndex) btn.classList.add("mq-correct");
+          if(!correct && index === selectedIndex) btn.classList.add("mq-incorrect");
+        });
+
+        playBeep(correct);
+        state.played += 1;
+
+        if(!state.errorWeakness) state.errorWeakness = {};
+        if(!correct && currentItem.errorType){
+          if(!state.errorWeakness[currentItem.errorType]) state.errorWeakness[currentItem.errorType] = 0;
+          state.errorWeakness[currentItem.errorType] += 1;
+        }
+
+        if(correct){
+          state.xp += 5;
+          state.coins += 1;
+          state.streak += 1;
+          if(els.feedback){
+            els.feedback.textContent = "Nice fix! " + (currentItem.insight || "");
+            els.feedback.className = "mq-feedback mq-feedback-correct";
+          }
+          appendInsightLog(currentItem, true);
+        }else{
+          state.streak = 0;
+          state.missed.push(currentItem);
+          if(els.feedback){
+            els.feedback.textContent = "Good attempt. Hint: " + (currentItem.hint || "Try again and look for the first wrong step.");
+            els.feedback.className = "mq-feedback mq-feedback-encouraging";
+          }
+          appendInsightLog(currentItem, false);
+        }
+
+        updateStats();
+        updateBadges();
+        scheduleNextItem();
+      }
+
+      function applyVisualToggles(){
+        var body = document.body;
+        if(els.highContrast){
+          if(els.highContrast.checked) body.classList.add("mq-high-contrast");
+          else body.classList.remove("mq-high-contrast");
+        }
+        if(els.dyslexic){
+          if(els.dyslexic.checked) body.classList.add("mq-dyslexic");
+          else body.classList.remove("mq-dyslexic");
+        }
+      }
+
+      // Controls
+      if(els.grade){
+        els.grade.addEventListener("change", function(e){
+          state.gradeBand = e.target.value;
+          updateStats();
+          renderItem(getNextItem());
+        });
+      }
+      if(els.track){
+        els.track.addEventListener("change", function(e){
+          state.track = e.target.value;
+          updateStats();
+          renderItem(getNextItem());
+        });
+      }
+      if(els.highContrast) els.highContrast.addEventListener("change", applyVisualToggles);
+      if(els.dyslexic) els.dyslexic.addEventListener("change", applyVisualToggles);
+
+      if(els.reset){
+        els.reset.addEventListener("click", function(){
+          if(!confirm("Reset XP, coins, streak, and Fix-It Queue for this player?")) return;
+          state = makeEmptyState();
+          state.gradeBand = els.grade ? els.grade.value : "6-8";
+          state.track = els.track ? els.track.value : "operations";
+          if(els.insightLog) els.insightLog.innerHTML = "";
+          updateStats();
+          updateBadges();
+          renderItem(getNextItem());
+        });
+      }
+
+      if(scaleSlider){
+        var initialScale = scaleSlider.value ? (parseInt(scaleSlider.value,10)/100) : 1;
+        document.documentElement.style.setProperty("--mq-scale", initialScale);
+        scaleSlider.addEventListener("input", function(e){
+          var value = parseInt(e.target.value,10) || 100;
+          document.documentElement.style.setProperty("--mq-scale", value/100);
+        });
+      }
+
+      if(delaySlider){
+        autoAdvanceDelayMs = (parseInt(delaySlider.value,10) || 5) * 1000;
+        delaySlider.addEventListener("input", function(e){
+          var secs = parseInt(e.target.value,10) || 5;
+          autoAdvanceDelayMs = secs * 1000;
+        });
+      }
+
+      if(sfxButton){
+        sfxButton.classList.add("mq-sfx-on");
+        sfxButton.addEventListener("click", function(){
+          sfxOn = !sfxOn;
+          sfxButton.textContent = sfxOn ? "SFX: ON" : "SFX: OFF";
+          if(sfxOn) sfxButton.classList.add("mq-sfx-on");
+          else sfxButton.classList.remove("mq-sfx-on");
+        });
+      }
+
+      if(nextButton){
+        nextButton.addEventListener("click", function(){
+          if(nextTimer){ clearTimeout(nextTimer); nextTimer=null; }
+          renderItem(getNextItem());
+        });
+      }
+
+      // Player UI
+      var playerSelect = $("mq-player");
+      var playerAddBtn = $("mq-player-add");
+      var playerDeleteBtn = $("mq-player-delete");
+
+      if(playerSelect){
+        playerSelect.addEventListener("change", function(e){
+          var newId = e.target.value;
+          if(!players[newId]) return;
+          savePlayers();
+          activePlayerId = newId;
+          var active = players[activePlayerId];
+          state = Object.assign(makeEmptyState(), active.state || {});
+          if(!state.errorWeakness) state.errorWeakness = {};
+          syncSelectorsFromState();
+          updateStats();
+          updateBadges();
+          renderItem(getNextItem());
+        });
+      }
+
+      if(playerAddBtn){
+        playerAddBtn.addEventListener("click", function(){
+          var name = prompt("New player name:", "Player " + (Object.keys(players).length + 1));
+          if(!name) return;
+
+          var base = name, counter = 2;
+          var existingNames = Object.keys(players).map(function(id){ return players[id].name; });
+          while(existingNames.indexOf(name) !== -1){
+            name = base + " (" + counter + ")";
+            counter++;
+          }
+
+          var newId = "p" + Date.now();
+          players[newId] = { name:name, state: makeEmptyState() };
+          activePlayerId = newId;
+          state = makeEmptyState();
+          syncSelectorsFromState();
+          refreshPlayerSelect();
+          updateStats();
+          updateBadges();
+          renderItem(getNextItem());
+        });
+      }
+
+      if(playerDeleteBtn){
+        playerDeleteBtn.addEventListener("click", function(){
+          if(!activePlayerId || !players[activePlayerId]) return;
+          if(Object.keys(players).length === 1){
+            alert("You need at least one player profile.");
+            return;
+          }
+          if(!confirm("Delete player '" + (players[activePlayerId].name || "player") + "' and their progress?")) return;
+
+          delete players[activePlayerId];
+          var remainingIds = Object.keys(players);
+          activePlayerId = remainingIds[0];
+          var active = players[activePlayerId];
+          state = Object.assign(makeEmptyState(), active.state || {});
+          if(!state.errorWeakness) state.errorWeakness = {};
+          refreshPlayerSelect();
+          syncSelectorsFromState();
+          updateStats();
+          updateBadges();
+          renderItem(getNextItem());
+        });
+      }
+
+      // -----------------------------
+      // Study panel logic
+      // -----------------------------
+      function refreshCustomList(){
+        if(!els.customList) return;
+        els.customList.innerHTML = "";
+
+        customItems = loadCustomItems();
+        if(customItems.length === 0){
+          var opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "No custom items yet.";
+          els.customList.appendChild(opt);
+          els.customList.disabled = true;
+          return;
+        }
+
+        els.customList.disabled = false;
+
+        customItems.forEach(function(ci, idx){
+          var opt = document.createElement("option");
+          opt.value = ci.id;
+          var label = (ci.prompt || "Custom item").slice(0, 60);
+          opt.textContent = (idx+1) + ") " + label;
+          els.customList.appendChild(opt);
+        });
+      }
+
+      function buildCustomItem(){
+        var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
+        var work = safeText(els.customWork ? els.customWork.value : "").trim();
+        var fix = safeText(els.customFix ? els.customFix.value : "").trim();
+
+        if(!problem || !work || !fix){
+          return { ok:false, message:"Please fill in Problem, Student work, and Clean fix." };
+        }
+
+        var gb = state.gradeBand || (els.grade ? els.grade.value : "6-8");
+        var tr = state.track || (els.track ? els.track.value : "operations");
+        var errType = els.customErrorType ? els.customErrorType.value : "custom";
+        var diff = els.customDifficulty ? els.customDifficulty.value : "medium";
+
+        // Simple distractors (editable later by adding more advanced UI if desired)
+        var distractors = [
+          "They made a sign/operation mistake (check the first wrong step).",
+          "They used a rule that does not apply in this situation.",
+          "They mixed steps from two different methods."
+        ];
+
+        var options = [
+          fix,
+          distractors[0],
+          distractors[1],
+          distractors[2]
+        ];
+
+        var item = {
+          id: "custom-" + Date.now(),
+          gradeBand: gb,
+          track: tr,
+          difficulty: diff,
+          errorType: errType,
+          inattention: false,
+          prompt: "Custom study: " + problem,
+          work: "Student work (incorrect): " + work,
+          options: options,
+          correctIndex: 0,
+          hint: "Read the fix and compare it to the student’s first wrong step.",
+          insight: fix
+        };
+
+        return { ok:true, item:item };
+      }
+
+      function addCustomItem(item){
+        customItems = loadCustomItems();
+        customItems.unshift(item);
+        if(!saveCustomItems(customItems)){
+          return { ok:false, message:"Could not save (storage unavailable). Try another browser or disable private mode." };
+        }
+        ITEMS.push(item); // available immediately
+        return { ok:true };
+      }
+
+      function practiceItemNow(item){
+        if(!item) return;
+        if(nextTimer){ clearTimeout(nextTimer); nextTimer=null; }
+        renderItem({ item:item, fromMissed:false });
+      }
+
+      function getSelectedCustomItem(){
+        if(!els.customList || !customItems || customItems.length === 0) return null;
+        var id = els.customList.value;
+        if(!id) return null;
+        for(var i=0;i<customItems.length;i++){
+          if(customItems[i].id === id) return customItems[i];
+        }
+        return null;
+      }
+
+      if(els.customAdd){
+        els.customAdd.addEventListener("click", function(){
+          var built = buildCustomItem();
+          if(!built.ok){
+            if(els.customStatus) els.customStatus.textContent = built.message;
+            return;
+          }
+          var res = addCustomItem(built.item);
+          if(!res.ok){
+            if(els.customStatus) els.customStatus.textContent = res.message;
+            return;
+          }
+          if(els.customStatus) els.customStatus.textContent = "Saved! Added to practice for " + (built.item.gradeBand) + " • " + (built.item.track) + ".";
+          refreshCustomList();
+        });
+      }
+
+      if(els.customPracticeNow){
+        els.customPracticeNow.addEventListener("click", function(){
+          var built = buildCustomItem();
+          if(!built.ok){
+            if(els.customStatus) els.customStatus.textContent = built.message;
+            return;
+          }
+          // Practice without saving
+          if(els.customStatus) els.customStatus.textContent = "Practicing this custom problem now (not saved).";
+          practiceItemNow(built.item);
+        });
+      }
+
+      if(els.customClear){
+        els.customClear.addEventListener("click", function(){
+          if(els.customProblem) els.customProblem.value = "";
+          if(els.customWork) els.customWork.value = "";
+          if(els.customFix) els.customFix.value = "";
+          if(els.customStatus) els.customStatus.textContent = "Cleared.";
+        });
+      }
+
+      if(els.customUse){
+        els.customUse.addEventListener("click", function(){
+          var item = getSelectedCustomItem();
+          if(!item){
+            if(els.customStatus) els.customStatus.textContent = "No saved custom item selected.";
+            return;
+          }
+          if(els.customStatus) els.customStatus.textContent = "Practicing saved custom item now.";
+          practiceItemNow(item);
+        });
+      }
+
+      if(els.customDelete){
+        els.customDelete.addEventListener("click", function(){
+          var item = getSelectedCustomItem();
+          if(!item){
+            if(els.customStatus) els.customStatus.textContent = "No saved custom item selected.";
+            return;
+          }
+          if(!confirm("Delete this saved custom item?")) return;
+
+          customItems = loadCustomItems().filter(function(ci){ return ci.id !== item.id; });
+          saveCustomItems(customItems);
+
+          // also remove from ITEMS in memory (best effort)
+          ITEMS = ITEMS.filter(function(it){ return it.id !== item.id; });
+
+          if(els.customStatus) els.customStatus.textContent = "Deleted.";
+          refreshCustomList();
+        });
+      }
+
+      // Initial render
+      loadPlayers();
+      refreshPlayerSelect();
+      syncSelectorsFromState();
+      applyVisualToggles();
+      updateStats();
+      updateBadges();
+      updateScoreboard();
+      refreshCustomList();
+      renderItem(getNextItem());
+    });
+  </script>
+
+  <div id="download" style="max-width:900px;margin:24px auto;padding:14px 16px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.7);">
+    <div style="font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;font-size:12px;margin-bottom:6px;">
+      Download
+    </div>
+    <div style="color:#e5e7eb;font-size:14px;margin-bottom:6px;">
+      BeTheMath is currently available as a web app. You can use it anytime from this page.
+    </div>
+    <div style="color:#9ca3af;font-size:12px;line-height:1.5;">
+      We’re preparing an offline installable version and a one-time purchase option. Nothing is collected or tracked; progress stays on your device.
+    </div>
+  </div>
+
+</body>
+</html>
