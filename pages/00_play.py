@@ -10,16 +10,16 @@ st.set_page_config(page_title="BeTheMath — Error Detective", page_icon="🧠",
 st.markdown(
     """
     <style>
-      /* Make the main content use the full browser width */
+      /* Edge-to-edge play page */
       .main .block-container {
         max-width: 100% !important;
-        padding-top: 0.25rem;
-        padding-bottom: 0;
-        padding-left: 0.25rem;
-        padding-right: 0.25rem;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
       }
 
-      /* Optional: hide Streamlit header/footer chrome */
+      /* Optional: remove Streamlit chrome */
       header[data-testid="stHeader"] { display: none; }
       footer { display: none; }
     </style>
@@ -27,8 +27,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 # (Gate in app.py already ran, so user is unlocked)
-st.title("BeTheMath — Error Detective")
 
 WEB_DIR = Path("webapp")
 INDEX = WEB_DIR / "index.html"
@@ -67,6 +67,8 @@ def repl_css(m):
     return m.group(0)
 
 html = re.sub(r'<link[^>]+href="([^"]+\.css[^"]*)"[^>]*>', repl_css, html, flags=re.IGNORECASE)
+
+
 
 # Inline JS <script src="...js"></script>
 def repl_js(m):
