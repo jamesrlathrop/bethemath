@@ -7,28 +7,28 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="BeTheMath — Error Detective", page_icon="🧠", layout="wide")
 
+# ---- Streamlit page chrome + background blend (ONE place only) ----
 st.markdown(
     """
     <style>
+      /* Match Streamlit background to the game so "outside" doesn't look white */
+      .stApp, [data-testid="stAppViewContainer"] {
+        background: #020617 !important;
+      }
+
       /* Edge-to-edge play page */
       .main .block-container {
         max-width: 100% !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding: 0 !important;
       }
 
-      /* Optional: remove Streamlit chrome */
+      /* Remove Streamlit chrome */
       header[data-testid="stHeader"] { display: none; }
       footer { display: none; }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-
-# (Gate in app.py already ran, so user is unlocked)
 
 WEB_DIR = Path("webapp")
 INDEX = WEB_DIR / "index.html"
@@ -56,7 +56,7 @@ def _data_uri(path: Path) -> str:
 def _resolve(p: str) -> Path:
     return WEB_DIR / p.lstrip("/")
 
-# Inline CSS <link href="...css">
+# ---- Inline CSS <link href="...css"> ----
 def repl_css(m):
     href = m.group(1)
     if not _is_local(href):
@@ -68,9 +68,7 @@ def repl_css(m):
 
 html = re.sub(r'<link[^>]+href="([^"]+\.css[^"]*)"[^>]*>', repl_css, html, flags=re.IGNORECASE)
 
-
-
-# Inline JS <script src="...js"></script>
+# ---- Inline JS <script src="...js"></script> ----
 def repl_js(m):
     src = m.group(1)
     attrs = m.group(2) or ""
@@ -82,9 +80,14 @@ def repl_js(m):
         return f"<script{type_attr}>\n{_read_text(f)}\n</script>"
     return m.group(0)
 
-html = re.sub(r'<script[^>]+src="([^"]+\.js[^"]*)"([^>]*)>\s*</script>', repl_js, html, flags=re.IGNORECASE)
+html = re.sub(
+    r'<script[^>]+src="([^"]+\.js[^"]*)"([^>]*)>\s*</script>',
+    repl_js,
+    html,
+    flags=re.IGNORECASE,
+)
 
-# Inline images in <img src="...">
+# ---- Inline images in <img src="..."> ----
 def repl_img(m):
     src = m.group(1)
     if not _is_local(src):
@@ -96,7 +99,7 @@ def repl_img(m):
 
 html = re.sub(r'<img[^>]+src="([^"]+)"[^>]*>', repl_img, html, flags=re.IGNORECASE)
 
-# --- Force the embedded game to fill the available frame (kills side margins in many builds) ---
+# ---- Force the embedded game to fill the available frame ----
 FULLSCREEN_PATCH = """
 <style>
   html, body {
@@ -107,15 +110,14 @@ FULLSCREEN_PATCH = """
     overflow: hidden !important;
   }
 
-  /* Common root/container ids/classes used by web builds */
-  #root, #app, .app, .container, .main, .game {
+  /* Your app root is #mq-root */
+  #mq-root, #root, #app, .app, .container, .main, .game {
     width: 100% !important;
     height: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
   }
 
-  /* Canvas-based games often need this */
   canvas {
     display: block !important;
     width: 100% !important;
