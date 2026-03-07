@@ -16,11 +16,8 @@
       --mq-muted:#9ca3af;
       --mq-warn:#facc15;
       --mq-scale:1;
-      .mq-study-card{
-        min-height: 520px;
-}
-
     }
+
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -78,11 +75,7 @@
       padding:6px 12px;
       border-bottom:1px solid var(--mq-border);
       background:var(--mq-bg);
-      position:fixed;
-top:0;
-left:0;
-right:0;
-z-index:999;
+      position:sticky;top:0;z-index:20;
       gap:10px;
     }
     .mq-topbar-title{
@@ -108,6 +101,7 @@ z-index:999;
       text-overflow:ellipsis;
     }
 
+    /* Works for <a> and <button> */
     .mq-buy-btn{
       text-decoration:none;
       border-radius:999px;
@@ -119,6 +113,10 @@ z-index:999;
       font-weight:800;
       letter-spacing:.06em;
       flex:0 0 auto;
+      cursor:pointer;
+      appearance:none;
+      -webkit-appearance:none;
+      font-family:inherit;
     }
     .mq-buy-btn:hover{background:rgba(34,197,94,.18)}
 
@@ -151,6 +149,19 @@ z-index:999;
       font-weight:700;
     }
 
+    /* Floating teacher dock (always available) */
+    .mq-dock{
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 3000;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Make Study jump land cleanly below the sticky topbar */
+    .mq-column-study{ scroll-margin-top: 72px; }
+
     /* ✅ 4 columns in your requested order:
        Session Settings | Current Challenge | Study | Session Stats
     */
@@ -162,7 +173,6 @@ z-index:999;
       align-items:start;
       grid-template-columns: 270px minmax(360px, 1fr) 320px 270px;
       grid-template-areas: "left center study right";
-      margin-top: 56px;
     }
     .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
     .mq-column-left{grid-area:left}
@@ -246,6 +256,7 @@ z-index:999;
       padding:14px 16px 16px;
       box-shadow:0 22px 50px rgba(15,23,42,.8);
     }
+    .mq-study-card{min-height:520px;}
     .mq-game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
     .mq-game-title{
       font-size:12px;
@@ -361,8 +372,10 @@ z-index:999;
         <span>Fix mistakes fast • Learn why • Stored only on your device</span>
       </div>
 
-<button class="mq-buy-btn" type="button" id="mq-study-jump" title="Jump to Study A Specific Problem">Study</button>
-<button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
+      <button class="mq-buy-btn" type="button" id="mq-study-jump" title="Jump to Study A Specific Problem">Study</button>
+      <button class="mq-buy-btn" type="button" id="mq-top" title="Back to top">Top</button>
+      <button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
+
       <div class="mq-modebar" aria-label="Mode">
         <div class="mq-mode-btn mq-mode-btn-active" title="Math mode (more modes later)">🧠 Math Mode</div>
       </div>
@@ -600,6 +613,13 @@ z-index:999;
     </div>
   </div>
 
+  <!-- Floating dock (always available from anywhere) -->
+  <div class="mq-dock" aria-label="Quick tools">
+    <button class="mq-buy-btn" type="button" id="mq-dock-top" title="Back to top">Top</button>
+    <button class="mq-buy-btn" type="button" id="mq-dock-study" title="Jump to Study A Specific Problem">Study</button>
+    <button class="mq-buy-btn" type="button" id="mq-dock-download" title="Download a CSV session report">CSV</button>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -749,7 +769,7 @@ z-index:999;
       function makeEmptyState(){
         return {
           xp:0, coins:0, streak:0, played:0,
-          gradeBand:"6-8",        // ✅ default start at 6–8
+          gradeBand:"6-8",
           track:"operations",
           missed:[],
           errorWeakness:{}
@@ -767,57 +787,74 @@ z-index:999;
 
       function $(id){ return document.getElementById(id); }
 
-// ---- Topbar actions: Jump to Study + Download CSV ----
-var jumpBtn = $("mq-study-jump");
-var dlBtn = $("mq-download-csv");
+      // ---- Top/Study/CSV (Topbar + Dock) ----
+      function scrollTopNow(){
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
 
-if (jumpBtn) {
-  jumpBtn.addEventListener("click", function () {
-    var studyPanel = document.querySelector(".mq-column-study");
-    if (studyPanel) studyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-}
+      function scrollToStudy(){
+        var studyPanel = document.querySelector(".mq-column-study");
+        if (studyPanel) studyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
 
-function csvEscape(v){
-  v = (v === null || v === undefined) ? "" : String(v);
-  if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
-  return v;
-}
+      function csvEscape(v){
+        v = (v === null || v === undefined) ? "" : String(v);
+        if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
+        return v;
+      }
 
-function downloadCSV(filename, rows){
-  var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
-  var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+      function downloadCSV(filename, rows){
+        var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
 
-if (dlBtn) {
-  dlBtn.addEventListener("click", function () {
-    var now = new Date();
-    var iso = now.toISOString();
+      function doDownloadCSV(){
+        var now = new Date();
+        var iso = now.toISOString();
 
-    var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
-    var gradeBand = (state && state.gradeBand) ? state.gradeBand : "";
-    var track = (state && state.track) ? state.track : "";
-    var xp = (state && state.xp !== undefined) ? state.xp : "";
-    var coins = (state && state.coins !== undefined) ? state.coins : "";
-    var streak = (state && state.streak !== undefined) ? state.streak : "";
-    var played = (state && state.played !== undefined) ? state.played : "";
+        var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
+        var gradeBand = (state && state.gradeBand) ? state.gradeBand : "";
+        var track = (state && state.track) ? state.track : "";
+        var xp = (state && state.xp !== undefined) ? state.xp : "";
+        var coins = (state && state.coins !== undefined) ? state.coins : "";
+        var streak = (state && state.streak !== undefined) ? state.streak : "";
+        var played = (state && state.played !== undefined) ? state.played : "";
 
-    var rows = [
-      ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
-      [iso, playerName, gradeBand, track, xp, coins, streak, played]
-    ];
+        var rows = [
+          ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
+          [iso, playerName, gradeBand, track, xp, coins, streak, played]
+        ];
 
-    downloadCSV("bethemath_session_report.csv", rows);
-  });
-}
+        downloadCSV("bethemath_session_report.csv", rows);
+      }
+
+      // Topbar buttons
+      var jumpBtn = $("mq-study-jump");
+      var topBtn = $("mq-top");
+      var dlBtn = $("mq-download-csv");
+
+      // Dock buttons
+      var dockTop = $("mq-dock-top");
+      var dockStudy = $("mq-dock-study");
+      var dockDl = $("mq-dock-download");
+
+      if (jumpBtn) jumpBtn.addEventListener("click", scrollToStudy);
+      if (topBtn) topBtn.addEventListener("click", scrollTopNow);
+      if (dlBtn) dlBtn.addEventListener("click", doDownloadCSV);
+
+      if (dockTop) dockTop.addEventListener("click", scrollTopNow);
+      if (dockStudy) dockStudy.addEventListener("click", scrollToStudy);
+      if (dockDl) dockDl.addEventListener("click", doDownloadCSV);
 
       var els = {
         grade:$("mq-grade"),
@@ -867,6 +904,17 @@ if (dlBtn) {
       var audioCtx = null;
       var nextTimer = null;
       var autoAdvanceDelayMs = 5000;
+
+      function ensureAudio(){
+        try{
+          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if(audioCtx.state === "suspended") return audioCtx.resume();
+        }catch(e){}
+        return Promise.resolve();
+      }
+
+      // Unlock audio on first user gesture
+      document.addEventListener("pointerdown", function(){ ensureAudio(); }, { once:true });
 
       function loadFromKey(key){
         try{
@@ -1194,23 +1242,25 @@ if (dlBtn) {
 
       function playBeep(correct){
         if(!sfxOn) return;
-        try{
-          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          var osc = audioCtx.createOscillator();
-          var gain = audioCtx.createGain();
-          osc.connect(gain); gain.connect(audioCtx.destination);
 
-          osc.type = "square";
-          osc.frequency.value = correct ? 1200 : 400;
+        ensureAudio().then(function(){
+          try{
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
 
-          var now = audioCtx.currentTime;
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
+            osc.type = "square";
+            osc.frequency.value = correct ? 1200 : 400;
 
-          osc.start(now);
-          osc.stop(now + 0.32);
-        }catch(e){}
+            var now = audioCtx.currentTime;
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
+
+            osc.start(now);
+            osc.stop(now + 0.32);
+          }catch(e){}
+        });
       }
 
       function scheduleNextItem(){
@@ -1456,7 +1506,6 @@ if (dlBtn) {
         var errType = els.customErrorType ? els.customErrorType.value : "custom";
         var diff = els.customDifficulty ? els.customDifficulty.value : "medium";
 
-        // Simple distractors (editable later by adding more advanced UI if desired)
         var distractors = [
           "They made a sign/operation mistake (check the first wrong step).",
           "They used a rule that does not apply in this situation.",
@@ -1494,7 +1543,7 @@ if (dlBtn) {
         if(!saveCustomItems(customItems)){
           return { ok:false, message:"Could not save (storage unavailable). Try another browser or disable private mode." };
         }
-        ITEMS.push(item); // available immediately
+        ITEMS.push(item);
         return { ok:true };
       }
 
@@ -1538,7 +1587,6 @@ if (dlBtn) {
             if(els.customStatus) els.customStatus.textContent = built.message;
             return;
           }
-          // Practice without saving
           if(els.customStatus) els.customStatus.textContent = "Practicing this custom problem now (not saved).";
           practiceItemNow(built.item);
         });
@@ -1577,7 +1625,6 @@ if (dlBtn) {
           customItems = loadCustomItems().filter(function(ci){ return ci.id !== item.id; });
           saveCustomItems(customItems);
 
-          // also remove from ITEMS in memory (best effort)
           ITEMS = ITEMS.filter(function(it){ return it.id !== item.id; });
 
           if(els.customStatus) els.customStatus.textContent = "Deleted.";
@@ -1597,18 +1644,5 @@ if (dlBtn) {
       renderItem(getNextItem());
     });
   </script>
-
-  <div id="download" style="max-width:900px;margin:24px auto;padding:14px 16px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.7);">
-    <div style="font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;font-size:12px;margin-bottom:6px;">
-      Download
-    </div>
-    <div style="color:#e5e7eb;font-size:14px;margin-bottom:6px;">
-      BeTheMath is currently available as a web app. You can use it anytime from this page.
-    </div>
-    <div style="color:#9ca3af;font-size:12px;line-height:1.5;">
-      We’re preparing an offline installable version and a one-time purchase option. Nothing is collected or tracked; progress stays on your device.
-    </div>
-  </div>
-
 </body>
 </html>
