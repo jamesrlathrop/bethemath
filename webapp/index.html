@@ -356,10 +356,10 @@
         <span>Fix mistakes fast • Learn why • Stored only on your device</span>
       </div>
 
-      <a class="mq-buy-btn" href="#download" id="mq-buy-link">Download</a>
-
+<button class="mq-buy-btn" type="button" id="mq-study-jump" title="Jump to Study A Specific Problem">Study</button>
+<button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
       <div class="mq-modebar" aria-label="Mode">
-        <div class="mq-mode-btn mq-mode-btn-active">🧠 Math</div>
+        <div class="mq-mode-btn mq-mode-btn-active" title="Math mode (more modes later)">🧠 Math Mode</div>
       </div>
     </div>
 
@@ -761,6 +761,58 @@
       var lastItemId = null;
 
       function $(id){ return document.getElementById(id); }
+
+// ---- Topbar actions: Jump to Study + Download CSV ----
+var jumpBtn = $("mq-study-jump");
+var dlBtn = $("mq-download-csv");
+
+if (jumpBtn) {
+  jumpBtn.addEventListener("click", function () {
+    var studyPanel = document.querySelector(".mq-column-study");
+    if (studyPanel) studyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+function csvEscape(v){
+  v = (v === null || v === undefined) ? "" : String(v);
+  if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+
+function downloadCSV(filename, rows){
+  var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
+  var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+if (dlBtn) {
+  dlBtn.addEventListener("click", function () {
+    var now = new Date();
+    var iso = now.toISOString();
+
+    var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
+    var gradeBand = (state && state.gradeBand) ? state.gradeBand : "";
+    var track = (state && state.track) ? state.track : "";
+    var xp = (state && state.xp !== undefined) ? state.xp : "";
+    var coins = (state && state.coins !== undefined) ? state.coins : "";
+    var streak = (state && state.streak !== undefined) ? state.streak : "";
+    var played = (state && state.played !== undefined) ? state.played : "";
+
+    var rows = [
+      ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
+      [iso, playerName, gradeBand, track, xp, coins, streak, played]
+    ];
+
+    downloadCSV("bethemath_session_report.csv", rows);
+  });
+}
 
       var els = {
         grade:$("mq-grade"),
