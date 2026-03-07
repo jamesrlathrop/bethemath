@@ -78,7 +78,11 @@
       padding:6px 12px;
       border-bottom:1px solid var(--mq-border);
       background:var(--mq-bg);
-      position:sticky;top:0;z-index:20;
+      position:fixed;
+top:0;
+left:0;
+right:0;
+z-index:999;
       gap:10px;
     }
     .mq-topbar-title{
@@ -158,6 +162,7 @@
       align-items:start;
       grid-template-columns: 270px minmax(360px, 1fr) 320px 270px;
       grid-template-areas: "left center study right";
+      margin-top: 56px;
     }
     .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
     .mq-column-left{grid-area:left}
