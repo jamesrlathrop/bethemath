@@ -133,4 +133,8 @@ else:
     html = FULLSCREEN_PATCH + html
 
 # Bigger height + no scroll chrome
-components.html(html, height=1400, scrolling=False)
+b64 = base64.b64encode(html.encode("utf-8")).decode("utf-8")
+st.markdown(
+    f'<iframe src="data:text/html;base64,{b64}" style="width:100%;height:1400px;border:0;display:block;" allow="autoplay"></iframe>',
+    unsafe_allow_html=True,
+)
