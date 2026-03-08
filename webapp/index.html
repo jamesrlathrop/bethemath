@@ -861,7 +861,7 @@
 
       // Minimal practice loop for your custom item (Practice Now)
       function renderCustomPractice(problem, work, fix){
-             // -----------------------
+           // -----------------------
       // Main challenge loop
       // -----------------------
       var currentItem = null;
@@ -876,12 +876,17 @@
 
         if (els.miniXP) els.miniXP.textContent = String(state.xp || 0);
         if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
-        if (els.miniFocus) els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + ((state.track || "operations").charAt(0).toUpperCase() + (state.track || "operations").slice(1));
+        if (els.miniFocus) {
+          var trackName = state.track || "operations";
+          els.miniFocus.textContent =
+            (state.gradeBand || "6-8") + " • " +
+            trackName.charAt(0).toUpperCase() + trackName.slice(1);
+        }
         if (els.miniType) els.miniType.textContent = "Focus: common errors & clean fixes";
       }
 
       function pushInsight(text){
-        if (!els.insightLog) return;
+        if (!els.insightLog || !text) return;
         var div = document.createElement("div");
         div.style.marginBottom = "8px";
         div.textContent = "• " + text;
@@ -969,14 +974,17 @@
               state.streak = 0;
 
               if (els.feedback){
-                els.feedback.textContent = (item.hint || "Try again by checking the first wrong step.") + " Correct fix: " + ((item.options && item.options[item.correctIndex]) || "");
+                els.feedback.textContent =
+                  (item.hint || "Try again by checking the first wrong step.") +
+                  " Correct fix: " +
+                  ((item.options && item.options[item.correctIndex]) || "");
                 els.feedback.className = "mq-feedback mq-feedback-encouraging";
               }
             }
 
             updateStats();
+            pushInsight(item.insight);
 
-            if (item.insight) pushInsight(item.insight);
             if (nextBtn) nextBtn.disabled = false;
             if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
           });
@@ -1103,3 +1111,7 @@
       // -----------------------
       updateStats();
       loadFirstChallenge();
+    });
+  </script>
+</body>
+</html>
