@@ -1,19 +1,8 @@
-import os
-import json
 import re
-import time
-import hmac
-import hashlib
-import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(
-    page_title="BeTheMath — AI Tutor",
-    page_icon="🧠",
-    layout="centered",
-    initial_sidebar_state="collapsed",
-)
+st.set_page_config(page_title="AI Tutor", layout="centered")
 
 st.markdown(
     """
@@ -27,150 +16,128 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
-SECRET = (os.getenv("BTM_AI_TUTOR_SECRET") or os.getenv("ADMIN_CODE") or "").encode("utf-8")
+def fallback_clean_fix(problem: str, work: str, variant: str = "step") -> str:
+    problem = (problem or "").strip()
+    work = (work or "").strip()
 
-def _qp_get(qp, key: str) -> str:
-    v = qp.get(key, "")
-    if isinstance(v, list):
-        return v[0] if v else ""
-    return v or ""
+    if not work and not problem:
+        return ""
 
-def _token_ok(token: str) -> bool:
+    text = work or problem
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+
+    if variant == "alt":
+        lead = "Another clear way to think about it:"
+    else:
+        lead = "My corrected thinking:"
+
+    if text and text[-1] not in ".!?":
+        text += "."
+
+    if problem:
+        return f"{lead} For {problem}, the mistake in the work should be corrected step by step. {text}"
+    return f"{lead} {text}"
+
+def generate_clean_fix(problem: str, work: str, variant: str = "step") -> str:
     try:
-        ts_s, sig = token.split(".", 1)
-        ts = int(ts_s)
+        from btm_ai import generate_clean_fix as project_generate_clean_fix  # type: ignore
+        result = project_generate_clean_fix(problem=problem, work=work, variant=variant)
+        if isinstance(result, str) and result.strip():
+            return result.strip()
     except Exception:
-        return False
+        pass
 
-    # valid for 30 minutes
-    if abs(int(time.time()) - ts) > 1800:
-        return False
+    return fallback_clean_fix(problem, work, variant)
 
-    payload = f"{ts}"
-    good = hmac.new(SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
-    return hmac.compare_digest(good, sig)
+qp = st.query_params
 
-def _extract_clean_fix(md: str) -> str:
-    patterns = [
-        r"CLEAN\s*FIX[:\s]*\n(.+?)(\n\s*\n|$)",
-        r"###\s*CLEAN\s*FIX.*?\n(.+?)(\n###|\Z)",
-        r"\*\*CLEAN\s*FIX\*\*[:\s]*\n(.+?)(\n\s*\n|$)",
-    ]
-    for p in patterns:
-        m = re.search(p, md, flags=re.IGNORECASE | re.DOTALL)
-        if m:
-            return m.group(1).strip()
-    lines = [ln.strip() for ln in (md or "").splitlines() if ln.strip()]
-    return "\n".join(lines[:3]).strip()
+problem = qp.get("problem", "")
+work = qp.get("work", "")
+variant = qp.get("variant", "step")
 
-def _openai_explain(problem: str, student_work: str, variant: str) -> str:
-    if not OPENAI_API_KEY:
-        return "⚠️ OPENAI_API_KEY is missing in Railway Variables."
+if isinstance(problem, list):
+    problem = problem[0] if problem else ""
+if isinstance(work, list):
+    work = work[0] if work else ""
+if isinstance(variant, list):
+    variant = variant[0] if variant else "step"
 
-    style = "STEP-BY-STEP (simple, numbered)" if variant != "alt" else "ANOTHER WAY (different wording, add an analogy)"
+problem = str(problem or "").strip()
+work = str(work or "").strip()
+variant = str(variant or "step").strip()
 
-    system = (
-        "You are BeTheMath AI Tutor. Be kind, clear, and practical.\n"
-        "Always include:\n"
-        "STEP-BY-STEP (numbered)\n"
-        "CLEAN FIX (1–3 lines)\n"
-        "WHY THE WRONG ANSWER FEELS RIGHT (one sentence)\n"
-        "QUICK CHECK (one question + answer)\n"
-        "Keep math correct. Use simple words.\n"
-    )
-    user = (
-        f"STYLE: {style}\n\n"
-        f"PROBLEM:\n{problem}\n\n"
-        f"STUDENT WORK (incorrect):\n{student_work}\n\n"
-        "If steps are missing, infer the most likely mistake and explain it.\n"
-    )
+clean_edit = generate_clean_fix(problem, work, variant)
 
-    payload = {
-        "model": OPENAI_MODEL,
-        "store": False,
-        "input": [
-            {"role": "system", "content": [{"type": "input_text", "text": system}]},
-            {"role": "user", "content": [{"type": "input_text", "text": user}]},
-        ],
-        "max_output_tokens": 850,
-    }
+st.title("AI Generate Fix")
+st.caption("Review the clean version below, then insert it back into Study.")
 
-    r = requests.post(
-        "https://api.openai.com/v1/responses",
-        headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"},
-        data=json.dumps(payload),
-        timeout=45,
-    )
+st.text_area(
+    "Problem",
+    value=problem,
+    height=100,
+    disabled=True,
+)
 
-    if r.status_code == 401:
-        return "⚠️ OpenAI 401 Unauthorized. Fix OPENAI_API_KEY in Railway Variables and redeploy."
-    if r.status_code >= 400:
-        return f"⚠️ AI error ({r.status_code}). Try again."
+st.text_area(
+    "Student work (incorrect)",
+    value=work,
+    height=140,
+    disabled=True,
+)
 
-    data = r.json()
-    out = []
-    for item in data.get("output", []) or []:
-        if item.get("type") == "message":
-            for c in item.get("content", []) or []:
-                if c.get("type") == "output_text" and c.get("text"):
-                    out.append(c["text"])
-    return ("\n".join(out)).strip() or "⚠️ No text returned."
-
-qp = st.query_params if hasattr(st, "query_params") else st.experimental_get_query_params()
-
-token = _qp_get(qp, "token").strip()
-problem = _qp_get(qp, "problem").strip()
-work = _qp_get(qp, "work").strip()
-variant = (_qp_get(qp, "variant") or "step").strip()
-
-if not token or not _token_ok(token):
-    st.error("This AI Tutor window is not authorized. Close it and reopen from inside Study → AI Generate Fix.")
-    st.stop()
-
-st.markdown("## 🤖 AI Tutor")
-md = _openai_explain(problem, work, variant)
-st.markdown(md)
-
-clean = _extract_clean_fix(md)
-st.markdown("### Clean fix to insert")
-clean_edit = st.text_area("", value=clean, height=120)
+edited = st.text_area(
+    "Clean fix",
+    value=clean_edit,
+    height=220,
+    key="clean_fix_editable",
+)
 
 c1, c2 = st.columns(2)
+
 with c1:
     if st.button("Insert into Study box", use_container_width=True):
-        payload = {"type": "btm_clean_fix", "text": clean_edit}
+        payload = {"type": "btm_clean_fix", "text": edited}
         components.html(
             f"""
             <script>
-              const msg = {json.dumps(payload)};
-              // We are inside a Streamlit component iframe -> parent is the AI page
-              // parent.parent is the GAME iframe (where the Study box exists)
-              if (window.parent && window.parent.parent) {{
-                window.parent.parent.postMessage(msg, "*");
-                window.parent.parent.postMessage({json.dumps({"type":"btm_close_ai"})}, "*");
-              }} else if (window.parent) {{
-                window.parent.postMessage(msg, "*");
-                window.parent.postMessage({json.dumps({"type":"btm_close_ai"})}, "*");
+              const msg = {payload};
+              const closeMsg = {{type: "btm_close_ai"}};
+
+              try {{
+                if (window.parent && window.parent.parent) {{
+                  window.parent.parent.postMessage(msg, "*");
+                  window.parent.parent.postMessage(closeMsg, "*");
+                }} else if (window.parent) {{
+                  window.parent.postMessage(msg, "*");
+                  window.parent.postMessage(closeMsg, "*");
+                }}
+              }} catch (e) {{
+                console.error("postMessage failed", e);
               }}
             </script>
             """,
             height=0,
         )
-        st.success("Sent.")
+        st.success("Inserted. Returning to Study…")
+
 with c2:
     if st.button("Close", use_container_width=True):
         components.html(
-    f"""
-    <script>
-      const closeMsg = {json.dumps({'type':'btm_close_ai'})};
-      if (window.parent && window.parent.parent) {{
-        window.parent.parent.postMessage(closeMsg, "*");
-      }} else if (window.parent) {{
-        window.parent.postMessage(closeMsg, "*");
-      }}
-    </script>
-    """,
-    height=0,
-)
+            """
+            <script>
+              const closeMsg = {type: "btm_close_ai"};
+              try {
+                if (window.parent && window.parent.parent) {
+                  window.parent.parent.postMessage(closeMsg, "*");
+                } else if (window.parent) {
+                  window.parent.postMessage(closeMsg, "*");
+                }
+              } catch (e) {
+                console.error("close postMessage failed", e);
+              }
+            </script>
+            """,
+            height=0,
+        )
+        st.info("Closing…")
