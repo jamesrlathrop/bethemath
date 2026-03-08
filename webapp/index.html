@@ -399,8 +399,267 @@
     }
   </style>
 </head>
+<script>
+(() => {
+  if (window.__BTM_NEXT_FIX_INSTALLED__) return;
+  window.__BTM_NEXT_FIX_INSTALLED__ = true;
 
-<body>
+  const wait = (ms = 120) => new Promise((r) => setTimeout(r, ms));
+
+  const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
+
+  const challengeRoot = () =>
+    document.querySelector(
+      "#currentChallenge, #current-challenge, [data-current-challenge], .current-challenge, .challenge-card, .challenge-panel, [class*='challenge']"
+    );
+
+  const challengeSnapshot = () => {
+    const root = challengeRoot() || document.body;
+    return norm(root.innerText).slice(0, 500);
+  };
+
+  const findTextNode = (root, selectors) => {
+    for (const sel of selectors) {
+      const el = root.querySelector(sel);
+      if (el) return el;
+    }
+    return null;
+  };
+
+  const extractTitle = (item) => {
+    if (typeof item === "string") return "";
+    return (
+      item?.title ||
+      item?.name ||
+      item?.label ||
+      item?.heading ||
+      ""
+    );
+  };
+
+  const extractBody = (item) => {
+    if (typeof item === "string") return item;
+    return (
+      item?.prompt ||
+      item?.question ||
+      item?.text ||
+      item?.body ||
+      item?.description ||
+      item?.problem ||
+      item?.challenge ||
+      ""
+    );
+  };
+
+  const writeChallengeToDOM = (item) => {
+    const root = challengeRoot();
+    if (!root) return false;
+
+    const title = extractTitle(item);
+    const body = extractBody(item);
+
+    const titleNode = findTextNode(root, [
+      "[data-challenge-title]",
+      ".challenge-title",
+      "h1",
+      "h2",
+      "h3"
+    ]);
+
+    const bodyNode = findTextNode(root, [
+      "[data-challenge-text]",
+      ".challenge-text",
+      ".challenge-prompt",
+      ".challenge-body",
+      "p"
+    ]);
+
+    let changed = false;
+
+    if (titleNode && title) {
+      titleNode.textContent = title;
+      changed = true;
+    }
+
+    if (bodyNode && body) {
+      bodyNode.textContent = body;
+      changed = true;
+    }
+
+    if (!changed && body) {
+      const candidates = [...root.querySelectorAll("div, p, li, span")]
+        .filter((el) => {
+          const t = norm(el.innerText);
+          return (
+            t &&
+            !/study|next|practice now|score|badge/i.test(t)
+          );
+        });
+
+      if (candidates.length) {
+        candidates[0].textContent = body;
+        changed = true;
+      }
+    }
+
+    return changed;
+  };
+
+  const candidateFunctionNames = [
+    "nextChallenge",
+    "goToNextChallenge",
+    "showNextChallenge",
+    "loadNextChallenge",
+    "renderNextChallenge",
+    "advanceChallenge",
+    "newChallenge",
+    "generateChallenge",
+    "loadChallenge",
+    "renderCurrentChallenge",
+    "loadCurrentChallenge",
+    "showCurrentChallenge",
+    "bootCurrentChallenge",
+    "initCurrentChallenge",
+    "mountCurrentChallenge",
+    "refreshCurrentChallenge"
+  ];
+
+  const tryKnownFunctions = async (before) => {
+    for (const name of candidateFunctionNames) {
+      const fn = window[name];
+      if (typeof fn !== "function") continue;
+      try {
+        fn();
+        await wait();
+        if (challengeSnapshot() !== before) return true;
+      } catch (err) {
+        console.warn(`[BTM Next Fix] ${name} failed`, err);
+      }
+    }
+    return false;
+  };
+
+  const getChallengeArraySource = () => {
+    const candidateNames = [
+      "BTM_CHALLENGES",
+      "btmChallenges",
+      "currentChallenges",
+      "challengePool",
+      "challenges",
+      "CURRENT_CHALLENGES"
+    ];
+
+    for (const name of candidateNames) {
+      const arr = window[name];
+      if (Array.isArray(arr) && arr.length > 1) {
+        return arr;
+      }
+    }
+
+    const root = challengeRoot();
+    const ds = root?.dataset?.challenges || document.body?.dataset?.challenges;
+    if (ds) {
+      try {
+        const parsed = JSON.parse(ds);
+        if (Array.isArray(parsed) && parsed.length > 1) return parsed;
+      } catch (_) {}
+    }
+
+    return null;
+  };
+
+  const tryArrayFallback = async (before) => {
+    const arr = getChallengeArraySource();
+    if (!arr || arr.length < 2) return false;
+
+    let idx = Number.isInteger(window.__BTM_CHALLENGE_INDEX__)
+      ? window.__BTM_CHALLENGE_INDEX__
+      : -1;
+
+    for (let i = 0; i < arr.length; i++) {
+      idx = (idx + 1) % arr.length;
+      window.__BTM_CHALLENGE_INDEX__ = idx;
+
+      const item = arr[idx];
+
+      if (typeof window.currentChallenge !== "undefined") {
+        window.currentChallenge = item;
+      }
+
+      const wrote = writeChallengeToDOM(item);
+
+      if (typeof window.renderCurrentChallenge === "function") {
+        try {
+          window.renderCurrentChallenge();
+        } catch (_) {}
+      }
+
+      await wait();
+
+      if (wrote && challengeSnapshot() !== before) return true;
+      if (challengeSnapshot() !== before) return true;
+    }
+
+    return false;
+  };
+
+  const tryEventFallback = async (before) => {
+    const events = [
+      "btm:next-challenge",
+      "btm:challenge-refresh",
+      "btm:current-challenge-refresh"
+    ];
+
+    for (const evtName of events) {
+      try {
+        window.dispatchEvent(new CustomEvent(evtName));
+        document.dispatchEvent(new CustomEvent(evtName));
+        await wait();
+        if (challengeSnapshot() !== before) return true;
+      } catch (_) {}
+    }
+
+    return false;
+  };
+
+  document.addEventListener(
+    "click",
+    async (evt) => {
+      const btn = evt.target.closest("button, a, [role='button'], .btn");
+      if (!btn) return;
+
+      const label = norm(btn.innerText || btn.textContent);
+      if (!/^next$/i.test(label) && !/\bnext\b/i.test(label)) return;
+
+      evt.preventDefault();
+      evt.stopPropagation();
+      if (typeof evt.stopImmediatePropagation === "function") {
+        evt.stopImmediatePropagation();
+      }
+
+      if (window.__BTM_NEXT_FIX_BUSY__) return;
+      window.__BTM_NEXT_FIX_BUSY__ = true;
+
+      try {
+        const before = challengeSnapshot();
+
+        if (await tryKnownFunctions(before)) return;
+        if (await tryArrayFallback(before)) return;
+        if (await tryEventFallback(before)) return;
+
+        console.warn("[BTM Next Fix] Click intercepted, but no challenge change was detected.");
+      } finally {
+        setTimeout(() => {
+          window.__BTM_NEXT_FIX_BUSY__ = false;
+        }, 150);
+      }
+    },
+    true
+  );
+
+  console.log("[BTM Next Fix] Installed.");
+})();
+</script><body>
   <div id="mq-root">
     <div class="mq-topbar">
       <div class="mq-topbar-title">
