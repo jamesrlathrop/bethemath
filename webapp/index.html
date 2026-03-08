@@ -361,7 +361,22 @@
     .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap}
     .mq-inline-row > *{flex:1}
     .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
-  </style>
+ 
+ /* Study highlight */
+.mq-study-highlight {
+  outline: 2px solid var(--mq-warn);
+  box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.18);
+  transition: box-shadow .2s ease, outline .2s ease;
+}
+
+/* Make Study buttons stand out */
+#mq-study-jump, #mq-dock-study {
+  border-color: rgba(250,204,21,.65) !important;
+  background: rgba(250,204,21,.12) !important;
+  color: #fde68a !important;
+}
+ 
+ </style>
 </head>
 
 <body>
