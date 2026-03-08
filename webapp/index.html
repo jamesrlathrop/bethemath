@@ -26,7 +26,6 @@
       overflow-x:hidden;
     }
 
-    /* High contrast */
     body.mq-high-contrast{background:#000!important;color:#fff!important}
     body.mq-high-contrast .mq-topbar,
     body.mq-high-contrast .mq-shell{background:#000!important}
@@ -52,7 +51,6 @@
     body.mq-high-contrast .mq-mode-btn{color:#fff!important}
     body.mq-high-contrast .mq-mode-btn-active{background:#fff!important;color:#000!important}
 
-    /* Dyslexic mode */
     body.mq-dyslexic{
       font-family:"OpenDyslexic","Comic Sans MS","Arial Rounded MT Bold",
         system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -150,7 +148,6 @@
       font-weight:700;
     }
 
-    /* Floating dock */
     .mq-dock{
       position: fixed;
       right: 12px;
@@ -160,7 +157,6 @@
       gap: 8px;
     }
 
-    /* Layout */
     .mq-shell{
       display:grid;
       flex:1;
@@ -173,9 +169,8 @@
     .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
     .mq-column-left{grid-area:left}
     .mq-column-center{grid-area:center}
-    .mq-column-study{grid-area:study}
+    .mq-column-study{grid-area:study; scroll-margin-top:72px;}
     .mq-column-right{grid-area:right}
-    .mq-column-study{ scroll-margin-top: 72px; }
 
     @media(max-width:1500px){
       .mq-shell{
@@ -356,7 +351,6 @@
     .mq-inline-row > *{flex:1}
     .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
 
-    /* Study title highlight (12s) */
     .mq-study-title-highlight{
       border-radius: 10px;
       padding: 6px 10px;
@@ -372,7 +366,6 @@
       100% { transform: scale(1); }
     }
 
-    /* AI modal */
     .mq-ai-overlay{
       position:fixed; inset:0;
       background:rgba(0,0,0,.65);
@@ -425,7 +418,6 @@
     </div>
 
     <div class="mq-shell">
-      <!-- 1) Session Settings -->
       <div class="mq-column mq-column-left">
         <div class="mq-game-card mq-study-card">
           <div class="mq-panel-title">Session Settings</div>
@@ -445,7 +437,7 @@
             <select id="mq-grade">
               <option value="K-2">K–2</option>
               <option value="3-5">3–5</option>
-              <option value="6-8">6–8</option>
+              <option value="6-8" selected>6–8</option>
               <option value="Alg1">Algebra I</option>
               <option value="Geo">Geometry</option>
               <option value="Alg2">Algebra II</option>
@@ -458,7 +450,7 @@
           <div class="mq-field">
             <span class="mq-label">Track</span>
             <select id="mq-track">
-              <option value="operations">Operations</option>
+              <option value="operations" selected>Operations</option>
               <option value="reasoning">Reasoning</option>
               <option value="logic">Logic &amp; Patterns</option>
             </select>
@@ -508,7 +500,6 @@
         </div>
       </div>
 
-      <!-- 2) Current Challenge -->
       <div class="mq-column mq-column-center">
         <div class="mq-game-card">
           <div class="mq-game-header">
@@ -529,9 +520,7 @@
 
           <div class="mq-question-text" id="mq-question">Loading…</div>
           <div class="mq-work" id="mq-work">Student work will appear here.</div>
-
           <div class="mq-options" id="mq-options"></div>
-
           <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix for the student's work.</div>
 
           <div style="margin-top:6px; display:flex; justify-content:flex-end;">
@@ -546,7 +535,6 @@
         </div>
       </div>
 
-      <!-- 3) Study A Specific Problem -->
       <div class="mq-column mq-column-study">
         <div class="mq-panel">
           <div class="mq-panel-title" id="mq-study-title">Study A Specific Problem</div>
@@ -594,7 +582,6 @@
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
             <button id="mq-ai-generate" type="button" class="mq-small-btn">AI Generate Fix</button>
             <button id="mq-ai-alt" type="button" class="mq-small-btn">AI Another Way</button>
-
             <button id="mq-custom-add" type="button" class="mq-small-btn">Add to Practice</button>
             <button id="mq-custom-practice-now" type="button" class="mq-small-btn">Practice Now</button>
             <button id="mq-custom-clear" type="button" class="mq-reset-btn">Clear</button>
@@ -617,7 +604,6 @@
         </div>
       </div>
 
-      <!-- 4) Session Stats -->
       <div class="mq-column mq-column-right">
         <div class="mq-panel">
           <div class="mq-panel-title">Session Stats</div>
@@ -658,14 +644,12 @@
     </div>
   </div>
 
-  <!-- Floating dock -->
   <div class="mq-dock" aria-label="Quick tools">
     <button class="mq-buy-btn" type="button" id="mq-dock-top" title="Back to top">Top</button>
     <button class="mq-buy-btn" type="button" id="mq-dock-study" title="Jump to Study A Specific Problem">Study</button>
     <button class="mq-buy-btn" type="button" id="mq-dock-download" title="Download a CSV session report">CSV</button>
   </div>
 
-  <!-- AI modal -->
   <div class="mq-ai-overlay" id="mq-ai-overlay">
     <div class="mq-ai-modal">
       <div class="mq-ai-head">
@@ -680,12 +664,14 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-
-      // Content items (short demo set — keep your existing items below if you have more)
       var ITEMS = [
         {
-          id:"68-op-1", gradeBand:"6-8", track:"operations", difficulty:"medium",
-          errorType:"fraction-addition", inattention:false,
+          id:"68-op-1",
+          gradeBand:"6-8",
+          track:"operations",
+          difficulty:"medium",
+          errorType:"fraction-addition",
+          inattention:false,
           prompt:"A student adds fractions and gets 1/4 + 1/2 = 2/6.",
           work:"Student work: 1/4 + 1/2 = 2/6",
           options:[
@@ -705,7 +691,6 @@
       }
       function $(id){ return document.getElementById(id); }
 
-      // Top/Study/CSV
       function scrollTopNow(){
         try{
           var se = document.scrollingElement || document.documentElement;
@@ -719,16 +704,11 @@
       function scrollToStudy(){
         var studyCol = document.querySelector(".mq-column-study");
         if (!studyCol) return;
-
         studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
-
         var title = studyCol.querySelector(".mq-panel-title");
         if (!title) return;
-
         title.classList.add("mq-study-title-highlight");
-        setTimeout(function(){
-          title.classList.remove("mq-study-title-highlight");
-        }, 12000);
+        setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 12000);
       }
 
       function csvEscape(v){
@@ -749,7 +729,6 @@
         URL.revokeObjectURL(url);
       }
 
-      // State
       function makeEmptyState(){
         return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"operations", missed:[], errorWeakness:{} };
       }
@@ -757,10 +736,17 @@
       var players = { p1: { name:"Player 1", state: state } };
       var activePlayerId = "p1";
       var lastItemId = null;
+      var currentItem = null;
+      var answeredCurrent = false;
 
       var els = {
+        player:$("mq-player"),
+        playerAdd:$("mq-player-add"),
+        playerDelete:$("mq-player-delete"),
         grade:$("mq-grade"),
         track:$("mq-track"),
+        delay:$("mq-delay"),
+        scale:$("mq-scale"),
         question:$("mq-question"),
         work:$("mq-work"),
         options:$("mq-options"),
@@ -781,6 +767,8 @@
         miniStreak:$("mq-mini-streak"),
         miniFocus:$("mq-mini-focus"),
         miniType:$("mq-mini-type"),
+        next:$("mq-next"),
+        sfxToggle:$("mq-sfx-toggle"),
         customProblem:$("mq-custom-problem"),
         customWork:$("mq-custom-work"),
         customFix:$("mq-custom-fix"),
@@ -795,10 +783,8 @@
         customDelete:$("mq-custom-delete")
       };
 
-      // Bind top buttons + dock
       $("mq-top").addEventListener("click", scrollTopNow);
       $("mq-dock-top").addEventListener("click", scrollTopNow);
-
       $("mq-study-jump").addEventListener("click", scrollToStudy);
       $("mq-dock-study").addEventListener("click", scrollToStudy);
 
@@ -815,7 +801,6 @@
       $("mq-download-csv").addEventListener("click", doDownloadCSV);
       $("mq-dock-download").addEventListener("click", doDownloadCSV);
 
-      // AI modal wiring
       var MQ_HOST = "https://bethemath.matesuite.ai";
       var aiOverlay = $("mq-ai-overlay");
       var aiFrame = $("mq-ai-frame");
@@ -859,15 +844,6 @@
         }
       });
 
-      // Minimal practice loop for your custom item (Practice Now)
-      function renderCustomPractice(problem, work, fix){
-           // -----------------------
-      // Main challenge loop
-      // -----------------------
-      var currentItem = null;
-      var answeredCurrent = false;
-      var nextBtn = $("mq-next");
-
       function updateStats(){
         els.xp.textContent = String(state.xp || 0);
         els.coins.textContent = String(state.coins || 0);
@@ -878,9 +854,7 @@
         if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
         if (els.miniFocus) {
           var trackName = state.track || "operations";
-          els.miniFocus.textContent =
-            (state.gradeBand || "6-8") + " • " +
-            trackName.charAt(0).toUpperCase() + trackName.slice(1);
+          els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + trackName.charAt(0).toUpperCase() + trackName.slice(1);
         }
         if (els.miniType) els.miniType.textContent = "Focus: common errors & clean fixes";
       }
@@ -891,6 +865,72 @@
         div.style.marginBottom = "8px";
         div.textContent = "• " + text;
         els.insightLog.prepend(div);
+      }
+
+      function refreshPlayerUI(){
+        if (!els.player) return;
+        els.player.innerHTML = "";
+        Object.keys(players).forEach(function(pid){
+          var opt = document.createElement("option");
+          opt.value = pid;
+          opt.textContent = players[pid].name;
+          if (pid === activePlayerId) opt.selected = true;
+          els.player.appendChild(opt);
+        });
+      }
+
+      function refreshScoreboard(){
+        var arr = Object.keys(players).map(function(pid){
+          return {
+            id: pid,
+            name: players[pid].name,
+            xp: players[pid].state.xp || 0
+          };
+        }).sort(function(a,b){ return b.xp - a.xp; });
+
+        if (!arr.length){
+          els.scoreboard.textContent = "No players yet.";
+          return;
+        }
+
+        els.scoreboard.innerHTML = arr.map(function(p, idx){
+          return (idx + 1) + ". " + p.name + " — XP " + p.xp;
+        }).join("<br>");
+      }
+
+      function saveSettingsOnly(){
+        try{
+          localStorage.setItem("btm_ui_scale", String(els.scale ? els.scale.value : "100"));
+          localStorage.setItem("btm_high_contrast", els.highContrast && els.highContrast.checked ? "1" : "0");
+          localStorage.setItem("btm_dyslexic", els.dyslexic && els.dyslexic.checked ? "1" : "0");
+          localStorage.setItem("btm_grade_band", els.grade ? els.grade.value : "6-8");
+          localStorage.setItem("btm_track", els.track ? els.track.value : "operations");
+          if (els.autosave) els.autosave.textContent = "Saved.";
+        } catch(e) {}
+      }
+
+      function loadSettingsOnly(){
+        try{
+          var uiScale = localStorage.getItem("btm_ui_scale");
+          var hc = localStorage.getItem("btm_high_contrast");
+          var dys = localStorage.getItem("btm_dyslexic");
+          var grade = localStorage.getItem("btm_grade_band");
+          var track = localStorage.getItem("btm_track");
+
+          if (els.scale && uiScale) els.scale.value = uiScale;
+          if (els.highContrast) els.highContrast.checked = hc === "1";
+          if (els.dyslexic) els.dyslexic.checked = dys === "1";
+          if (els.grade && grade) els.grade.value = grade;
+          if (els.track && track) els.track.value = track;
+        } catch(e) {}
+      }
+
+      function applyAccessibility(){
+        document.body.classList.toggle("mq-high-contrast", !!(els.highContrast && els.highContrast.checked));
+        document.body.classList.toggle("mq-dyslexic", !!(els.dyslexic && els.dyslexic.checked));
+        if (els.scale){
+          document.documentElement.style.setProperty("--mq-scale", String((Number(els.scale.value || 100) / 100)));
+        }
       }
 
       function getFilteredItems(){
@@ -927,8 +967,7 @@
         answeredCurrent = false;
         lastItemId = item.id;
 
-        if (nextBtn) nextBtn.disabled = true;
-
+        if (els.next) els.next.disabled = true;
         if (els.queueNote) els.queueNote.textContent = "Ready";
         if (els.question) els.question.textContent = item.prompt || "Solve the item.";
         if (els.work) els.work.textContent = item.work || "Student work will appear here.";
@@ -936,7 +975,6 @@
           els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
           els.feedback.className = "mq-feedback";
         }
-
         if (els.options) els.options.innerHTML = "";
 
         (item.options || []).forEach(function(optText, i){
@@ -983,9 +1021,10 @@
             }
 
             updateStats();
+            refreshScoreboard();
             pushInsight(item.insight);
 
-            if (nextBtn) nextBtn.disabled = false;
+            if (els.next) els.next.disabled = false;
             if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
           });
 
@@ -1007,30 +1046,16 @@
         renderItem(item);
       }
 
-      if (nextBtn){
-        nextBtn.addEventListener("click", function(){
-          var item = chooseNextItem();
-          if (item) renderItem(item);
-        });
+      function refreshCustomList(){
+        if (!els.customList) return;
+        els.customList.innerHTML = "";
+        var opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No saved custom items yet.";
+        els.customList.appendChild(opt);
+        els.customList.disabled = true;
       }
 
-      if (els.grade){
-        els.grade.addEventListener("change", function(){
-          state.gradeBand = els.grade.value;
-          loadFirstChallenge();
-        });
-      }
-
-      if (els.track){
-        els.track.addEventListener("change", function(){
-          state.track = els.track.value;
-          loadFirstChallenge();
-        });
-      }
-
-      // -----------------------
-      // Study custom practice loop
-      // -----------------------
       function renderCustomPractice(problem, work, fix){
         currentItem = null;
         answeredCurrent = true;
@@ -1076,39 +1101,164 @@
           els.feedback.className = "mq-feedback";
         }
         if (els.queueNote) els.queueNote.textContent = "Custom practice item";
-        if (nextBtn) nextBtn.disabled = true;
+        if (els.next) els.next.disabled = true;
 
         scrollTopNow();
       }
 
-      els.customPracticeNow.addEventListener("click", function(){
-        var p = safeText(els.customProblem.value).trim();
-        var w = safeText(els.customWork.value).trim();
-        var f = safeText(els.customFix.value).trim();
+      if (els.next){
+        els.next.addEventListener("click", function(){
+          var item = chooseNextItem();
+          if (item) renderItem(item);
+        });
+      }
 
-        if(!p || !w){
-          els.customStatus.textContent = "Please fill in Problem + Student work first.";
-          return;
-        }
-        if(!f){
-          els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
-          return;
-        }
+      if (els.grade){
+        els.grade.addEventListener("change", function(){
+          saveSettingsOnly();
+          applyAccessibility();
+          loadFirstChallenge();
+        });
+      }
 
-        els.customStatus.textContent = "Practicing now.";
-        renderCustomPractice(p, w, f);
-      });
+      if (els.track){
+        els.track.addEventListener("change", function(){
+          saveSettingsOnly();
+          loadFirstChallenge();
+        });
+      }
 
-      els.customClear.addEventListener("click", function(){
-        els.customProblem.value = "";
-        els.customWork.value = "";
-        els.customFix.value = "";
-        els.customStatus.textContent = "Cleared.";
-      });
+      if (els.scale){
+        els.scale.addEventListener("input", function(){
+          applyAccessibility();
+          saveSettingsOnly();
+        });
+      }
 
-      // -----------------------
-      // Initial boot
-      // -----------------------
+      if (els.highContrast){
+        els.highContrast.addEventListener("change", function(){
+          applyAccessibility();
+          saveSettingsOnly();
+        });
+      }
+
+      if (els.dyslexic){
+        els.dyslexic.addEventListener("change", function(){
+          applyAccessibility();
+          saveSettingsOnly();
+        });
+      }
+
+      if (els.sfxToggle){
+        els.sfxToggle.addEventListener("click", function(){
+          els.sfxToggle.classList.toggle("mq-sfx-on");
+          els.sfxToggle.textContent = els.sfxToggle.classList.contains("mq-sfx-on") ? "SFX: ON" : "SFX: OFF";
+        });
+      }
+
+      if (els.playerAdd){
+        els.playerAdd.addEventListener("click", function(){
+          var id = "p" + (Object.keys(players).length + 1);
+          players[id] = { name: "Player " + Object.keys(players).length, state: makeEmptyState() };
+          activePlayerId = id;
+          state = players[activePlayerId].state;
+          refreshPlayerUI();
+          refreshScoreboard();
+          updateStats();
+          loadFirstChallenge();
+        });
+      }
+
+      if (els.playerDelete){
+        els.playerDelete.addEventListener("click", function(){
+          var keys = Object.keys(players);
+          if (keys.length <= 1) return;
+          delete players[activePlayerId];
+          activePlayerId = Object.keys(players)[0];
+          state = players[activePlayerId].state;
+          refreshPlayerUI();
+          refreshScoreboard();
+          updateStats();
+          loadFirstChallenge();
+        });
+      }
+
+      if (els.player){
+        els.player.addEventListener("change", function(){
+          activePlayerId = els.player.value;
+          state = players[activePlayerId].state;
+          updateStats();
+          refreshScoreboard();
+          loadFirstChallenge();
+        });
+      }
+
+      if (els.reset){
+        els.reset.addEventListener("click", function(){
+          state.xp = 0;
+          state.coins = 0;
+          state.streak = 0;
+          state.played = 0;
+          if (els.insightLog) els.insightLog.innerHTML = "";
+          updateStats();
+          refreshScoreboard();
+          loadFirstChallenge();
+          if (els.autosave) els.autosave.textContent = "Progress reset.";
+        });
+      }
+
+      if (els.customPracticeNow){
+        els.customPracticeNow.addEventListener("click", function(){
+          var p = safeText(els.customProblem.value).trim();
+          var w = safeText(els.customWork.value).trim();
+          var f = safeText(els.customFix.value).trim();
+
+          if(!p || !w){
+            els.customStatus.textContent = "Please fill in Problem + Student work first.";
+            return;
+          }
+          if(!f){
+            els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
+            return;
+          }
+
+          els.customStatus.textContent = "Practicing now.";
+          renderCustomPractice(p, w, f);
+        });
+      }
+
+      if (els.customAdd){
+        els.customAdd.addEventListener("click", function(){
+          els.customStatus.textContent = "Saved custom items can be added next.";
+        });
+      }
+
+      if (els.customUse){
+        els.customUse.addEventListener("click", function(){
+          els.customStatus.textContent = "No saved custom item selected yet.";
+        });
+      }
+
+      if (els.customDelete){
+        els.customDelete.addEventListener("click", function(){
+          els.customStatus.textContent = "No saved custom item selected yet.";
+        });
+      }
+
+      if (els.customClear){
+        els.customClear.addEventListener("click", function(){
+          els.customProblem.value = "";
+          els.customWork.value = "";
+          els.customFix.value = "";
+          els.customStatus.textContent = "Cleared.";
+        });
+      }
+
+      loadSettingsOnly();
+      applyAccessibility();
+      refreshPlayerUI();
+      refreshScoreboard();
+      refreshCustomList();
       updateStats();
       loadFirstChallenge();
     });
