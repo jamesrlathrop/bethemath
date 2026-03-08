@@ -5,6 +5,11 @@ import mimetypes
 import streamlit as st
 import streamlit.components.v1 as components
 
+from btm_access import require_access_code
+
+if not require_access_code(label="Access code"):
+    st.stop()
+
 st.set_page_config(page_title="BeTheMath — Error Detective", page_icon="🧠", layout="wide")
 
 # ---- Streamlit page chrome + background blend (ONE place only) ----
