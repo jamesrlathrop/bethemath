@@ -17,13 +17,13 @@
       --mq-warn:#facc15;
       --mq-scale:1;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       background:radial-gradient(circle at top,var(--mq-bg) 0,var(--mq-bg) 55%,#000 100%);
       color:var(--mq-text);
+      overflow-x:hidden;
     }
 
     /* High contrast */
@@ -66,6 +66,8 @@
       flex-direction:column;
       transform-origin:top center;
       transform:scale(var(--mq-scale));
+      width: calc(100% / var(--mq-scale));
+      margin: 0 auto;
     }
 
     .mq-topbar{
@@ -101,7 +103,6 @@
       text-overflow:ellipsis;
     }
 
-    /* Works for <a> and <button> */
     .mq-buy-btn{
       text-decoration:none;
       border-radius:999px;
@@ -112,11 +113,11 @@
       font-size:12px;
       font-weight:800;
       letter-spacing:.06em;
-      flex:0 0 auto;
       cursor:pointer;
       appearance:none;
       -webkit-appearance:none;
       font-family:inherit;
+      flex:0 0 auto;
     }
     .mq-buy-btn:hover{background:rgba(34,197,94,.18)}
 
@@ -149,7 +150,7 @@
       font-weight:700;
     }
 
-    /* Floating teacher dock (always available) */
+    /* Floating dock */
     .mq-dock{
       position: fixed;
       right: 12px;
@@ -159,12 +160,7 @@
       gap: 8px;
     }
 
-    /* Make Study jump land cleanly below the sticky topbar */
-    .mq-column-study{ scroll-margin-top: 72px; }
-
-    /* ✅ 4 columns in your requested order:
-       Session Settings | Current Challenge | Study | Session Stats
-    */
+    /* Layout */
     .mq-shell{
       display:grid;
       flex:1;
@@ -179,8 +175,8 @@
     .mq-column-center{grid-area:center}
     .mq-column-study{grid-area:study}
     .mq-column-right{grid-area:right}
+    .mq-column-study{ scroll-margin-top: 72px; }
 
-    /* Medium screens: keep Settings + Challenge + Stats, move Study below */
     @media(max-width:1500px){
       .mq-shell{
         grid-template-columns: 270px 1fr 270px;
@@ -189,8 +185,6 @@
           "study study study";
       }
     }
-
-    /* Small screens: stack (Study stays right after the Challenge) */
     @media(max-width:900px){
       .mq-shell{
         grid-template-columns: 1fr;
@@ -361,36 +355,56 @@
     .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap}
     .mq-inline-row > *{flex:1}
     .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
- 
- /* Study highlight */
-.mq-study-highlight {
-  outline: 2px solid var(--mq-warn);
-  box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.18);
-  transition: box-shadow .2s ease, outline .2s ease;
-}
 
-/* Make Study buttons stand out */
+    /* Study title highlight (12s) */
+    .mq-study-title-highlight{
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: inline-block;
+      background: rgba(250, 204, 21, 0.16);
+      border: 1px solid rgba(250, 204, 21, 0.55);
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
+      animation: mqPulse 1.2s ease;
+    }
+    @keyframes mqPulse {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
 
-/* Highlight the Study title (not the button) */
-.mq-study-title-highlight{
-  border-radius: 10px;
-  padding: 6px 10px;
-  display: inline-block;
-  background: rgba(250, 204, 21, 0.16);
-  border: 1px solid rgba(250, 204, 21, 0.55);
-  box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
-}
-
-@keyframes mqPulse {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-.mq-study-title-highlight{
-  animation: mqPulse 1.2s ease;
-}
- 
- </style>
+    /* AI modal */
+    .mq-ai-overlay{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:5000;
+    }
+    .mq-ai-modal{
+      width:min(920px,96vw);
+      height:min(720px,92vh);
+      background:rgba(15,23,42,.98);
+      border:1px solid rgba(148,163,184,.25);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 30px 80px rgba(0,0,0,.6);
+    }
+    .mq-ai-head{
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 10px;
+      border-bottom:1px solid rgba(148,163,184,.18);
+    }
+    .mq-ai-frame{
+      width:100%;
+      height:calc(100% - 46px);
+      border:0;
+      background:#020617;
+    }
+  </style>
 </head>
 
 <body>
@@ -414,7 +428,6 @@
       <!-- 1) Session Settings -->
       <div class="mq-column mq-column-left">
         <div class="mq-game-card mq-study-card">
-
           <div class="mq-panel-title">Session Settings</div>
           <div class="mq-panel-sub">Choose player, level, track, and accessibility options.</div>
 
@@ -536,7 +549,7 @@
       <!-- 3) Study A Specific Problem -->
       <div class="mq-column mq-column-study">
         <div class="mq-panel">
-          <div class="mq-panel-title">Study A Specific Problem</div>
+          <div class="mq-panel-title" id="mq-study-title">Study A Specific Problem</div>
           <div class="mq-panel-sub">Teacher/parent/student: create a custom practice item from a real mistake.</div>
 
           <div class="mq-field">
@@ -579,6 +592,9 @@
           </div>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <button id="mq-ai-generate" type="button" class="mq-small-btn">AI Generate Fix</button>
+            <button id="mq-ai-alt" type="button" class="mq-small-btn">AI Another Way</button>
+
             <button id="mq-custom-add" type="button" class="mq-small-btn">Add to Practice</button>
             <button id="mq-custom-practice-now" type="button" class="mq-small-btn">Practice Now</button>
             <button id="mq-custom-clear" type="button" class="mq-reset-btn">Clear</button>
@@ -642,55 +658,31 @@
     </div>
   </div>
 
-  <!-- Floating dock (always available from anywhere) -->
+  <!-- Floating dock -->
   <div class="mq-dock" aria-label="Quick tools">
     <button class="mq-buy-btn" type="button" id="mq-dock-top" title="Back to top">Top</button>
     <button class="mq-buy-btn" type="button" id="mq-dock-study" title="Jump to Study A Specific Problem">Study</button>
     <button class="mq-buy-btn" type="button" id="mq-dock-download" title="Download a CSV session report">CSV</button>
   </div>
 
+  <!-- AI modal -->
+  <div class="mq-ai-overlay" id="mq-ai-overlay">
+    <div class="mq-ai-modal">
+      <div class="mq-ai-head">
+        <div style="font-weight:800; letter-spacing:.06em; font-size:12px; color:#9ca3af; text-transform:uppercase;">
+          AI Tutor
+        </div>
+        <button id="mq-ai-close" type="button" class="mq-small-btn">Close</button>
+      </div>
+      <iframe id="mq-ai-frame" class="mq-ai-frame" src="about:blank"></iframe>
+    </div>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-      // -----------------------------
-      // Content: Items (errors + fixes)
-      // -----------------------------
+      // Content items (short demo set — keep your existing items below if you have more)
       var ITEMS = [
-        // K–2
-        {
-          id:"k2-op-1", gradeBand:"K-2", track:"operations", difficulty:"easy",
-          errorType:"digit-append", inattention:false,
-          prompt:"A student writes 7 + 5 = 75. What went wrong?",
-          work:"Student work: 7 + 5 = 75",
-          options:[
-            "They stuck the digits together instead of adding. 7 + 5 is 12.",
-            "They subtracted 5 from 7.",
-            "They multiplied 7 × 5.",
-            "They turned 5 into 50."
-          ],
-          correctIndex:0,
-          hint:"First ask: what is 7 + 5 really equal to?",
-          insight:"Misconception: “addition means stick digits together.” Principle: addition combines quantities. Correct work: 7 + 5 = 12."
-        },
-
-        // 3–5
-        {
-          id:"35-op-1", gradeBand:"3-5", track:"operations", difficulty:"medium",
-          errorType:"carry-borrow", inattention:false,
-          prompt:"A student solves 27 + 38 and writes 55.",
-          work:"Student work: 27 + 38 = 55",
-          options:[
-            "They added tens but didn’t carry from 7 + 8 = 15. The correct sum is 65.",
-            "They subtracted 27 from 38.",
-            "They multiplied digits instead of adding.",
-            "They rounded and forgot to adjust."
-          ],
-          correctIndex:0,
-          hint:"Add ones first: 7 + 8 = 15. What happens to the 1?",
-          insight:"Misconception: “ignore the carry.” Principle: place value requires regrouping. Correct: 7+8=15 → write 5 carry 1 → 2+3+1=6 → 65."
-        },
-
-        // 6–8
         {
           id:"68-op-1", gradeBand:"6-8", track:"operations", difficulty:"medium",
           errorType:"fraction-addition", inattention:false,
@@ -705,149 +697,45 @@
           correctIndex:0,
           hint:"Rewrite both fractions with the same denominator.",
           insight:"Misconception: “add across.” Principle: fraction addition needs a common unit. Correct: 1/4 + 1/2 = 1/4 + 2/4 = 3/4."
-        },
-        {
-          id:"68-op-2", gradeBand:"6-8", track:"operations", difficulty:"medium",
-          errorType:"integer-sign", inattention:true,
-          prompt:"A student computes −8 + 5 and writes −13.",
-          work:"Student work: −8 + 5 = −13",
-          options:[
-            "They treated both numbers as negative. Correct: the negative is stronger by 3, so −8 + 5 = −3.",
-            "They subtracted 5 from 8 but lost the sign.",
-            "They multiplied −8 by 5.",
-            "They changed −8 into +8."
-          ],
-          correctIndex:0,
-          hint:"Which absolute value is bigger: 8 or 5?",
-          insight:"Misconception: “keep the minus and add.” Principle: compare absolute values. Correct: −8 + 5 = −3."
-        },
-        {
-          id:"68-op-3", gradeBand:"6-8", track:"operations", difficulty:"medium",
-          errorType:"distribution", inattention:false,
-          prompt:"A student simplifies 3(x − 4) and writes 3x − 4.",
-          work:"Student work: 3(x − 4) = 3x − 4",
-          options:[
-            "They forgot to multiply 3 by −4. Correct: 3(x − 4) = 3x − 12.",
-            "They subtracted 4 from 3x incorrectly.",
-            "They added 4 to both sides.",
-            "They distributed the wrong number."
-          ],
-          correctIndex:0,
-          hint:"Distribution must touch every term inside the parentheses.",
-          insight:"Misconception: “distribute only to x.” Principle: multiply each term. Correct: 3x − 12."
-        },
-
-        // Algebra I
-        {
-          id:"alg1-op-1", gradeBand:"Alg1", track:"operations", difficulty:"medium",
-          errorType:"distribution", inattention:false,
-          prompt:"A student expands 2(x + 3) as 2x + 3.",
-          work:"Student work: 2(x + 3) = 2x + 3",
-          options:[
-            "They distributed 2 to x but forgot 2·3. Correct: 2x + 6.",
-            "They subtracted 3.",
-            "They divided by 2.",
-            "They turned x into x²."
-          ],
-          correctIndex:0,
-          hint:"How many terms are inside the parentheses?",
-          insight:"Misconception: “multiply only the variable.” Principle: distribute to every term. Correct: 2x+6."
         }
       ];
-
-      // -----------------------------
-      // Custom items (Study A Specific Problem)
-      // -----------------------------
-      var CUSTOM_KEY = "bethemath_custom_items_v1";
 
       function safeText(s){
         return (s == null) ? "" : String(s).replace(/\r\n/g,"\n");
       }
-
-      function loadCustomItems(){
-        try{
-          var raw = localStorage.getItem(CUSTOM_KEY);
-          if(!raw) return [];
-          var arr = JSON.parse(raw);
-          return Array.isArray(arr) ? arr : [];
-        }catch(e){
-          return [];
-        }
-      }
-
-      function saveCustomItems(arr){
-        try{
-          localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr || []));
-          return true;
-        }catch(e){
-          return false;
-        }
-      }
-
-      var customItems = loadCustomItems();
-      // merge custom items into main pool
-      if(customItems.length){
-        customItems.forEach(function(ci){
-          if(ci && ci.id) ITEMS.push(ci);
-        });
-      }
-
-      // -----------------------------
-      // State & storage (players)
-      // -----------------------------
-      function makeEmptyState(){
-        return {
-          xp:0, coins:0, streak:0, played:0,
-          gradeBand:"6-8",
-          track:"operations",
-          missed:[],
-          errorWeakness:{}
-        };
-      }
-
-      var STORAGE_KEYS = ["bethemath_players_v1","mathquest_players_v1"];
-      var SAVE_KEY = STORAGE_KEYS[0];
-
-      function isInattentionItem(item){ return !!(item && item.inattention); }
-      var state = makeEmptyState();
-      var players = {};
-      var activePlayerId = null;
-      var lastItemId = null;
-
       function $(id){ return document.getElementById(id); }
 
-  // ---- Top/Study/CSV (Topbar + Dock) ----
-function scrollTopNow(){
-  try{
-    var se = document.scrollingElement || document.documentElement;
-    if (se && se.scrollTo) se.scrollTo({ top: 0, behavior: "smooth" });
-    else window.scrollTo({ top: 0, behavior: "smooth" });
-    if (se) se.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }catch(e){}
-}
+      // Top/Study/CSV
+      function scrollTopNow(){
+        try{
+          var se = document.scrollingElement || document.documentElement;
+          if (se && se.scrollTo) se.scrollTo({ top: 0, behavior: "smooth" });
+          else window.scrollTo({ top: 0, behavior: "smooth" });
+          if (se) se.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }catch(e){}
+      }
 
-function scrollToStudy(){
-  var studyCol = document.querySelector(".mq-column-study");
-  if (!studyCol) return;
+      function scrollToStudy(){
+        var studyCol = document.querySelector(".mq-column-study");
+        if (!studyCol) return;
 
-  studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
+        studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  var title = studyCol.querySelector(".mq-panel-title");
-  if (!title) return;
+        var title = studyCol.querySelector(".mq-panel-title");
+        if (!title) return;
 
-  title.classList.add("mq-study-title-highlight");
-  setTimeout(function(){
-    title.classList.remove("mq-study-title-highlight");
-  }, 12000);
-}
+        title.classList.add("mq-study-title-highlight");
+        setTimeout(function(){
+          title.classList.remove("mq-study-title-highlight");
+        }, 12000);
+      }
 
       function csvEscape(v){
         v = (v === null || v === undefined) ? "" : String(v);
         if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
         return v;
       }
-
       function downloadCSV(filename, rows){
         var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
         var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -861,43 +749,14 @@ function scrollToStudy(){
         URL.revokeObjectURL(url);
       }
 
-      function doDownloadCSV(){
-        var now = new Date();
-        var iso = now.toISOString();
-
-        var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
-        var gradeBand = (state && state.gradeBand) ? state.gradeBand : "";
-        var track = (state && state.track) ? state.track : "";
-        var xp = (state && state.xp !== undefined) ? state.xp : "";
-        var coins = (state && state.coins !== undefined) ? state.coins : "";
-        var streak = (state && state.streak !== undefined) ? state.streak : "";
-        var played = (state && state.played !== undefined) ? state.played : "";
-
-        var rows = [
-          ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
-          [iso, playerName, gradeBand, track, xp, coins, streak, played]
-        ];
-
-        downloadCSV("bethemath_session_report.csv", rows);
+      // State
+      function makeEmptyState(){
+        return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"operations", missed:[], errorWeakness:{} };
       }
-
-      // Topbar buttons
-      var jumpBtn = $("mq-study-jump");
-      var topBtn = $("mq-top");
-      var dlBtn = $("mq-download-csv");
-
-      // Dock buttons
-      var dockTop = $("mq-dock-top");
-      var dockStudy = $("mq-dock-study");
-      var dockDl = $("mq-dock-download");
-
-      if (jumpBtn) jumpBtn.addEventListener("click", scrollToStudy);
-      if (topBtn) topBtn.addEventListener("click", scrollTopNow);
-      if (dlBtn) dlBtn.addEventListener("click", doDownloadCSV);
-
-      if (dockTop) dockTop.addEventListener("click", scrollTopNow);
-      if (dockStudy) dockStudy.addEventListener("click", scrollToStudy);
-      if (dockDl) dockDl.addEventListener("click", doDownloadCSV);
+      var state = makeEmptyState();
+      var players = { p1: { name:"Player 1", state: state } };
+      var activePlayerId = "p1";
+      var lastItemId = null;
 
       var els = {
         grade:$("mq-grade"),
@@ -922,8 +781,6 @@ function scrollToStudy(){
         miniStreak:$("mq-mini-streak"),
         miniFocus:$("mq-mini-focus"),
         miniType:$("mq-mini-type"),
-
-        // Study panel
         customProblem:$("mq-custom-problem"),
         customWork:$("mq-custom-work"),
         customFix:$("mq-custom-fix"),
@@ -938,753 +795,137 @@ function scrollToStudy(){
         customDelete:$("mq-custom-delete")
       };
 
-      var scaleSlider = $("mq-scale");
-      var delaySlider = $("mq-delay");
-      var sfxButton = $("mq-sfx-toggle");
-      var nextButton = $("mq-next");
+      // Bind top buttons + dock
+      $("mq-top").addEventListener("click", scrollTopNow);
+      $("mq-dock-top").addEventListener("click", scrollTopNow);
 
-      var sfxOn = true;
-      var audioCtx = null;
-      var nextTimer = null;
-      var autoAdvanceDelayMs = 5000;
+      $("mq-study-jump").addEventListener("click", scrollToStudy);
+      $("mq-dock-study").addEventListener("click", scrollToStudy);
 
-      function ensureAudio(){
-        try{
-          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          if(audioCtx.state === "suspended") return audioCtx.resume();
-        }catch(e){}
-        return Promise.resolve();
+      function doDownloadCSV(){
+        var now = new Date();
+        var iso = now.toISOString();
+        var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
+        var rows = [
+          ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
+          [iso, playerName, state.gradeBand, state.track, state.xp, state.coins, state.streak, state.played]
+        ];
+        downloadCSV("bethemath_session_report.csv", rows);
       }
+      $("mq-download-csv").addEventListener("click", doDownloadCSV);
+      $("mq-dock-download").addEventListener("click", doDownloadCSV);
 
-      // Unlock audio on first user gesture
-      document.addEventListener("pointerdown", function(){ ensureAudio(); }, { once:true });
+      // AI modal wiring
+      var MQ_HOST = "https://bethemath.matesuite.ai";
+      var aiOverlay = $("mq-ai-overlay");
+      var aiFrame = $("mq-ai-frame");
+      var aiClose = $("mq-ai-close");
+      var aiBtn = $("mq-ai-generate");
+      var aiAltBtn = $("mq-ai-alt");
 
-      function loadFromKey(key){
-        try{
-          var raw = localStorage.getItem(key);
-          if(!raw) return null;
-          var parsed = JSON.parse(raw);
-          if(parsed && typeof parsed === "object" && parsed.players) return parsed;
-          return null;
-        }catch(e){ return null; }
+      function closeAi(){
+        if(aiOverlay) aiOverlay.style.display = "none";
+        if(aiFrame) aiFrame.src = "about:blank";
       }
-
-      function loadPlayers(){
-        players = {};
-        activePlayerId = null;
-
-        var parsed = null;
-        for(var i=0;i<STORAGE_KEYS.length;i++){
-          parsed = loadFromKey(STORAGE_KEYS[i]);
-          if(parsed){ break; }
-        }
-
-        if(parsed){
-          players = parsed.players || {};
-          activePlayerId = parsed.activeId || null;
-        }
-
-        if(!players || Object.keys(players).length === 0){
-          var id = "p1";
-          players = {};
-          players[id] = { name:"Player 1", state: makeEmptyState() };
-          activePlayerId = id;
-        }
-
-        var active = players[activePlayerId];
-        if(active && active.state){
-          state = Object.assign(makeEmptyState(), active.state);
-          if(!state.errorWeakness) state.errorWeakness = {};
-        }else{
-          state = makeEmptyState();
-        }
-      }
-
-      function savePlayers(){
-        if(!activePlayerId || !players[activePlayerId]) return;
-        players[activePlayerId].state = state;
-
-        try{
-          localStorage.setItem(
-            SAVE_KEY,
-            JSON.stringify({ activeId: activePlayerId, players: players })
-          );
-          if(els.autosave && players[activePlayerId]){
-            els.autosave.textContent = "Saved for " + (players[activePlayerId].name || "player") + ".";
-          }
-        }catch(e){
-          if(els.autosave) els.autosave.textContent = "Autosave skipped (storage unavailable).";
-        }
-      }
-
-      function refreshPlayerSelect(){
-        var select = $("mq-player");
-        if(!select) return;
-        select.innerHTML = "";
-
-        Object.keys(players).forEach(function(id){
-          var opt = document.createElement("option");
-          opt.value = id;
-          opt.textContent = players[id].name || id;
-          if(id === activePlayerId) opt.selected = true;
-          select.appendChild(opt);
-        });
-      }
-
-      function syncSelectorsFromState(){
-        if(els.grade) els.grade.value = state.gradeBand;
-        if(els.track) els.track.value = state.track;
-        updateMiniHeader();
-      }
-
-      function updateMiniHeader(){
-        if(els.miniXP) els.miniXP.textContent = state.xp || 0;
-        if(els.miniStreak) els.miniStreak.textContent = state.streak || 0;
-        if(els.miniFocus){
-          var gb = (state.gradeBand || "6-8")
-            .replace("Alg1","Algebra I").replace("Alg2","Algebra II")
-            .replace("Geo","Geometry").replace("Trig","Trigonometry")
-            .replace("PreCalc","Pre-Calculus").replace("Calc","Calculus");
-          var tr = state.track === "logic" ? "Logic & Patterns" : (state.track === "reasoning" ? "Reasoning" : "Operations");
-          els.miniFocus.textContent = gb + " • " + tr;
-        }
-        if(els.miniType){
-          els.miniType.textContent = "Focus: common errors & clean fixes";
-        }
-      }
-
-      function updateScoreboard(){
-        if(!els.scoreboard) return;
-
-        var ids = Object.keys(players);
-        if(ids.length === 0){
-          els.scoreboard.textContent = "No players yet.";
-          return;
-        }
-
-        var summary = ids.map(function(id){
-          var p = players[id];
-          var st = p.state || makeEmptyState();
-          return { name: p.name || id, xp: st.xp || 0, coins: st.coins || 0 };
-        });
-
-        summary.sort(function(a,b){
-          if(b.xp !== a.xp) return b.xp - a.xp;
-          if(b.coins !== a.coins) return b.coins - a.coins;
-          return a.name.localeCompare(b.name);
-        });
-
-        var ol = document.createElement("ol");
-        ol.style.paddingLeft = "18px";
-        ol.style.margin = "0";
-        summary.forEach(function(p){
-          var li = document.createElement("li");
-          li.textContent = p.name + " — XP " + p.xp + ", Coins " + p.coins;
-          ol.appendChild(li);
-        });
-
-        els.scoreboard.innerHTML = "";
-        els.scoreboard.appendChild(ol);
-      }
-
-      function updateStats(){
-        if(els.xp) els.xp.textContent = state.xp;
-        if(els.coins) els.coins.textContent = state.coins;
-        if(els.streak) els.streak.textContent = state.streak;
-        if(els.played) els.played.textContent = state.played;
-        updateMiniHeader();
-        savePlayers();
-        updateScoreboard();
-      }
-
-      function updateBadges(){
-        if(!els.badges) return;
-        els.badges.innerHTML = "";
-        var list = [];
-        if(state.played >= 1) list.push("First Fix");
-        if(state.streak >= 3) list.push("Streak 3+");
-        if(state.streak >= 5) list.push("Streak 5+");
-        if(state.xp >= 25) list.push("25+ XP");
-        if(state.xp >= 60) list.push("60+ XP");
-        if(state.missed && state.missed.length >= 3) list.push("Fix-It Queue");
-
-        list.forEach(function(label){
-          var chip = document.createElement("div");
-          chip.className = "mq-badge-chip mq-badge-earned";
-          chip.textContent = "★ " + label;
-          els.badges.appendChild(chip);
-        });
-      }
-
-      function getPool(){
-        return ITEMS.filter(function(item){
-          return item.gradeBand === state.gradeBand && item.track === state.track;
-        });
-      }
-
-      function getTopWeakErrorTypes(){
-        var map = state.errorWeakness || {};
-        var types = Object.keys(map);
-        if(types.length === 0) return [];
-        var entries = types.map(function(t){ return { type:t, score: map[t] }; });
-        entries.sort(function(a,b){ return b.score - a.score; });
-        var filtered = entries.filter(function(e){ return e.score >= 2; });
-        if(filtered.length === 0) return [];
-        return filtered.map(function(e){ return e.type; });
-      }
-
-      function pickDifficultyFromPool(pool){
-        if(!pool || pool.length === 0) return null;
-
-        var present = { easy:false, medium:false, hard:false };
-        pool.forEach(function(item){
-          if(item.difficulty && present.hasOwnProperty(item.difficulty)) present[item.difficulty] = true;
-        });
-
-        var streak = state.streak || 0;
-        var weights = { easy:0, medium:0, hard:0 };
-
-        if(streak <= 1){ weights.easy=.7; weights.medium=.25; weights.hard=.05; }
-        else if(streak <= 4){ weights.easy=.4; weights.medium=.4; weights.hard=.2; }
-        else { weights.easy=.2; weights.medium=.4; weights.hard=.4; }
-
-        var available = [];
-        ["easy","medium","hard"].forEach(function(d){
-          if(present[d] && weights[d] > 0) available.push({ difficulty:d, weight:weights[d] });
-        });
-
-        if(available.length === 0){
-          var fallback = [];
-          pool.forEach(function(item){
-            if(item.difficulty && present.hasOwnProperty(item.difficulty) && fallback.indexOf(item.difficulty) === -1){
-              fallback.push(item.difficulty);
-            }
-          });
-          if(fallback.length === 0) return null;
-          return fallback[Math.floor(Math.random()*fallback.length)];
-        }
-
-        var total = available.reduce(function(sum,d){ return sum + d.weight; }, 0);
-        var r = Math.random()*total;
-        var acc = 0;
-        for(var i=0;i<available.length;i++){
-          acc += available[i].weight;
-          if(r <= acc) return available[i].difficulty;
-        }
-        return available[available.length - 1].difficulty;
-      }
-
-      function chooseAdaptiveFromPool(pool){
-        if(!pool || pool.length === 0) return null;
-
-        var difficulty = pickDifficultyFromPool(pool);
-        var candidates = pool;
-
-        if(difficulty){
-          var filtered = pool.filter(function(item){ return item.difficulty === difficulty; });
-          if(filtered.length > 0) candidates = filtered;
-        }
-
-        var weakTypes = getTopWeakErrorTypes();
-        if(weakTypes.length > 0 && Math.random() < 0.5){
-          var focusType = weakTypes[0];
-          var typeFiltered = candidates.filter(function(item){ return item.errorType === focusType; });
-          if(typeFiltered.length > 0) candidates = typeFiltered;
-        }
-
-        if(candidates.length > 1 && lastItemId){
-          var diffCandidates = candidates.filter(function(item){ return item.id !== lastItemId; });
-          if(diffCandidates.length > 0) candidates = diffCandidates;
-        }
-
-        return candidates[Math.floor(Math.random()*candidates.length)];
-      }
-
-      function getNextItem(){
-        var fromMissed = false;
-        var item = null;
-
-        // retention loop: revisit missed items sometimes
-        if(state.missed && state.missed.length > 0 && Math.random() < 0.4){
-          var idx = Math.floor(Math.random()*state.missed.length);
-          item = state.missed[idx];
-          fromMissed = true;
-          state.missed.splice(idx, 1);
-        }else{
-          var pool = getPool();
-          if(pool.length === 0) return { item:null, fromMissed:false };
-          item = chooseAdaptiveFromPool(pool) || pool[Math.floor(Math.random()*pool.length)];
-        }
-        return { item:item, fromMissed:fromMissed };
-      }
-
-      var currentItem = null;
-
-      function appendInsightLog(item, correct){
-        if(!els.insightLog || !item) return;
-        var div = document.createElement("div");
-        div.style.marginBottom = "6px";
-
-        var strong = document.createElement("strong");
-        strong.textContent = correct ? "✔️ Insight: " : "🔁 Fix-It insight: ";
-        div.appendChild(strong);
-
-        var span = document.createElement("span");
-        span.textContent = safeText(item.insight || "");
-        div.appendChild(span);
-
-        els.insightLog.prepend(div);
-      }
-
-      function renderItem(next){
-        currentItem = next.item;
-
-        if(nextTimer){ clearTimeout(nextTimer); nextTimer = null; }
-        if(nextButton) nextButton.disabled = false;
-
-        if(!currentItem){
-          if(els.question) els.question.textContent = "No items for this grade band + track yet.";
-          if(els.work) els.work.textContent = "";
-          if(els.options) els.options.innerHTML = "";
-          if(els.feedback){
-            els.feedback.textContent = "Try another grade band or track.";
-            els.feedback.className = "mq-feedback";
-          }
-          if(els.queueNote) els.queueNote.textContent = "";
-          return;
-        }
-
-        lastItemId = currentItem.id;
-
-        if(els.question) els.question.textContent = currentItem.prompt;
-        if(els.work) els.work.textContent = currentItem.work || "";
-        if(els.feedback){
-          els.feedback.textContent = "Pick the best explanation or fix for this student's work.";
-          els.feedback.className = "mq-feedback";
-        }
-
-        if(els.queueNote){
-          var inattentionLabel = isInattentionItem(currentItem)
-            ? " ⚠ Inattention focus"
-            : "";
-          els.queueNote.textContent = (next.fromMissed ? "🔁 Fix-It Queue: back for another try." : "✨ New item from this grade band + track.") + inattentionLabel;
-        }
-
-        if(!els.options) return;
-        els.options.innerHTML = "";
-
-        currentItem.options.forEach(function(optText, index){
-          var btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "mq-option-btn";
-          btn.textContent = optText;
-          btn.addEventListener("click", function(){ handleAnswer(index); });
-          els.options.appendChild(btn);
-        });
-      }
-
-      function playBeep(correct){
-        if(!sfxOn) return;
-
-        ensureAudio().then(function(){
-          try{
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-
-            osc.type = "square";
-            osc.frequency.value = correct ? 1200 : 400;
-
-            var now = audioCtx.currentTime;
-            gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(0.45, now + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
-
-            osc.start(now);
-            osc.stop(now + 0.32);
-          }catch(e){}
-        });
-      }
-
-      function scheduleNextItem(){
-        if(nextTimer){ clearTimeout(nextTimer); nextTimer = null; }
-        nextTimer = setTimeout(function(){
-          renderItem(getNextItem());
-        }, autoAdvanceDelayMs);
-      }
-
-      function handleAnswer(selectedIndex){
-        if(!currentItem) return;
-
-        var buttons = els.options
-          ? Array.prototype.slice.call(els.options.querySelectorAll(".mq-option-btn"))
-          : [];
-
-        var correct = selectedIndex === currentItem.correctIndex;
-
-        buttons.forEach(function(btn, index){
-          btn.disabled = true;
-          btn.classList.remove("mq-correct","mq-incorrect");
-          if(index === currentItem.correctIndex) btn.classList.add("mq-correct");
-          if(!correct && index === selectedIndex) btn.classList.add("mq-incorrect");
-        });
-
-        playBeep(correct);
-        state.played += 1;
-
-        if(!state.errorWeakness) state.errorWeakness = {};
-        if(!correct && currentItem.errorType){
-          if(!state.errorWeakness[currentItem.errorType]) state.errorWeakness[currentItem.errorType] = 0;
-          state.errorWeakness[currentItem.errorType] += 1;
-        }
-
-        if(correct){
-          state.xp += 5;
-          state.coins += 1;
-          state.streak += 1;
-          if(els.feedback){
-            els.feedback.textContent = "Nice fix! " + (currentItem.insight || "");
-            els.feedback.className = "mq-feedback mq-feedback-correct";
-          }
-          appendInsightLog(currentItem, true);
-        }else{
-          state.streak = 0;
-          state.missed.push(currentItem);
-          if(els.feedback){
-            els.feedback.textContent = "Good attempt. Hint: " + (currentItem.hint || "Try again and look for the first wrong step.");
-            els.feedback.className = "mq-feedback mq-feedback-encouraging";
-          }
-          appendInsightLog(currentItem, false);
-        }
-
-        updateStats();
-        updateBadges();
-        scheduleNextItem();
-      }
-
-      function applyVisualToggles(){
-        var body = document.body;
-        if(els.highContrast){
-          if(els.highContrast.checked) body.classList.add("mq-high-contrast");
-          else body.classList.remove("mq-high-contrast");
-        }
-        if(els.dyslexic){
-          if(els.dyslexic.checked) body.classList.add("mq-dyslexic");
-          else body.classList.remove("mq-dyslexic");
-        }
-      }
-
-      // Controls
-      if(els.grade){
-        els.grade.addEventListener("change", function(e){
-          state.gradeBand = e.target.value;
-          updateStats();
-          renderItem(getNextItem());
-        });
-      }
-      if(els.track){
-        els.track.addEventListener("change", function(e){
-          state.track = e.target.value;
-          updateStats();
-          renderItem(getNextItem());
-        });
-      }
-      if(els.highContrast) els.highContrast.addEventListener("change", applyVisualToggles);
-      if(els.dyslexic) els.dyslexic.addEventListener("change", applyVisualToggles);
-
-      if(els.reset){
-        els.reset.addEventListener("click", function(){
-          if(!confirm("Reset XP, coins, streak, and Fix-It Queue for this player?")) return;
-          state = makeEmptyState();
-          state.gradeBand = els.grade ? els.grade.value : "6-8";
-          state.track = els.track ? els.track.value : "operations";
-          if(els.insightLog) els.insightLog.innerHTML = "";
-          updateStats();
-          updateBadges();
-          renderItem(getNextItem());
-        });
-      }
-
-      if(scaleSlider){
-        var initialScale = scaleSlider.value ? (parseInt(scaleSlider.value,10)/100) : 1;
-        document.documentElement.style.setProperty("--mq-scale", initialScale);
-        scaleSlider.addEventListener("input", function(e){
-          var value = parseInt(e.target.value,10) || 100;
-          document.documentElement.style.setProperty("--mq-scale", value/100);
-        });
-      }
-
-      if(delaySlider){
-        autoAdvanceDelayMs = (parseInt(delaySlider.value,10) || 5) * 1000;
-        delaySlider.addEventListener("input", function(e){
-          var secs = parseInt(e.target.value,10) || 5;
-          autoAdvanceDelayMs = secs * 1000;
-        });
-      }
-
-      if(sfxButton){
-        sfxButton.classList.add("mq-sfx-on");
-        sfxButton.addEventListener("click", function(){
-          sfxOn = !sfxOn;
-          sfxButton.textContent = sfxOn ? "SFX: ON" : "SFX: OFF";
-          if(sfxOn) sfxButton.classList.add("mq-sfx-on");
-          else sfxButton.classList.remove("mq-sfx-on");
-        });
-      }
-
-      if(nextButton){
-        nextButton.addEventListener("click", function(){
-          if(nextTimer){ clearTimeout(nextTimer); nextTimer=null; }
-          renderItem(getNextItem());
-        });
-      }
-
-      // Player UI
-      var playerSelect = $("mq-player");
-      var playerAddBtn = $("mq-player-add");
-      var playerDeleteBtn = $("mq-player-delete");
-
-      if(playerSelect){
-        playerSelect.addEventListener("change", function(e){
-          var newId = e.target.value;
-          if(!players[newId]) return;
-          savePlayers();
-          activePlayerId = newId;
-          var active = players[activePlayerId];
-          state = Object.assign(makeEmptyState(), active.state || {});
-          if(!state.errorWeakness) state.errorWeakness = {};
-          syncSelectorsFromState();
-          updateStats();
-          updateBadges();
-          renderItem(getNextItem());
-        });
-      }
-
-      if(playerAddBtn){
-        playerAddBtn.addEventListener("click", function(){
-          var name = prompt("New player name:", "Player " + (Object.keys(players).length + 1));
-          if(!name) return;
-
-          var base = name, counter = 2;
-          var existingNames = Object.keys(players).map(function(id){ return players[id].name; });
-          while(existingNames.indexOf(name) !== -1){
-            name = base + " (" + counter + ")";
-            counter++;
-          }
-
-          var newId = "p" + Date.now();
-          players[newId] = { name:name, state: makeEmptyState() };
-          activePlayerId = newId;
-          state = makeEmptyState();
-          syncSelectorsFromState();
-          refreshPlayerSelect();
-          updateStats();
-          updateBadges();
-          renderItem(getNextItem());
-        });
-      }
-
-      if(playerDeleteBtn){
-        playerDeleteBtn.addEventListener("click", function(){
-          if(!activePlayerId || !players[activePlayerId]) return;
-          if(Object.keys(players).length === 1){
-            alert("You need at least one player profile.");
-            return;
-          }
-          if(!confirm("Delete player '" + (players[activePlayerId].name || "player") + "' and their progress?")) return;
-
-          delete players[activePlayerId];
-          var remainingIds = Object.keys(players);
-          activePlayerId = remainingIds[0];
-          var active = players[activePlayerId];
-          state = Object.assign(makeEmptyState(), active.state || {});
-          if(!state.errorWeakness) state.errorWeakness = {};
-          refreshPlayerSelect();
-          syncSelectorsFromState();
-          updateStats();
-          updateBadges();
-          renderItem(getNextItem());
-        });
-      }
-
-      // -----------------------------
-      // Study panel logic
-      // -----------------------------
-      function refreshCustomList(){
-        if(!els.customList) return;
-        els.customList.innerHTML = "";
-
-        customItems = loadCustomItems();
-        if(customItems.length === 0){
-          var opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "No custom items yet.";
-          els.customList.appendChild(opt);
-          els.customList.disabled = true;
-          return;
-        }
-
-        els.customList.disabled = false;
-
-        customItems.forEach(function(ci, idx){
-          var opt = document.createElement("option");
-          opt.value = ci.id;
-          var label = (ci.prompt || "Custom item").slice(0, 60);
-          opt.textContent = (idx+1) + ") " + label;
-          els.customList.appendChild(opt);
-        });
-      }
-
-      function buildCustomItem(){
+      function openAi(variant){
         var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
         var work = safeText(els.customWork ? els.customWork.value : "").trim();
-        var fix = safeText(els.customFix ? els.customFix.value : "").trim();
-
-        if(!problem || !work || !fix){
-          return { ok:false, message:"Please fill in Problem, Student work, and Clean fix." };
+        if(!problem || !work){
+          if(els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
+          return;
         }
+        var url = MQ_HOST + "/ai_tutor"
+          + "?variant=" + encodeURIComponent(variant || "step")
+          + "&problem=" + encodeURIComponent(problem)
+          + "&work=" + encodeURIComponent(work);
 
-        var gb = state.gradeBand || (els.grade ? els.grade.value : "6-8");
-        var tr = state.track || (els.track ? els.track.value : "operations");
-        var errType = els.customErrorType ? els.customErrorType.value : "custom";
-        var diff = els.customDifficulty ? els.customDifficulty.value : "medium";
+        if(aiFrame) aiFrame.src = url;
+        if(aiOverlay) aiOverlay.style.display = "flex";
+      }
+      aiClose.addEventListener("click", closeAi);
+      aiOverlay.addEventListener("click", function(e){ if(e.target === aiOverlay) closeAi(); });
+      aiBtn.addEventListener("click", function(){ openAi("step"); });
+      aiAltBtn.addEventListener("click", function(){ openAi("alt"); });
 
-        var distractors = [
+      window.addEventListener("message", function(event){
+        if(event.origin !== MQ_HOST) return;
+        var data = event.data || {};
+        if(data.type === "btm_clean_fix"){
+          if(els.customFix) els.customFix.value = String(data.text || "");
+          if(els.customStatus) els.customStatus.textContent = "AI fix inserted. Now click Practice Now.";
+        }
+        if(data.type === "btm_close_ai"){
+          closeAi();
+        }
+      });
+
+      // Minimal practice loop for your custom item (Practice Now)
+      function renderCustomPractice(problem, work, fix){
+        els.question.textContent = "Custom study: " + problem;
+        els.work.textContent = "Student work (incorrect): " + work;
+        els.options.innerHTML = "";
+
+        var opts = [fix,
           "They made a sign/operation mistake (check the first wrong step).",
           "They used a rule that does not apply in this situation.",
           "They mixed steps from two different methods."
         ];
+        opts.forEach(function(t, i){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mq-option-btn";
+          btn.textContent = t;
+          btn.addEventListener("click", function(){
+            var correct = (i === 0);
+            if(correct){
+              btn.classList.add("mq-correct");
+              els.feedback.textContent = "Nice fix! " + fix;
+              els.feedback.className = "mq-feedback mq-feedback-correct";
+            }else{
+              btn.classList.add("mq-incorrect");
+              els.feedback.textContent = "Good attempt. Hint: compare the fix to the first wrong step.";
+              els.feedback.className = "mq-feedback mq-feedback-encouraging";
+            }
+          });
+          els.options.appendChild(btn);
+        });
 
-        var options = [
-          fix,
-          distractors[0],
-          distractors[1],
-          distractors[2]
-        ];
-
-        var item = {
-          id: "custom-" + Date.now(),
-          gradeBand: gb,
-          track: tr,
-          difficulty: diff,
-          errorType: errType,
-          inattention: false,
-          prompt: "Custom study: " + problem,
-          work: "Student work (incorrect): " + work,
-          options: options,
-          correctIndex: 0,
-          hint: "Read the fix and compare it to the student’s first wrong step.",
-          insight: fix
-        };
-
-        return { ok:true, item:item };
+        els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
+        els.feedback.className = "mq-feedback";
+        scrollTopNow();
       }
 
-      function addCustomItem(item){
-        customItems = loadCustomItems();
-        customItems.unshift(item);
-        if(!saveCustomItems(customItems)){
-          return { ok:false, message:"Could not save (storage unavailable). Try another browser or disable private mode." };
+      els.customPracticeNow.addEventListener("click", function(){
+        var p = safeText(els.customProblem.value).trim();
+        var w = safeText(els.customWork.value).trim();
+        var f = safeText(els.customFix.value).trim();
+        if(!p || !w){
+          els.customStatus.textContent = "Please fill in Problem + Student work first.";
+          return;
         }
-        ITEMS.push(item);
-        return { ok:true };
-      }
-
-      function practiceItemNow(item){
-        if(!item) return;
-        if(nextTimer){ clearTimeout(nextTimer); nextTimer=null; }
-        renderItem({ item:item, fromMissed:false });
-      }
-
-      function getSelectedCustomItem(){
-        if(!els.customList || !customItems || customItems.length === 0) return null;
-        var id = els.customList.value;
-        if(!id) return null;
-        for(var i=0;i<customItems.length;i++){
-          if(customItems[i].id === id) return customItems[i];
+        if(!f){
+          els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
+          return;
         }
-        return null;
-      }
+        els.customStatus.textContent = "Practicing now.";
+        renderCustomPractice(p, w, f);
+      });
 
-      if(els.customAdd){
-        els.customAdd.addEventListener("click", function(){
-          var built = buildCustomItem();
-          if(!built.ok){
-            if(els.customStatus) els.customStatus.textContent = built.message;
-            return;
-          }
-          var res = addCustomItem(built.item);
-          if(!res.ok){
-            if(els.customStatus) els.customStatus.textContent = res.message;
-            return;
-          }
-          if(els.customStatus) els.customStatus.textContent = "Saved! Added to practice for " + (built.item.gradeBand) + " • " + (built.item.track) + ".";
-          refreshCustomList();
-        });
-      }
+      els.customClear.addEventListener("click", function(){
+        els.customProblem.value = "";
+        els.customWork.value = "";
+        els.customFix.value = "";
+        els.customStatus.textContent = "Cleared.";
+      });
 
-      if(els.customPracticeNow){
-        els.customPracticeNow.addEventListener("click", function(){
-          var built = buildCustomItem();
-          if(!built.ok){
-            if(els.customStatus) els.customStatus.textContent = built.message;
-            return;
-          }
-          if(els.customStatus) els.customStatus.textContent = "Practicing this custom problem now (not saved).";
-          practiceItemNow(built.item);
-        });
-      }
-
-      if(els.customClear){
-        els.customClear.addEventListener("click", function(){
-          if(els.customProblem) els.customProblem.value = "";
-          if(els.customWork) els.customWork.value = "";
-          if(els.customFix) els.customFix.value = "";
-          if(els.customStatus) els.customStatus.textContent = "Cleared.";
-        });
-      }
-
-      if(els.customUse){
-        els.customUse.addEventListener("click", function(){
-          var item = getSelectedCustomItem();
-          if(!item){
-            if(els.customStatus) els.customStatus.textContent = "No saved custom item selected.";
-            return;
-          }
-          if(els.customStatus) els.customStatus.textContent = "Practicing saved custom item now.";
-          practiceItemNow(item);
-        });
-      }
-
-      if(els.customDelete){
-        els.customDelete.addEventListener("click", function(){
-          var item = getSelectedCustomItem();
-          if(!item){
-            if(els.customStatus) els.customStatus.textContent = "No saved custom item selected.";
-            return;
-          }
-          if(!confirm("Delete this saved custom item?")) return;
-
-          customItems = loadCustomItems().filter(function(ci){ return ci.id !== item.id; });
-          saveCustomItems(customItems);
-
-          ITEMS = ITEMS.filter(function(it){ return it.id !== item.id; });
-
-          if(els.customStatus) els.customStatus.textContent = "Deleted.";
-          refreshCustomList();
-        });
-      }
-
-      // Initial render
-      loadPlayers();
-      refreshPlayerSelect();
-      syncSelectorsFromState();
-      applyVisualToggles();
-      updateStats();
-      updateBadges();
-      updateScoreboard();
-      refreshCustomList();
-      renderItem(getNextItem());
+      // Init minimal stats display
+      els.xp.textContent = 0;
+      els.coins.textContent = 0;
+      els.streak.textContent = 0;
+      els.played.textContent = 0;
+      els.question.textContent = "Loading…";
+      els.work.textContent = "Student work will appear here.";
+      els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
     });
   </script>
 </body>
