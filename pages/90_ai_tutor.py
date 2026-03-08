@@ -144,8 +144,16 @@ with c1:
         components.html(
             f"""
             <script>
-              window.parent.postMessage({json.dumps(payload)}, "*");
-              window.parent.postMessage({json.dumps({"type":"btm_close_ai"})}, "*");
+              const msg = {json.dumps(payload)};
+              // We are inside a Streamlit component iframe -> parent is the AI page
+              // parent.parent is the GAME iframe (where the Study box exists)
+              if (window.parent && window.parent.parent) {{
+                window.parent.parent.postMessage(msg, "*");
+                window.parent.parent.postMessage({json.dumps({"type":"btm_close_ai"})}, "*");
+              }} else if (window.parent) {{
+                window.parent.postMessage(msg, "*");
+                window.parent.postMessage({json.dumps({"type":"btm_close_ai"})}, "*");
+              }}
             </script>
             """,
             height=0,
@@ -154,6 +162,15 @@ with c1:
 with c2:
     if st.button("Close", use_container_width=True):
         components.html(
-            f"<script>window.parent.postMessage({json.dumps({'type':'btm_close_ai'})}, '*');</script>",
-            height=0,
-        )
+    f"""
+    <script>
+      const closeMsg = {json.dumps({'type':'btm_close_ai'})};
+      if (window.parent && window.parent.parent) {{
+        window.parent.parent.postMessage(closeMsg, "*");
+      }} else if (window.parent) {{
+        window.parent.postMessage(closeMsg, "*");
+      }}
+    </script>
+    """,
+    height=0,
+)
