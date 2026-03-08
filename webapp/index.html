@@ -861,37 +861,215 @@
 
       // Minimal practice loop for your custom item (Practice Now)
       function renderCustomPractice(problem, work, fix){
-        els.question.textContent = "Custom study: " + problem;
-        els.work.textContent = "Student work (incorrect): " + work;
-        els.options.innerHTML = "";
+             // -----------------------
+      // Main challenge loop
+      // -----------------------
+      var currentItem = null;
+      var answeredCurrent = false;
+      var nextBtn = $("mq-next");
 
-        var opts = [fix,
+      function updateStats(){
+        els.xp.textContent = String(state.xp || 0);
+        els.coins.textContent = String(state.coins || 0);
+        els.streak.textContent = String(state.streak || 0);
+        els.played.textContent = String(state.played || 0);
+
+        if (els.miniXP) els.miniXP.textContent = String(state.xp || 0);
+        if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
+        if (els.miniFocus) els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + ((state.track || "operations").charAt(0).toUpperCase() + (state.track || "operations").slice(1));
+        if (els.miniType) els.miniType.textContent = "Focus: common errors & clean fixes";
+      }
+
+      function pushInsight(text){
+        if (!els.insightLog) return;
+        var div = document.createElement("div");
+        div.style.marginBottom = "8px";
+        div.textContent = "• " + text;
+        els.insightLog.prepend(div);
+      }
+
+      function getFilteredItems(){
+        var grade = els.grade ? els.grade.value : "6-8";
+        var track = els.track ? els.track.value : "operations";
+
+        state.gradeBand = grade;
+        state.track = track;
+
+        var filtered = ITEMS.filter(function(item){
+          var okGrade = !item.gradeBand || item.gradeBand === grade;
+          var okTrack = !item.track || item.track === track;
+          return okGrade && okTrack;
+        });
+
+        if (!filtered.length) filtered = ITEMS.slice();
+        return filtered;
+      }
+
+      function chooseNextItem(){
+        var pool = getFilteredItems();
+        if (!pool.length) return null;
+
+        var choices = pool.filter(function(item){
+          return item.id !== lastItemId;
+        });
+        if (!choices.length) choices = pool.slice();
+
+        return choices[Math.floor(Math.random() * choices.length)];
+      }
+
+      function renderItem(item){
+        currentItem = item;
+        answeredCurrent = false;
+        lastItemId = item.id;
+
+        if (nextBtn) nextBtn.disabled = true;
+
+        if (els.queueNote) els.queueNote.textContent = "Ready";
+        if (els.question) els.question.textContent = item.prompt || "Solve the item.";
+        if (els.work) els.work.textContent = item.work || "Student work will appear here.";
+        if (els.feedback){
+          els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
+          els.feedback.className = "mq-feedback";
+        }
+
+        if (els.options) els.options.innerHTML = "";
+
+        (item.options || []).forEach(function(optText, i){
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mq-option-btn";
+          btn.textContent = optText;
+
+          btn.addEventListener("click", function(){
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+
+            var correct = i === item.correctIndex;
+            var buttons = els.options.querySelectorAll(".mq-option-btn");
+
+            buttons.forEach(function(b, idx){
+              b.disabled = true;
+              if (idx === item.correctIndex) b.classList.add("mq-correct");
+            });
+
+            state.played = (state.played || 0) + 1;
+
+            if (correct){
+              btn.classList.add("mq-correct");
+              state.xp = (state.xp || 0) + 10;
+              state.coins = (state.coins || 0) + 1;
+              state.streak = (state.streak || 0) + 1;
+
+              if (els.feedback){
+                els.feedback.textContent = "Correct. " + (item.insight || "");
+                els.feedback.className = "mq-feedback mq-feedback-correct";
+              }
+            } else {
+              btn.classList.add("mq-incorrect");
+              state.streak = 0;
+
+              if (els.feedback){
+                els.feedback.textContent = (item.hint || "Try again by checking the first wrong step.") + " Correct fix: " + ((item.options && item.options[item.correctIndex]) || "");
+                els.feedback.className = "mq-feedback mq-feedback-encouraging";
+              }
+            }
+
+            updateStats();
+
+            if (item.insight) pushInsight(item.insight);
+            if (nextBtn) nextBtn.disabled = false;
+            if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+          });
+
+          els.options.appendChild(btn);
+        });
+
+        updateStats();
+      }
+
+      function loadFirstChallenge(){
+        var item = chooseNextItem();
+        if (!item){
+          if (els.question) els.question.textContent = "No challenge items available yet.";
+          if (els.work) els.work.textContent = "Add items to the main pool.";
+          if (els.feedback) els.feedback.textContent = "Current Challenge is empty.";
+          if (els.queueNote) els.queueNote.textContent = "No items";
+          return;
+        }
+        renderItem(item);
+      }
+
+      if (nextBtn){
+        nextBtn.addEventListener("click", function(){
+          var item = chooseNextItem();
+          if (item) renderItem(item);
+        });
+      }
+
+      if (els.grade){
+        els.grade.addEventListener("change", function(){
+          state.gradeBand = els.grade.value;
+          loadFirstChallenge();
+        });
+      }
+
+      if (els.track){
+        els.track.addEventListener("change", function(){
+          state.track = els.track.value;
+          loadFirstChallenge();
+        });
+      }
+
+      // -----------------------
+      // Study custom practice loop
+      // -----------------------
+      function renderCustomPractice(problem, work, fix){
+        currentItem = null;
+        answeredCurrent = true;
+
+        if (els.question) els.question.textContent = "Custom study: " + problem;
+        if (els.work) els.work.textContent = "Student work (incorrect): " + work;
+        if (els.options) els.options.innerHTML = "";
+
+        var opts = [
+          fix,
           "They made a sign/operation mistake (check the first wrong step).",
           "They used a rule that does not apply in this situation.",
           "They mixed steps from two different methods."
         ];
+
         opts.forEach(function(t, i){
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "mq-option-btn";
           btn.textContent = t;
+
           btn.addEventListener("click", function(){
-            var correct = (i === 0);
-            if(correct){
+            if (i === 0){
               btn.classList.add("mq-correct");
-              els.feedback.textContent = "Nice fix! " + fix;
-              els.feedback.className = "mq-feedback mq-feedback-correct";
-            }else{
+              if (els.feedback){
+                els.feedback.textContent = "Nice fix! " + fix;
+                els.feedback.className = "mq-feedback mq-feedback-correct";
+              }
+            } else {
               btn.classList.add("mq-incorrect");
-              els.feedback.textContent = "Good attempt. Hint: compare the fix to the first wrong step.";
-              els.feedback.className = "mq-feedback mq-feedback-encouraging";
+              if (els.feedback){
+                els.feedback.textContent = "Good attempt. Hint: compare the fix to the first wrong step.";
+                els.feedback.className = "mq-feedback mq-feedback-encouraging";
+              }
             }
           });
+
           els.options.appendChild(btn);
         });
 
-        els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
-        els.feedback.className = "mq-feedback";
+        if (els.feedback){
+          els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
+          els.feedback.className = "mq-feedback";
+        }
+        if (els.queueNote) els.queueNote.textContent = "Custom practice item";
+        if (nextBtn) nextBtn.disabled = true;
+
         scrollTopNow();
       }
 
@@ -899,6 +1077,7 @@
         var p = safeText(els.customProblem.value).trim();
         var w = safeText(els.customWork.value).trim();
         var f = safeText(els.customFix.value).trim();
+
         if(!p || !w){
           els.customStatus.textContent = "Please fill in Problem + Student work first.";
           return;
@@ -907,6 +1086,7 @@
           els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
           return;
         }
+
         els.customStatus.textContent = "Practicing now.";
         renderCustomPractice(p, w, f);
       });
@@ -918,15 +1098,8 @@
         els.customStatus.textContent = "Cleared.";
       });
 
-      // Init minimal stats display
-      els.xp.textContent = 0;
-      els.coins.textContent = 0;
-      els.streak.textContent = 0;
-      els.played.textContent = 0;
-      els.question.textContent = "Loading…";
-      els.work.textContent = "Student work will appear here.";
-      els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
-    });
-  </script>
-</body>
-</html>
+      // -----------------------
+      // Initial boot
+      // -----------------------
+      updateStats();
+      loadFirstChallenge();
