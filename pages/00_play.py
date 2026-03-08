@@ -38,7 +38,8 @@ st.markdown(
 # -----------------------
 if not require_access_code(label="Access code"):
     st.stop()
-
+if "show_ai_tutor" not in st.session_state:
+    st.session_state["show_ai_tutor"] = False
 
 # -----------------------
 # OpenAI helper (server-side, key stays private)
@@ -149,8 +150,22 @@ def _extract_clean_fix(md: str) -> str:
 # -----------------------
 # AI Helper UI (student-friendly)
 # -----------------------
-with st.expander("🤖 AI Helper — Study a Specific Problem (fills the explanation for you)", expanded=True):
-    st.write("Type the problem + what the student wrote. Click **Explain it**.")
+st.markdown("### Study A Specific Problem — Help")
+
+col1, col2 = st.columns([1, 3])
+with col1:
+    if st.button("Show AI Tutor", use_container_width=True):
+        st.session_state["show_ai_tutor"] = True
+    if st.session_state["show_ai_tutor"]:
+        if st.button("Hide AI Tutor", use_container_width=True):
+            st.session_state["show_ai_tutor"] = False
+
+with col2:
+    st.caption("Use this only when you’re stuck on a specific problem.")
+
+if st.session_state["show_ai_tutor"]:
+    st.markdown("---")
+    st.markdown("## 🤖 AI Tutor — Study A Specific Problem")
 
     ai_problem = st.text_area(
         "Problem (what was asked?)",
@@ -166,12 +181,6 @@ with st.expander("🤖 AI Helper — Study a Specific Problem (fills the explana
     )
 
     c1, c2 = st.columns(2)
-
-    if "ai_explain_md" not in st.session_state:
-        st.session_state["ai_explain_md"] = ""
-    if "ai_explain_md_2" not in st.session_state:
-        st.session_state["ai_explain_md_2"] = ""
-
     with c1:
         if st.button("Explain it (step-by-step)", use_container_width=True):
             if not ai_problem.strip() or not ai_work.strip():
@@ -184,7 +193,6 @@ with st.expander("🤖 AI Helper — Study a Specific Problem (fills the explana
                     style="STEP-BY-STEP (simple, numbered)",
                     avoid_text="",
                 )
-
     with c2:
         if st.button("Explain another way", use_container_width=True):
             if not ai_problem.strip() or not ai_work.strip():
