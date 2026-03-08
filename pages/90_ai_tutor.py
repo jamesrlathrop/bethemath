@@ -1,11 +1,12 @@
 import os
 import json
 import re
+import time
+import hmac
+import hashlib
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
-
-from btm_access import require_access_code
 
 st.set_page_config(
     page_title="BeTheMath — AI Tutor",
@@ -17,27 +18,39 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-      header[data-testid="stHeader"] { display: none; }
-      [data-testid="stSidebar"] { display: none; }
-      footer { display: none; }
-      .block-container { padding-top: 0.6rem; }
+      header[data-testid="stHeader"] { display:none; }
+      [data-testid="stSidebar"] { display:none; }
+      footer { display:none; }
+      .block-container { max-width: 900px; padding-top: 0.8rem; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# keep it protected (should already be unlocked in the same browser session)
-if not require_access_code(label="Access code"):
-    st.stop()
-
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
+SECRET = (os.getenv("BTM_AI_TUTOR_SECRET") or os.getenv("ADMIN_CODE") or "").encode("utf-8")
 
 def _qp_get(qp, key: str) -> str:
     v = qp.get(key, "")
     if isinstance(v, list):
         return v[0] if v else ""
     return v or ""
+
+def _token_ok(token: str) -> bool:
+    try:
+        ts_s, sig = token.split(".", 1)
+        ts = int(ts_s)
+    except Exception:
+        return False
+
+    # valid for 30 minutes
+    if abs(int(time.time()) - ts) > 1800:
+        return False
+
+    payload = f"{ts}"
+    good = hmac.new(SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    return hmac.compare_digest(good, sig)
 
 def _extract_clean_fix(md: str) -> str:
     patterns = [
@@ -56,25 +69,22 @@ def _openai_explain(problem: str, student_work: str, variant: str) -> str:
     if not OPENAI_API_KEY:
         return "⚠️ OPENAI_API_KEY is missing in Railway Variables."
 
-    style = "STEP-BY-STEP (simple, numbered)"
-    if variant == "alt":
-        style = "ANOTHER WAY (different wording, different approach, add an analogy)"
+    style = "STEP-BY-STEP (simple, numbered)" if variant != "alt" else "ANOTHER WAY (different wording, add an analogy)"
 
     system = (
         "You are BeTheMath AI Tutor. Be kind, clear, and practical.\n"
-        "Write for a student who is confused.\n"
-        "Always include these sections:\n"
+        "Always include:\n"
         "STEP-BY-STEP (numbered)\n"
-        "CLEAN FIX (1–3 lines, copy-ready)\n"
+        "CLEAN FIX (1–3 lines)\n"
         "WHY THE WRONG ANSWER FEELS RIGHT (one sentence)\n"
-        "QUICK CHECK (one short question + answer)\n"
+        "QUICK CHECK (one question + answer)\n"
         "Keep math correct. Use simple words.\n"
     )
     user = (
         f"STYLE: {style}\n\n"
         f"PROBLEM:\n{problem}\n\n"
         f"STUDENT WORK (incorrect):\n{student_work}\n\n"
-        "If student work is missing steps, infer the most likely mistake and explain it.\n"
+        "If steps are missing, infer the most likely mistake and explain it.\n"
     )
 
     payload = {
@@ -84,24 +94,18 @@ def _openai_explain(problem: str, student_work: str, variant: str) -> str:
             {"role": "system", "content": [{"type": "input_text", "text": system}]},
             {"role": "user", "content": [{"type": "input_text", "text": user}]},
         ],
-        "max_output_tokens": 750,
+        "max_output_tokens": 850,
     }
 
-    try:
-        r = requests.post(
-            "https://api.openai.com/v1/responses",
-            headers={
-                "Authorization": f"Bearer {OPENAI_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            data=json.dumps(payload),
-            timeout=40,
-        )
-    except Exception:
-        return "⚠️ Network error calling AI. Try again."
+    r = requests.post(
+        "https://api.openai.com/v1/responses",
+        headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"},
+        data=json.dumps(payload),
+        timeout=45,
+    )
 
     if r.status_code == 401:
-        return "⚠️ OpenAI 401 Unauthorized. Fix Railway → Variables → OPENAI_API_KEY and redeploy."
+        return "⚠️ OpenAI 401 Unauthorized. Fix OPENAI_API_KEY in Railway Variables and redeploy."
     if r.status_code >= 400:
         return f"⚠️ AI error ({r.status_code}). Try again."
 
@@ -115,15 +119,17 @@ def _openai_explain(problem: str, student_work: str, variant: str) -> str:
     return ("\n".join(out)).strip() or "⚠️ No text returned."
 
 qp = st.query_params if hasattr(st, "query_params") else st.experimental_get_query_params()
+
+token = _qp_get(qp, "token").strip()
 problem = _qp_get(qp, "problem").strip()
 work = _qp_get(qp, "work").strip()
-variant = _qp_get(qp, "variant").strip() or "step"
+variant = (_qp_get(qp, "variant") or "step").strip()
 
-st.markdown("## 🤖 AI Tutor")
-if not problem or not work:
-    st.warning("Missing problem or student work. Close this window and try again.")
+if not token or not _token_ok(token):
+    st.error("This AI Tutor window is not authorized. Close it and reopen from inside Study → AI Generate Fix.")
     st.stop()
 
+st.markdown("## 🤖 AI Tutor")
 md = _openai_explain(problem, work, variant)
 st.markdown(md)
 

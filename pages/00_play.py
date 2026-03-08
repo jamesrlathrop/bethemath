@@ -1,10 +1,15 @@
+import os
 import re
+import time
+import hmac
+import hashlib
 import base64
 import mimetypes
 from pathlib import Path
 
 import streamlit as st
 from btm_access import require_access_code
+
 
 st.set_page_config(
     page_title="BeTheMath — Error Detective",
@@ -13,6 +18,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# IMPORTANT: run access gate BEFORE forcing dark background (prevents unreadable black gate)
+if not require_access_code(label="Access code"):
+    st.stop()
+
+# After unlock, make it feel like an app
 st.markdown(
     """
     <style>
@@ -26,9 +36,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if not require_access_code(label="Access code"):
-    st.stop()
+# Build a short-lived signed token so the in-game AI modal can open /ai_tutor
+# even though it starts a new Streamlit session.
+APP_URL = os.getenv("APP_URL", "https://bethemath.matesuite.ai").rstrip("/")
+SECRET = (os.getenv("BTM_AI_TUTOR_SECRET") or os.getenv("ADMIN_CODE") or "").encode("utf-8")
 
+ts = int(time.time())
+payload = f"{ts}"
+sig = hmac.new(SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+UNLOCK_TOKEN = f"{ts}.{sig}"
+
+# Load the game
 WEB_DIR = Path("webapp")
 INDEX = WEB_DIR / "index.html"
 if not INDEX.exists():
@@ -53,6 +71,7 @@ def _data_uri(path: Path) -> str:
 def _resolve(p: str) -> Path:
     return WEB_DIR / p.lstrip("/")
 
+# Inline CSS
 def repl_css(m):
     href = m.group(1)
     if not _is_local(href):
@@ -64,6 +83,7 @@ def repl_css(m):
 
 html = re.sub(r'<link[^>]+href="([^"]+\.css[^"]*)"[^>]*>', repl_css, html, flags=re.IGNORECASE)
 
+# Inline JS
 def repl_js(m):
     src = m.group(1)
     attrs = m.group(2) or ""
@@ -77,6 +97,7 @@ def repl_js(m):
 
 html = re.sub(r'<script[^>]+src="([^"]+\.js[^"]*)"([^>]*)>\s*</script>', repl_js, html, flags=re.IGNORECASE)
 
+# Inline images
 def repl_img(m):
     src = m.group(1)
     if not _is_local(src):
@@ -88,13 +109,24 @@ def repl_img(m):
 
 html = re.sub(r'<img[^>]+src="([^"]+)"[^>]*>', repl_img, html, flags=re.IGNORECASE)
 
+# Inject host + token into the game (so the modal can open AI Tutor safely)
+inject = f"""
+<script>
+  window.__BTM_HOST = {APP_URL!r};
+  window.__BTM_UNLOCK_TOKEN = {UNLOCK_TOKEN!r};
+</script>
+"""
+if re.search(r"</head>", html, flags=re.IGNORECASE):
+    html = re.sub(r"</head>", inject + "\n</head>", html, count=1, flags=re.IGNORECASE)
+else:
+    html = inject + html
+
 b64 = base64.b64encode(html.encode("utf-8")).decode("utf-8")
 st.markdown(
     f"""
     <iframe
       src="data:text/html;base64,{b64}"
       style="width:100%; height: calc(100vh - 8px); border:0; display:block; background:#020617;"
-      allow="autoplay"
       scrolling="yes"
     ></iframe>
     """,
