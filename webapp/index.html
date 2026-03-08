@@ -1263,5 +1263,217 @@
       loadFirstChallenge();
     });
   </script>
+<script>
+(() => {
+  if (window.__BTM_SMOKE__) return;
+  window.__BTM_SMOKE__ = true;
+
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const visible = (el) => {
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return style.display !== "none" &&
+           style.visibility !== "hidden" &&
+           rect.width > 0 &&
+           rect.height > 0;
+  };
+
+  const allButtons = () =>
+    [...document.querySelectorAll('button, a, [role="button"], .btn')]
+      .filter(visible);
+
+  const findButton = (regex) =>
+    allButtons().find((el) => regex.test((el.innerText || el.textContent || "").trim()));
+
+  const challengeRegion = () => {
+    const direct =
+      document.querySelector("#currentChallenge, #current-challenge, [data-current-challenge], .current-challenge, .challenge-card, [class*='challenge']");
+    if (direct) return direct;
+
+    return [...document.querySelectorAll("section, div, article, main")]
+      .find((el) => /Current Challenge/i.test((el.innerText || "").trim()));
+  };
+
+  const snapshotChallenge = () => {
+    const region = challengeRegion();
+    if (region) {
+      return (region.innerText || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 240);
+    }
+    return (document.body.innerText || "")
+      .replace(/\s+/g, " ")
+      .match(/Current Challenge.{0,240}/i)?.[0] || "";
+  };
+
+  const panel = document.createElement("div");
+  panel.id = "btm-smoke-panel";
+  panel.style.cssText = `
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 999999;
+    width: 320px;
+    max-width: calc(100vw - 28px);
+    background: rgba(2, 6, 23, 0.96);
+    color: #e5e7eb;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    box-shadow: 0 12px 36px rgba(0,0,0,.35);
+    padding: 12px 12px 10px;
+    font: 13px/1.4 system-ui, -apple-system, Segoe UI, sans-serif;
+  `;
+  panel.innerHTML = `
+    <div style="font-weight:700; margin-bottom:8px;">BeTheMath Smoke Test</div>
+    <div id="btm-smoke-lines" style="display:grid; gap:6px;"></div>
+    <div style="margin-top:10px; opacity:.78; font-size:12px;">
+      Reload page after edits to rerun.
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  const lines = panel.querySelector("#btm-smoke-lines");
+
+  const addLine = (label, status, detail = "") => {
+    const color =
+      status === "PASS" ? "#22c55e" :
+      status === "FAIL" ? "#ef4444" :
+      "#facc15";
+
+    const row = document.createElement("div");
+    row.innerHTML = `
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <span style="
+          display:inline-block;
+          min-width:48px;
+          text-align:center;
+          font-weight:700;
+          color:#020617;
+          background:${color};
+          border-radius:999px;
+          padding:1px 8px;
+          font-size:11px;
+          margin-top:1px;
+        ">${status}</span>
+        <div>
+          <div style="font-weight:600;">${label}</div>
+          ${detail ? `<div style="opacity:.8; margin-top:1px;">${detail}</div>` : ""}
+        </div>
+      </div>
+    `;
+    lines.appendChild(row);
+  };
+
+  async function testCurrentChallengeBoot() {
+    await wait(500);
+    const region = challengeRegion();
+    const text = snapshotChallenge();
+    const ok = !!region || /Current Challenge/i.test(document.body.innerText || "");
+    addLine(
+      "Current Challenge boot",
+      ok ? "PASS" : "FAIL",
+      ok
+        ? (text ? `Found: ${text.slice(0, 110)}${text.length > 110 ? "…" : ""}` : "Challenge region detected.")
+        : "No Current Challenge area detected after boot."
+    );
+    return ok;
+  }
+
+  async function testNextButton() {
+    await wait(250);
+    const nextBtn = findButton(/^next$/i) || findButton(/\bnext\b/i);
+    if (!nextBtn) {
+      addLine("Next button", "FAIL", "Visible Next button not found.");
+      return false;
+    }
+
+    const before = snapshotChallenge();
+    nextBtn.click();
+    await wait(500);
+    const after = snapshotChallenge();
+
+    const ok = !!after && after !== before;
+    addLine(
+      "Next button",
+      ok ? "PASS" : "FAIL",
+      ok
+        ? "Challenge content changed after click."
+        : "Clicked Next, but challenge content did not change."
+    );
+    return ok;
+  }
+
+  async function testStudyToPracticeNow() {
+    await wait(250);
+    const studyBtn =
+      findButton(/^study$/i) ||
+      findButton(/\bstudy\b/i);
+
+    if (!studyBtn) {
+      addLine("Study → Practice Now", "FAIL", "Visible Study button not found.");
+      return false;
+    }
+
+    studyBtn.click();
+    await wait(500);
+
+    const practiceNowBtn =
+      findButton(/^practice now$/i) ||
+      findButton(/\bpractice now\b/i);
+
+    if (!practiceNowBtn) {
+      addLine("Study → Practice Now", "FAIL", "Study opened, but Practice Now button was not found.");
+      return false;
+    }
+
+    const before = {
+      snapshot: snapshotChallenge(),
+      practiceVisible: /practice/i.test(document.body.innerText || "")
+    };
+
+    practiceNowBtn.click();
+    await wait(600);
+
+    const answerInput =
+      document.querySelector('input[type="text"], textarea, input:not([type]), input[type="number"]');
+    const practiceNowStillVisible = !!findButton(/^practice now$/i) || !!findButton(/\bpractice now\b/i);
+    const afterSnapshot = snapshotChallenge();
+
+    const ok =
+      !!answerInput ||
+      !practiceNowStillVisible ||
+      afterSnapshot !== before.snapshot;
+
+    addLine(
+      "Study → Practice Now",
+      ok ? "PASS" : "FAIL",
+      ok
+        ? "Returned to an active practice state."
+        : "Practice Now click did not clearly return to practice."
+    );
+    return ok;
+  }
+
+  async function run() {
+    lines.innerHTML = "";
+    addLine("Smoke test", "WARN", "Running checks…");
+    await wait(150);
+
+    lines.innerHTML = "";
+    await testCurrentChallengeBoot();
+    await testNextButton();
+    await testStudyToPracticeNow();
+  }
+
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(run, 700);
+  } else {
+    window.addEventListener("DOMContentLoaded", () => setTimeout(run, 700), { once: true });
+  }
+})();
+</script>
 </body>
 </html>
