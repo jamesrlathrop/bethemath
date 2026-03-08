@@ -26,6 +26,40 @@
       overflow-x:hidden;
     }
 
+    /* High contrast */
+    body.mq-high-contrast{background:#000!important;color:#fff!important}
+    body.mq-high-contrast .mq-topbar,
+    body.mq-high-contrast .mq-shell{background:#000!important}
+    body.mq-high-contrast .mq-panel,
+    body.mq-high-contrast .mq-game-card{background:#000!important;border-color:#fff!important;box-shadow:none!important}
+    body.mq-high-contrast .mq-question-text,
+    body.mq-high-contrast .mq-work,
+    body.mq-high-contrast .mq-panel-title,
+    body.mq-high-contrast .mq-panel-sub,
+    body.mq-high-contrast .mq-stat-pill,
+    body.mq-high-contrast .mq-stat-value,
+    body.mq-high-contrast .mq-badge-chip,
+    body.mq-high-contrast .mq-footer-note,
+    body.mq-high-contrast #mq-queue-note,
+    body.mq-high-contrast #mq-scoreboard,
+    body.mq-high-contrast #mq-about{color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-option-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-option-btn.mq-correct{background:#00ff00!important;color:#000!important;border-color:#00ff00!important}
+    body.mq-high-contrast .mq-option-btn.mq-incorrect{background:#ff0033!important;color:#fff!important;border-color:#ff0033!important}
+    body.mq-high-contrast .mq-small-btn,
+    body.mq-high-contrast .mq-reset-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
+    body.mq-high-contrast .mq-modebar{border-color:#fff!important}
+    body.mq-high-contrast .mq-mode-btn{color:#fff!important}
+    body.mq-high-contrast .mq-mode-btn-active{background:#fff!important;color:#000!important}
+
+    /* Dyslexic mode */
+    body.mq-dyslexic{
+      font-family:"OpenDyslexic","Comic Sans MS","Arial Rounded MT Bold",
+        system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      line-height:1.5;
+    }
+    body.mq-dyslexic #mq-root{letter-spacing:.02em}
+
     #mq-root{
       min-height:100vh;
       display:flex;
@@ -46,50 +80,102 @@
       position:sticky;top:0;z-index:20;
       gap:10px;
     }
-    .mq-topbar-title{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .mq-topbar-title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
     .mq-topbar-title strong{
-      font-size:15px;letter-spacing:.04em;font-weight:700;color:var(--mq-text);
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-size:15px;
+      letter-spacing:.04em;
+      font-weight:700;
+      color:var(--mq-text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .mq-topbar-title span{
-      font-size:11px;color:var(--mq-muted);
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-size:11px;
+      color:var(--mq-muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .mq-pill{
-      text-decoration:none;border-radius:999px;
+    .mq-buy-btn{
+      text-decoration:none;
+      border-radius:999px;
       border:1px solid rgba(34,197,94,.45);
-      padding:7px 12px;background:rgba(34,197,94,.12);
-      color:#bbf7d0;font-size:12px;font-weight:800;letter-spacing:.06em;
-      cursor:pointer;appearance:none;-webkit-appearance:none;font-family:inherit;
+      padding:7px 12px;
+      background:rgba(34,197,94,.12);
+      color:#bbf7d0;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.06em;
+      cursor:pointer;
+      appearance:none;
+      -webkit-appearance:none;
+      font-family:inherit;
       flex:0 0 auto;
     }
-    .mq-pill:hover{background:rgba(34,197,94,.18)}
+    .mq-buy-btn:hover{background:rgba(34,197,94,.18)}
 
     .mq-modebar{
-      display:inline-flex;gap:4px;border-radius:999px;padding:2px;
-      background:var(--mq-bg);border:1px solid var(--mq-border);flex:0 0 auto;
+      display:inline-flex;
+      gap:4px;
+      border-radius:999px;
+      padding:2px;
+      background:var(--mq-bg);
+      border:1px solid var(--mq-border);
+      flex:0 0 auto;
     }
     .mq-mode-btn{
-      border:none;background:transparent;color:var(--mq-muted);
-      font-size:12px;padding:5px 12px;border-radius:999px;cursor:default;
-      display:inline-flex;align-items:center;gap:6px;user-select:none;white-space:nowrap;
+      border:none;
+      background:transparent;
+      color:var(--mq-muted);
+      font-size:12px;
+      padding:5px 12px;
+      border-radius:999px;
+      cursor:default;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+      white-space:nowrap;
     }
     .mq-mode-btn-active{
-      background:var(--mq-accent-soft);color:#bbf7d0;font-weight:700;
+      background:var(--mq-accent-soft);
+      color:#bbf7d0;
+      font-weight:700;
     }
 
+    /* Floating dock */
+    .mq-dock{
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 3000;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Layout */
     .mq-shell{
-      display:grid;flex:1;
-      padding:6px;gap:12px;align-items:start;
+      display:grid;
+      flex:1;
+      padding:6px;
+      gap:12px;
+      align-items:start;
       grid-template-columns: 270px minmax(360px, 1fr) 320px 270px;
       grid-template-areas: "left center study right";
     }
     .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
     .mq-column-left{grid-area:left}
     .mq-column-center{grid-area:center}
-    .mq-column-study{grid-area:study; scroll-margin-top: 72px;}
+    .mq-column-study{grid-area:study}
     .mq-column-right{grid-area:right}
+    .mq-column-study{ scroll-margin-top: 72px; }
 
     @media(max-width:1500px){
       .mq-shell{
@@ -118,50 +204,103 @@
       box-shadow:0 18px 40px rgba(15,23,42,.7);
     }
     .mq-panel-title{
-      font-size:12px;font-weight:700;text-transform:uppercase;
-      letter-spacing:.14em;color:var(--mq-muted);margin-bottom:6px;
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--mq-muted);
+      margin-bottom:6px;
     }
     .mq-panel-sub{
-      font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.35;
+      font-size:11px;
+      color:#6b7280;
+      margin-bottom:8px;
+      line-height:1.35;
     }
 
     .mq-field{margin-bottom:8px;display:flex;flex-direction:column;gap:3px}
-    .mq-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mq-muted)}
-    select,input[type="range"], textarea{
-      width:100%;padding:6px 8px;border-radius:10px;border:1px solid var(--mq-border);
-      background:var(--mq-bg);color:var(--mq-text);font-size:13px;
+    .mq-label{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--mq-muted);
+    }
+    .mq-player-row{display:flex;gap:6px;align-items:center}
+    .mq-player-row select{flex:1}
+
+    select,input[type="range"], textarea, input[type="text"]{
+      width:100%;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid var(--mq-border);
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:13px;
     }
     textarea{min-height:76px;resize:vertical;line-height:1.35}
 
+    .mq-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .mq-toggle-row label{font-size:12px;color:var(--mq-muted)}
+    .mq-toggle-row input[type="checkbox"]{transform:scale(1.1)}
+
     .mq-game-card{
       background:rgba(15,23,42,.92);
-      border-radius:20px;border:1px solid rgba(148,163,184,.25);
+      border-radius:20px;
+      border:1px solid rgba(148,163,184,.25);
       padding:14px 16px 16px;
       box-shadow:0 22px 50px rgba(15,23,42,.8);
     }
+    .mq-study-card{min-height:520px;}
     .mq-game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
-    .mq-game-title{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mq-muted)}
-    #game-container{
-      width:100%;height:70px;border-radius:16px;border:1px solid var(--mq-border);
-      background:linear-gradient(135deg, rgba(34,197,94,.10), rgba(2,6,23,.9));
-      margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;
-      padding:12px 14px;gap:10px;
+    .mq-game-title{
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:var(--mq-muted);
     }
+    #game-container{
+      width:100%;
+      height:70px;
+      border-radius:16px;
+      border:1px solid var(--mq-border);
+      background:linear-gradient(135deg, rgba(34,197,94,.10), rgba(2,6,23,.9));
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      gap:10px;
+    }
+    #game-container .mq-mini-stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+    #game-container .mq-mini-stat strong{font-size:12px;color:var(--mq-text)}
+    #game-container .mq-mini-stat span{font-size:10px;color:var(--mq-muted)}
 
     .mq-question-text{font-size:14px;margin-bottom:6px;color:var(--mq-text)}
     .mq-work{
-      font-family:ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:13px;padding:8px 10px;border-radius:10px;background:var(--mq-bg);
-      border:1px solid #111827;color:var(--mq-text);margin-bottom:6px;white-space:pre-wrap;
+      font-family:"SF Mono",ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:13px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:var(--mq-bg);
+      border:1px solid #111827;
+      color:var(--mq-text);
+      margin-bottom:6px;
+      white-space:pre-wrap;
     }
-
     .mq-options{display:flex;flex-direction:column;gap:8px;margin-top:8px;margin-bottom:8px}
     .mq-option-btn{
-      text-align:left;border-radius:12px;border:1px solid var(--mq-border);
-      padding:10px 12px;background:var(--mq-bg);color:var(--mq-text);
-      font-size:13px;cursor:pointer;
+      text-align:left;
+      border-radius:12px;
+      border:1px solid var(--mq-border);
+      padding:10px 12px;
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:13px;
+      cursor:pointer;
+      transition:transform .07s ease, border-color .14s ease;
     }
-    .mq-option-btn:hover:not(:disabled){border-color:#334155}
+    .mq-option-btn:hover:not(:disabled){border-color:#334155;transform:translateY(-1px)}
     .mq-option-btn:disabled{opacity:.86;cursor:default}
     .mq-option-btn.mq-correct{background:rgba(34,197,94,.12);border-color:var(--mq-accent)}
     .mq-option-btn.mq-incorrect{background:rgba(239,68,68,.12);border-color:#f97373}
@@ -169,47 +308,102 @@
     .mq-feedback{font-size:12px;color:var(--mq-muted);min-height:18px;line-height:1.35}
     .mq-feedback-correct{color:#bbf7d0}
     .mq-feedback-encouraging{color:var(--mq-warn)}
+    .mq-queue-note{font-size:11px;color:#6b7280;margin-top:2px}
 
-    .mq-small-btn,.mq-reset-btn{
-      border-radius:999px;border:1px solid var(--mq-border);
-      padding:6px 10px;background:var(--mq-bg);color:var(--mq-text);font-size:11px;cursor:pointer;
+    .mq-insight-log{font-size:11px;color:var(--mq-muted);max-height:140px;overflow-y:auto;padding-right:4px;line-height:1.35}
+    .mq-badges-row{display:flex;flex-wrap:wrap;gap:6px}
+    .mq-badge-chip{
+      font-size:10px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid var(--mq-border);
+      color:var(--mq-muted);
+      background:var(--mq-bg);
+      white-space:nowrap;
     }
+    .mq-badge-earned{background:rgba(34,197,94,.16);color:#bbf7d0;border-color:var(--mq-accent)}
+
+    .mq-stat-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+    .mq-stat-pill{
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:var(--mq-bg);
+      border:1px solid var(--mq-border);
+      color:var(--mq-muted);
+    }
+    .mq-stat-value{color:var(--mq-text);font-weight:700;margin-left:6px}
+
+    .mq-reset-btn,.mq-small-btn{
+      border-radius:999px;
+      border:1px solid var(--mq-border);
+      padding:6px 10px;
+      background:var(--mq-bg);
+      color:var(--mq-text);
+      font-size:11px;
+      cursor:pointer;
+    }
+    .mq-reset-btn:hover,.mq-small-btn:hover{background:#111827}
     .mq-reset-btn{border-color:#f97373;color:#fecaca}
-    .mq-small-btn:hover,.mq-reset-btn:hover{background:#111827}
+    .mq-sfx-on{border-color:var(--mq-accent);color:#bbf7d0}
+
+    .mq-footer-note{font-size:10px;color:#6b7280;margin-top:6px;line-height:1.35}
+    #mq-about{font-size:11px;color:var(--mq-muted);line-height:1.45}
+    #mq-about ul{margin:6px 0 0;padding-left:18px}
 
     .mq-divider{height:1px;background:rgba(148,163,184,.18);margin:10px 0}
+    .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap}
+    .mq-inline-row > *{flex:1}
+    .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
 
     /* Study title highlight (12s) */
     .mq-study-title-highlight{
-      border-radius: 10px;padding: 6px 10px;display: inline-block;
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: inline-block;
       background: rgba(250, 204, 21, 0.16);
       border: 1px solid rgba(250, 204, 21, 0.55);
       box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
       animation: mqPulse 1.2s ease;
     }
     @keyframes mqPulse {
-      0% { transform: scale(1); }
-      35% { transform: scale(1.02); }
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.02); }
       100% { transform: scale(1); }
     }
 
     /* AI modal */
     .mq-ai-overlay{
-      position:fixed; inset:0;background:rgba(0,0,0,.65);
-      display:none;align-items:center;justify-content:center;z-index:5000;
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:5000;
     }
     .mq-ai-modal{
-      width:min(920px,96vw);height:min(720px,92vh);
+      width:min(920px,96vw);
+      height:min(720px,92vh);
       background:rgba(15,23,42,.98);
       border:1px solid rgba(148,163,184,.25);
-      border-radius:18px;overflow:hidden;
+      border-radius:18px;
+      overflow:hidden;
       box-shadow:0 30px 80px rgba(0,0,0,.6);
     }
     .mq-ai-head{
-      height:46px;display:flex;align-items:center;justify-content:space-between;
-      padding:8px 10px;border-bottom:1px solid rgba(148,163,184,.18);
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 10px;
+      border-bottom:1px solid rgba(148,163,184,.18);
     }
-    .mq-ai-frame{width:100%;height:calc(100% - 46px);border:0;background:#020617;}
+    .mq-ai-frame{
+      width:100%;
+      height:calc(100% - 46px);
+      border:0;
+      background:#020617;
+    }
   </style>
 </head>
 
@@ -221,9 +415,9 @@
         <span>Fix mistakes fast • Learn why • Stored only on your device</span>
       </div>
 
-      <button class="mq-pill" type="button" id="mq-study-jump">Study</button>
-      <button class="mq-pill" type="button" id="mq-top">Top</button>
-      <button class="mq-pill" type="button" id="mq-download-csv">Download CSV</button>
+      <button class="mq-buy-btn" type="button" id="mq-study-jump" title="Jump to Study A Specific Problem">Study</button>
+      <button class="mq-buy-btn" type="button" id="mq-top" title="Back to top">Top</button>
+      <button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
 
       <div class="mq-modebar" aria-label="Mode">
         <div class="mq-mode-btn mq-mode-btn-active" title="Math mode (more modes later)">🧠 Math Mode</div>
@@ -231,58 +425,183 @@
     </div>
 
     <div class="mq-shell">
+      <!-- 1) Session Settings -->
+      <div class="mq-column mq-column-left">
+        <div class="mq-game-card mq-study-card">
+          <div class="mq-panel-title">Session Settings</div>
+          <div class="mq-panel-sub">Choose player, level, track, and accessibility options.</div>
 
-      <!-- Current Challenge (center) -->
+          <div class="mq-field">
+            <span class="mq-label">Player</span>
+            <div class="mq-player-row">
+              <select id="mq-player"></select>
+              <button id="mq-player-add" type="button" class="mq-small-btn" title="Add player">+</button>
+              <button id="mq-player-delete" type="button" class="mq-small-btn" title="Delete player">–</button>
+            </div>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Grade Band</span>
+            <select id="mq-grade">
+              <option value="K-2">K–2</option>
+              <option value="3-5">3–5</option>
+              <option value="6-8">6–8</option>
+              <option value="Alg1">Algebra I</option>
+              <option value="Geo">Geometry</option>
+              <option value="Alg2">Algebra II</option>
+              <option value="Trig">Trigonometry</option>
+              <option value="PreCalc">Pre-Calculus</option>
+              <option value="Calc">Calculus</option>
+            </select>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Track</span>
+            <select id="mq-track">
+              <option value="operations">Operations</option>
+              <option value="reasoning">Reasoning</option>
+              <option value="logic">Logic &amp; Patterns</option>
+            </select>
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">Auto-advance (seconds)</span>
+            <input id="mq-delay" type="range" min="3" max="20" value="5" />
+          </div>
+
+          <div class="mq-field">
+            <span class="mq-label">UI Scale</span>
+            <input id="mq-scale" type="range" min="80" max="130" value="100" />
+          </div>
+
+          <div class="mq-panel-sub" style="margin-top:8px;">Accessibility</div>
+          <div class="mq-toggle-row">
+            <label for="mq-high-contrast">High contrast</label>
+            <input id="mq-high-contrast" type="checkbox" />
+          </div>
+          <div class="mq-toggle-row">
+            <label for="mq-dyslexic">Dyslexic-friendly font</label>
+            <input id="mq-dyslexic" type="checkbox" />
+          </div>
+
+          <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="mq-sfx-toggle" type="button" class="mq-small-btn">SFX: ON</button>
+            <button id="mq-reset" type="button" class="mq-reset-btn">Reset Progress</button>
+          </div>
+
+          <div class="mq-footer-note" id="mq-autosave">Ready.</div>
+          <div class="mq-footer-note">Player profiles and progress are stored only on this device (localStorage).</div>
+        </div>
+
+        <div class="mq-panel">
+          <div class="mq-panel-title">About</div>
+          <div class="mq-panel-sub">Customer-first, calm, and private by design.</div>
+          <div id="mq-about">
+            <strong>BeTheMath</strong> helps learners become “error detectives”: spot the mistaken idea, then apply the clean fix.
+            <ul>
+              <li><strong>Practice tool</strong> — not a test, no grades, no pressure.</li>
+              <li><strong>Private by default</strong> — no accounts, no tracking, no uploads.</li>
+              <li><strong>Local-only progress</strong> — stored in your browser on this device.</li>
+              <li><strong>Explain → Fix → Repeat</strong> — each item includes the misconception, the principle, and the corrected work.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2) Current Challenge -->
       <div class="mq-column mq-column-center">
         <div class="mq-game-card">
           <div class="mq-game-header">
             <div class="mq-game-title">Current Challenge</div>
-            <div style="font-size:11px;color:#6b7280;" id="mq-queue-note">Ready</div>
+            <div style="font-size:11px;color:#6b7280;" id="mq-queue-note">Loading your first item…</div>
           </div>
 
           <div id="game-container">
-            <div style="font-size:12px;color:#e5e7eb;">Practice items appear here.</div>
-            <div style="font-size:11px;color:#9ca3af;">XP: <span id="mq-mini-xp">0</span></div>
+            <div class="mq-mini-stat">
+              <strong id="mq-mini-focus">6–8 • Operations</strong>
+              <span id="mq-mini-type">Focus: common errors &amp; clean fixes</span>
+            </div>
+            <div class="mq-mini-stat" style="text-align:right;">
+              <strong>XP <span id="mq-mini-xp">0</span></strong>
+              <span>Streak <span id="mq-mini-streak">0</span></span>
+            </div>
           </div>
 
-          <div class="mq-question-text" id="mq-question">Use Study to create a custom item.</div>
+          <div class="mq-question-text" id="mq-question">Loading…</div>
           <div class="mq-work" id="mq-work">Student work will appear here.</div>
+
           <div class="mq-options" id="mq-options"></div>
-          <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix.</div>
+
+          <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix for the student's work.</div>
+
+          <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+            <button id="mq-next" type="button" class="mq-small-btn" disabled>Next ▶</button>
+          </div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Insights</div>
+          <div class="mq-panel-sub">Each time you fix an error, a short insight appears here for quick review.</div>
+          <div class="mq-insight-log" id="mq-insight-log"></div>
         </div>
       </div>
 
-      <!-- Study (right-middle) -->
+      <!-- 3) Study A Specific Problem -->
       <div class="mq-column mq-column-study">
         <div class="mq-panel">
           <div class="mq-panel-title" id="mq-study-title">Study A Specific Problem</div>
-          <div class="mq-panel-sub">Student: type the problem + your incorrect work. Then use AI to generate the fix.</div>
+          <div class="mq-panel-sub">Teacher/parent/student: create a custom practice item from a real mistake.</div>
 
           <div class="mq-field">
             <span class="mq-label">Problem (what was asked?)</span>
-            <textarea id="mq-custom-problem" placeholder="Example: Simplify 3/4 + 1/3"></textarea>
+            <textarea id="mq-custom-problem" placeholder="Example: Simplify 3(x − 4)"></textarea>
           </div>
 
           <div class="mq-field">
             <span class="mq-label">Student work (incorrect)</span>
-            <textarea id="mq-custom-work" placeholder="Example: 3/4 + 1/3 = 7"></textarea>
+            <textarea id="mq-custom-work" placeholder="Example: 3(x − 4) = 3x − 4"></textarea>
           </div>
 
           <div class="mq-field">
             <span class="mq-label">Clean fix / explanation (the correct idea)</span>
-            <textarea id="mq-custom-fix" placeholder="Click AI Generate Fix to fill this automatically."></textarea>
+            <textarea id="mq-custom-fix" placeholder="Example: Distribute 3 to BOTH terms: 3x − 12."></textarea>
+          </div>
+
+          <div class="mq-inline-row">
+            <div class="mq-field">
+              <span class="mq-label">Error type (optional)</span>
+              <select id="mq-custom-errortype">
+                <option value="custom">Custom</option>
+                <option value="distribution">Distribution</option>
+                <option value="fraction-addition">Fraction Addition</option>
+                <option value="integer-sign">Integer Sign</option>
+                <option value="place-value">Place Value</option>
+                <option value="proportion">Proportion</option>
+                <option value="combine-like-terms">Combine Like Terms</option>
+                <option value="order-of-operations">Order of Operations</option>
+              </select>
+            </div>
+            <div class="mq-field">
+              <span class="mq-label">Difficulty</span>
+              <select id="mq-custom-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
           </div>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
             <button id="mq-ai-generate" type="button" class="mq-small-btn">AI Generate Fix</button>
             <button id="mq-ai-alt" type="button" class="mq-small-btn">AI Another Way</button>
-            <button id="mq-custom-practice-now" type="button" class="mq-small-btn">Practice Now</button>
+
             <button id="mq-custom-add" type="button" class="mq-small-btn">Add to Practice</button>
+            <button id="mq-custom-practice-now" type="button" class="mq-small-btn">Practice Now</button>
             <button id="mq-custom-clear" type="button" class="mq-reset-btn">Clear</button>
           </div>
 
-          <div class="mq-panel-sub" id="mq-custom-status" style="margin-top:8px;">
-            Tip: Use AI Generate Fix, then click Practice Now.
+          <div class="mq-note" id="mq-custom-status" style="margin-top:8px;">
+            Custom items are stored only in this browser on this device.
           </div>
 
           <div class="mq-divider"></div>
@@ -298,25 +617,52 @@
         </div>
       </div>
 
-      <!-- Left / Right columns are intentionally minimal in this “stability restore” file -->
-      <div class="mq-column mq-column-left">
-        <div class="mq-panel">
-          <div class="mq-panel-title">Session Settings</div>
-          <div class="mq-panel-sub">This build focuses on Study + AI inside the game.</div>
-          <div style="font-size:12px;color:#9ca3af;line-height:1.4;">
-            Normal practice modes remain in the main game version. This page restores Study so it works for students.
-          </div>
-        </div>
-      </div>
-
+      <!-- 4) Session Stats -->
       <div class="mq-column mq-column-right">
         <div class="mq-panel">
           <div class="mq-panel-title">Session Stats</div>
-          <div style="font-size:12px;color:#9ca3af;">XP: <span id="mq-xp">0</span></div>
+          <div class="mq-stat-row">
+            <div class="mq-stat-pill">XP <span class="mq-stat-value" id="mq-xp">0</span></div>
+            <div class="mq-stat-pill">Coins <span class="mq-stat-value" id="mq-coins">0</span></div>
+            <div class="mq-stat-pill">Streak <span class="mq-stat-value" id="mq-streak">0</span></div>
+            <div class="mq-stat-pill">Played <span class="mq-stat-value" id="mq-played">0</span></div>
+          </div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Badges</div>
+          <div class="mq-panel-sub">Earn badges for streaks, XP milestones, and returning to your Fix-It Queue.</div>
+          <div class="mq-badges-row" id="mq-badges"></div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Scoreboard</div>
+          <div class="mq-panel-sub">Local players on this device, sorted by XP.</div>
+          <div id="mq-scoreboard" style="font-size:11px;color:var(--mq-muted);line-height:1.4;">No players yet.</div>
+          <div class="mq-footer-note">This scoreboard never leaves this browser. It is not shared online.</div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Teacher / Parent Notes</div>
+          <div class="mq-panel-sub">Simple, ethical use: low-pressure practice + clear feedback.</div>
+          <div style="font-size:11px;color:var(--mq-muted);line-height:1.4;">
+            <ul style="padding-left:18px;margin:0;">
+              <li>Use 5–10 minutes as a warm-up (same band + track).</li>
+              <li>Ask: “What mistaken idea caused this?” then “What’s the clean fix?”</li>
+              <li>If a learner misses an item, read the hint together before the next one.</li>
+              <li>Rotate tracks: Operations → Reasoning → Logic &amp; Patterns.</li>
+            </ul>
+          </div>
         </div>
       </div>
-
     </div>
+  </div>
+
+  <!-- Floating dock -->
+  <div class="mq-dock" aria-label="Quick tools">
+    <button class="mq-buy-btn" type="button" id="mq-dock-top" title="Back to top">Top</button>
+    <button class="mq-buy-btn" type="button" id="mq-dock-study" title="Jump to Study A Specific Problem">Study</button>
+    <button class="mq-buy-btn" type="button" id="mq-dock-download" title="Download a CSV session report">CSV</button>
   </div>
 
   <!-- AI modal -->
@@ -326,7 +672,7 @@
         <div style="font-weight:800; letter-spacing:.06em; font-size:12px; color:#9ca3af; text-transform:uppercase;">
           AI Tutor
         </div>
-        <button id="mq-ai-close" type="button" class="mq-small-btn">Back to Study</button>
+        <button id="mq-ai-close" type="button" class="mq-small-btn">Close</button>
       </div>
       <iframe id="mq-ai-frame" class="mq-ai-frame" src="about:blank"></iframe>
     </div>
@@ -334,9 +680,32 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      function $(id){ return document.getElementById(id); }
-      function safeText(s){ return (s == null) ? "" : String(s).replace(/\r\n/g,"\n"); }
 
+      // Content items (short demo set — keep your existing items below if you have more)
+      var ITEMS = [
+        {
+          id:"68-op-1", gradeBand:"6-8", track:"operations", difficulty:"medium",
+          errorType:"fraction-addition", inattention:false,
+          prompt:"A student adds fractions and gets 1/4 + 1/2 = 2/6.",
+          work:"Student work: 1/4 + 1/2 = 2/6",
+          options:[
+            "They added numerators and denominators straight across. Use a common denominator: 1/4 + 2/4 = 3/4.",
+            "They multiplied instead of adding.",
+            "They subtracted one fraction from the other.",
+            "They simplified using the wrong numbers."
+          ],
+          correctIndex:0,
+          hint:"Rewrite both fractions with the same denominator.",
+          insight:"Misconception: “add across.” Principle: fraction addition needs a common unit. Correct: 1/4 + 1/2 = 1/4 + 2/4 = 3/4."
+        }
+      ];
+
+      function safeText(s){
+        return (s == null) ? "" : String(s).replace(/\r\n/g,"\n");
+      }
+      function $(id){ return document.getElementById(id); }
+
+      // Top/Study/CSV
       function scrollTopNow(){
         try{
           var se = document.scrollingElement || document.documentElement;
@@ -350,17 +719,18 @@
       function scrollToStudy(){
         var studyCol = document.querySelector(".mq-column-study");
         if (!studyCol) return;
+
         studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
-        var title = $("mq-study-title");
+
+        var title = studyCol.querySelector(".mq-panel-title");
         if (!title) return;
+
         title.classList.add("mq-study-title-highlight");
-        setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 12000);
+        setTimeout(function(){
+          title.classList.remove("mq-study-title-highlight");
+        }, 12000);
       }
 
-      $("mq-top").addEventListener("click", scrollTopNow);
-      $("mq-study-jump").addEventListener("click", scrollToStudy);
-
-      // CSV
       function csvEscape(v){
         v = (v === null || v === undefined) ? "" : String(v);
         if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
@@ -371,69 +741,130 @@
         var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-      $("mq-download-csv").addEventListener("click", function(){
-        downloadCSV("bethemath_session_report.csv", [["timestamp_iso"], [new Date().toISOString()]]);
-      });
 
-      // Custom items storage
-      var CUSTOM_KEY = "bethemath_custom_items_v2";
-      function loadCustomItems(){
-        try{
-          var raw = localStorage.getItem(CUSTOM_KEY);
-          if(!raw) return [];
-          var arr = JSON.parse(raw);
-          return Array.isArray(arr) ? arr : [];
-        }catch(e){ return []; }
+      // State
+      function makeEmptyState(){
+        return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"operations", missed:[], errorWeakness:{} };
       }
-      function saveCustomItems(arr){
-        try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr || [])); return true; }
-        catch(e){ return false; }
-      }
+      var state = makeEmptyState();
+      var players = { p1: { name:"Player 1", state: state } };
+      var activePlayerId = "p1";
+      var lastItemId = null;
 
       var els = {
-        problem:$("mq-custom-problem"),
-        work:$("mq-custom-work"),
-        fix:$("mq-custom-fix"),
-        status:$("mq-custom-status"),
-        list:$("mq-custom-list"),
-        practiceNow:$("mq-custom-practice-now"),
-        add:$("mq-custom-add"),
-        clear:$("mq-custom-clear"),
-        use:$("mq-custom-use"),
-        del:$("mq-custom-delete"),
-        q:$("mq-question"),
-        w:$("mq-work"),
+        grade:$("mq-grade"),
+        track:$("mq-track"),
+        question:$("mq-question"),
+        work:$("mq-work"),
         options:$("mq-options"),
-        feedback:$("mq-feedback")
+        feedback:$("mq-feedback"),
+        queueNote:$("mq-queue-note"),
+        xp:$("mq-xp"),
+        coins:$("mq-coins"),
+        streak:$("mq-streak"),
+        played:$("mq-played"),
+        badges:$("mq-badges"),
+        autosave:$("mq-autosave"),
+        highContrast:$("mq-high-contrast"),
+        dyslexic:$("mq-dyslexic"),
+        reset:$("mq-reset"),
+        insightLog:$("mq-insight-log"),
+        scoreboard:$("mq-scoreboard"),
+        miniXP:$("mq-mini-xp"),
+        miniStreak:$("mq-mini-streak"),
+        miniFocus:$("mq-mini-focus"),
+        miniType:$("mq-mini-type"),
+        customProblem:$("mq-custom-problem"),
+        customWork:$("mq-custom-work"),
+        customFix:$("mq-custom-fix"),
+        customErrorType:$("mq-custom-errortype"),
+        customDifficulty:$("mq-custom-difficulty"),
+        customAdd:$("mq-custom-add"),
+        customPracticeNow:$("mq-custom-practice-now"),
+        customClear:$("mq-custom-clear"),
+        customStatus:$("mq-custom-status"),
+        customList:$("mq-custom-list"),
+        customUse:$("mq-custom-use"),
+        customDelete:$("mq-custom-delete")
       };
 
-      function refreshList(){
-        var items = loadCustomItems();
-        els.list.innerHTML = "";
-        if(items.length === 0){
-          var opt = document.createElement("option");
-          opt.value = ""; opt.textContent = "No custom items yet.";
-          els.list.appendChild(opt);
-          els.list.disabled = true;
+      // Bind top buttons + dock
+      $("mq-top").addEventListener("click", scrollTopNow);
+      $("mq-dock-top").addEventListener("click", scrollTopNow);
+
+      $("mq-study-jump").addEventListener("click", scrollToStudy);
+      $("mq-dock-study").addEventListener("click", scrollToStudy);
+
+      function doDownloadCSV(){
+        var now = new Date();
+        var iso = now.toISOString();
+        var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
+        var rows = [
+          ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
+          [iso, playerName, state.gradeBand, state.track, state.xp, state.coins, state.streak, state.played]
+        ];
+        downloadCSV("bethemath_session_report.csv", rows);
+      }
+      $("mq-download-csv").addEventListener("click", doDownloadCSV);
+      $("mq-dock-download").addEventListener("click", doDownloadCSV);
+
+      // AI modal wiring
+      var MQ_HOST = "https://bethemath.matesuite.ai";
+      var aiOverlay = $("mq-ai-overlay");
+      var aiFrame = $("mq-ai-frame");
+      var aiClose = $("mq-ai-close");
+      var aiBtn = $("mq-ai-generate");
+      var aiAltBtn = $("mq-ai-alt");
+
+      function closeAi(){
+        if(aiOverlay) aiOverlay.style.display = "none";
+        if(aiFrame) aiFrame.src = "about:blank";
+      }
+      function openAi(variant){
+        var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
+        var work = safeText(els.customWork ? els.customWork.value : "").trim();
+        if(!problem || !work){
+          if(els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
           return;
         }
-        els.list.disabled = false;
-        items.forEach(function(ci, idx){
-          var opt = document.createElement("option");
-          opt.value = ci.id;
-          opt.textContent = (idx+1) + ") " + (ci.problem || "Custom item").slice(0,60);
-          els.list.appendChild(opt);
-        });
-      }
+        var url = MQ_HOST + "/ai_tutor"
+          + "?variant=" + encodeURIComponent(variant || "step")
+          + "&problem=" + encodeURIComponent(problem)
+          + "&work=" + encodeURIComponent(work);
 
+        if(aiFrame) aiFrame.src = url;
+        if(aiOverlay) aiOverlay.style.display = "flex";
+      }
+      aiClose.addEventListener("click", closeAi);
+      aiOverlay.addEventListener("click", function(e){ if(e.target === aiOverlay) closeAi(); });
+      aiBtn.addEventListener("click", function(){ openAi("step"); });
+      aiAltBtn.addEventListener("click", function(){ openAi("alt"); });
+
+      window.addEventListener("message", function(event){
+        if(event.origin !== MQ_HOST) return;
+        var data = event.data || {};
+        if(data.type === "btm_clean_fix"){
+          if(els.customFix) els.customFix.value = String(data.text || "");
+          if(els.customStatus) els.customStatus.textContent = "AI fix inserted. Now click Practice Now.";
+        }
+        if(data.type === "btm_close_ai"){
+          closeAi();
+        }
+      });
+
+      // Minimal practice loop for your custom item (Practice Now)
       function renderCustomPractice(problem, work, fix){
-        els.q.textContent = "Custom study: " + problem;
-        els.w.textContent = "Student work (incorrect): " + work;
+        els.question.textContent = "Custom study: " + problem;
+        els.work.textContent = "Student work (incorrect): " + work;
         els.options.innerHTML = "";
+
         var opts = [fix,
           "They made a sign/operation mistake (check the first wrong step).",
           "They used a rule that does not apply in this situation.",
@@ -445,7 +876,8 @@
           btn.className = "mq-option-btn";
           btn.textContent = t;
           btn.addEventListener("click", function(){
-            if(i === 0){
+            var correct = (i === 0);
+            if(correct){
               btn.classList.add("mq-correct");
               els.feedback.textContent = "Nice fix! " + fix;
               els.feedback.className = "mq-feedback mq-feedback-correct";
@@ -457,127 +889,43 @@
           });
           els.options.appendChild(btn);
         });
-        els.feedback.textContent = "Pick the best explanation or fix.";
+
+        els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
         els.feedback.className = "mq-feedback";
         scrollTopNow();
       }
 
-      els.practiceNow.addEventListener("click", function(){
-        var p = safeText(els.problem.value).trim();
-        var w = safeText(els.work.value).trim();
-        var f = safeText(els.fix.value).trim();
+      els.customPracticeNow.addEventListener("click", function(){
+        var p = safeText(els.customProblem.value).trim();
+        var w = safeText(els.customWork.value).trim();
+        var f = safeText(els.customFix.value).trim();
         if(!p || !w){
-          els.status.textContent = "Please fill in Problem + Student work first.";
+          els.customStatus.textContent = "Please fill in Problem + Student work first.";
           return;
         }
         if(!f){
-          els.status.textContent = "Clean fix is empty. Click AI Generate Fix first.";
+          els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
           return;
         }
-        els.status.textContent = "Practicing now.";
+        els.customStatus.textContent = "Practicing now.";
         renderCustomPractice(p, w, f);
       });
 
-      els.add.addEventListener("click", function(){
-        var p = safeText(els.problem.value).trim();
-        var w = safeText(els.work.value).trim();
-        var f = safeText(els.fix.value).trim();
-        if(!p || !w || !f){
-          els.status.textContent = "Fill in all three boxes (or use AI Generate Fix), then Add to Practice.";
-          return;
-        }
-        var items = loadCustomItems();
-        items.unshift({ id:"custom-" + Date.now(), problem:p, work:w, fix:f });
-        if(!saveCustomItems(items)){
-          els.status.textContent = "Could not save (storage unavailable).";
-          return;
-        }
-        els.status.textContent = "Saved to this device. Use Practice Selected anytime.";
-        refreshList();
+      els.customClear.addEventListener("click", function(){
+        els.customProblem.value = "";
+        els.customWork.value = "";
+        els.customFix.value = "";
+        els.customStatus.textContent = "Cleared.";
       });
 
-      els.clear.addEventListener("click", function(){
-        els.problem.value = ""; els.work.value = ""; els.fix.value = "";
-        els.status.textContent = "Cleared.";
-      });
-
-      els.use.addEventListener("click", function(){
-        var id = els.list.value;
-        var items = loadCustomItems();
-        var it = items.find(function(x){ return x.id === id; });
-        if(!it){ els.status.textContent = "No saved custom item selected."; return; }
-        els.status.textContent = "Practicing saved item now.";
-        renderCustomPractice(it.problem, it.work, it.fix);
-      });
-
-      els.del.addEventListener("click", function(){
-        var id = els.list.value;
-        if(!id){ els.status.textContent = "No saved custom item selected."; return; }
-        if(!confirm("Delete this saved custom item?")) return;
-        var items = loadCustomItems().filter(function(x){ return x.id !== id; });
-        saveCustomItems(items);
-        els.status.textContent = "Deleted.";
-        refreshList();
-      });
-
-      // AI modal
-      var host = (window.__BTM_HOST || "https://bethemath.matesuite.ai").replace(/\/$/,"");
-      var token = window.__BTM_UNLOCK_TOKEN || "";
-
-      var overlay = $("mq-ai-overlay");
-      var frame = $("mq-ai-frame");
-      $("mq-ai-close").addEventListener("click", function(){
-        overlay.style.display = "none";
-        frame.src = "about:blank";
-      });
-      overlay.addEventListener("click", function(e){
-        if(e.target === overlay){
-          overlay.style.display = "none";
-          frame.src = "about:blank";
-        }
-      });
-
-      function openAi(variant){
-        var p = safeText(els.problem.value).trim();
-        var w = safeText(els.work.value).trim();
-        if(!p || !w){
-          els.status.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
-          return;
-        }
-        if(!token){
-          els.status.textContent = "Unlock token missing. Refresh the page and try again.";
-          return;
-        }
-        var url = host + "/ai_tutor"
-          + "?token=" + encodeURIComponent(token)
-          + "&variant=" + encodeURIComponent(variant || "step")
-          + "&problem=" + encodeURIComponent(p)
-          + "&work=" + encodeURIComponent(w);
-
-        frame.src = url;
-        overlay.style.display = "flex";
-      }
-
-      $("mq-ai-generate").addEventListener("click", function(){ openAi("step"); });
-      $("mq-ai-alt").addEventListener("click", function(){ openAi("alt"); });
-
-      var origin;
-      try{ origin = new URL(host).origin; }catch(e){ origin = host; }
-
-      window.addEventListener("message", function(event){
-        if(event.origin !== origin) return;
-        var data = event.data || {};
-        if(data.type === "btm_clean_fix"){
-          els.fix.value = String(data.text || "");
-          els.status.textContent = "AI fix inserted. Now click Practice Now.";
-        }
-        if(data.type === "btm_close_ai"){
-          overlay.style.display = "none";
-          frame.src = "about:blank";
-        }
-      });
-
-      refreshList();
+      // Init minimal stats display
+      els.xp.textContent = 0;
+      els.coins.textContent = 0;
+      els.streak.textContent = 0;
+      els.played.textContent = 0;
+      els.question.textContent = "Loading…";
+      els.work.textContent = "Student work will appear here.";
+      els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
     });
   </script>
 </body>
