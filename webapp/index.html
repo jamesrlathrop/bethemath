@@ -39,7 +39,6 @@
     body.mq-high-contrast .mq-stat-value,
     body.mq-high-contrast .mq-badge-chip,
     body.mq-high-contrast .mq-footer-note,
-    body.mq-high-contrast #mq-queue-note,
     body.mq-high-contrast #mq-scoreboard,
     body.mq-high-contrast #mq-about{color:#fff!important;border-color:#fff!important}
     body.mq-high-contrast .mq-option-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
@@ -77,12 +76,14 @@
       background:var(--mq-bg);
       position:sticky;top:0;z-index:20;
       gap:10px;
+      flex-wrap:wrap;
     }
     .mq-topbar-title{
       display:flex;
       flex-direction:column;
       gap:2px;
       min-width:0;
+      flex:1 1 260px;
     }
     .mq-topbar-title strong{
       font-size:15px;
@@ -189,6 +190,7 @@
           "study"
           "right";
       }
+      .mq-dock{display:none}
     }
 
     .mq-panel{
@@ -303,9 +305,8 @@
     .mq-feedback{font-size:12px;color:var(--mq-muted);min-height:18px;line-height:1.35}
     .mq-feedback-correct{color:#bbf7d0}
     .mq-feedback-encouraging{color:var(--mq-warn)}
-    .mq-queue-note{font-size:11px;color:#6b7280;margin-top:2px}
 
-    .mq-insight-log{font-size:11px;color:var(--mq-muted);max-height:140px;overflow-y:auto;padding-right:4px;line-height:1.35}
+    .mq-insight-log{font-size:11px;color:var(--mq-muted);max-height:160px;overflow-y:auto;padding-right:4px;line-height:1.35}
     .mq-badges-row{display:flex;flex-wrap:wrap;gap:6px}
     .mq-badge-chip{
       font-size:10px;
@@ -399,267 +400,7 @@
     }
   </style>
 </head>
-<script>
-(() => {
-  if (window.__BTM_NEXT_FIX_INSTALLED__) return;
-  window.__BTM_NEXT_FIX_INSTALLED__ = true;
-
-  const wait = (ms = 120) => new Promise((r) => setTimeout(r, ms));
-
-  const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
-
-  const challengeRoot = () =>
-    document.querySelector(
-      "#currentChallenge, #current-challenge, [data-current-challenge], .current-challenge, .challenge-card, .challenge-panel, [class*='challenge']"
-    );
-
-  const challengeSnapshot = () => {
-    const root = challengeRoot() || document.body;
-    return norm(root.innerText).slice(0, 500);
-  };
-
-  const findTextNode = (root, selectors) => {
-    for (const sel of selectors) {
-      const el = root.querySelector(sel);
-      if (el) return el;
-    }
-    return null;
-  };
-
-  const extractTitle = (item) => {
-    if (typeof item === "string") return "";
-    return (
-      item?.title ||
-      item?.name ||
-      item?.label ||
-      item?.heading ||
-      ""
-    );
-  };
-
-  const extractBody = (item) => {
-    if (typeof item === "string") return item;
-    return (
-      item?.prompt ||
-      item?.question ||
-      item?.text ||
-      item?.body ||
-      item?.description ||
-      item?.problem ||
-      item?.challenge ||
-      ""
-    );
-  };
-
-  const writeChallengeToDOM = (item) => {
-    const root = challengeRoot();
-    if (!root) return false;
-
-    const title = extractTitle(item);
-    const body = extractBody(item);
-
-    const titleNode = findTextNode(root, [
-      "[data-challenge-title]",
-      ".challenge-title",
-      "h1",
-      "h2",
-      "h3"
-    ]);
-
-    const bodyNode = findTextNode(root, [
-      "[data-challenge-text]",
-      ".challenge-text",
-      ".challenge-prompt",
-      ".challenge-body",
-      "p"
-    ]);
-
-    let changed = false;
-
-    if (titleNode && title) {
-      titleNode.textContent = title;
-      changed = true;
-    }
-
-    if (bodyNode && body) {
-      bodyNode.textContent = body;
-      changed = true;
-    }
-
-    if (!changed && body) {
-      const candidates = [...root.querySelectorAll("div, p, li, span")]
-        .filter((el) => {
-          const t = norm(el.innerText);
-          return (
-            t &&
-            !/study|next|practice now|score|badge/i.test(t)
-          );
-        });
-
-      if (candidates.length) {
-        candidates[0].textContent = body;
-        changed = true;
-      }
-    }
-
-    return changed;
-  };
-
-  const candidateFunctionNames = [
-    "nextChallenge",
-    "goToNextChallenge",
-    "showNextChallenge",
-    "loadNextChallenge",
-    "renderNextChallenge",
-    "advanceChallenge",
-    "newChallenge",
-    "generateChallenge",
-    "loadChallenge",
-    "renderCurrentChallenge",
-    "loadCurrentChallenge",
-    "showCurrentChallenge",
-    "bootCurrentChallenge",
-    "initCurrentChallenge",
-    "mountCurrentChallenge",
-    "refreshCurrentChallenge"
-  ];
-
-  const tryKnownFunctions = async (before) => {
-    for (const name of candidateFunctionNames) {
-      const fn = window[name];
-      if (typeof fn !== "function") continue;
-      try {
-        fn();
-        await wait();
-        if (challengeSnapshot() !== before) return true;
-      } catch (err) {
-        console.warn(`[BTM Next Fix] ${name} failed`, err);
-      }
-    }
-    return false;
-  };
-
-  const getChallengeArraySource = () => {
-    const candidateNames = [
-      "BTM_CHALLENGES",
-      "btmChallenges",
-      "currentChallenges",
-      "challengePool",
-      "challenges",
-      "CURRENT_CHALLENGES"
-    ];
-
-    for (const name of candidateNames) {
-      const arr = window[name];
-      if (Array.isArray(arr) && arr.length > 1) {
-        return arr;
-      }
-    }
-
-    const root = challengeRoot();
-    const ds = root?.dataset?.challenges || document.body?.dataset?.challenges;
-    if (ds) {
-      try {
-        const parsed = JSON.parse(ds);
-        if (Array.isArray(parsed) && parsed.length > 1) return parsed;
-      } catch (_) {}
-    }
-
-    return null;
-  };
-
-  const tryArrayFallback = async (before) => {
-    const arr = getChallengeArraySource();
-    if (!arr || arr.length < 2) return false;
-
-    let idx = Number.isInteger(window.__BTM_CHALLENGE_INDEX__)
-      ? window.__BTM_CHALLENGE_INDEX__
-      : -1;
-
-    for (let i = 0; i < arr.length; i++) {
-      idx = (idx + 1) % arr.length;
-      window.__BTM_CHALLENGE_INDEX__ = idx;
-
-      const item = arr[idx];
-
-      if (typeof window.currentChallenge !== "undefined") {
-        window.currentChallenge = item;
-      }
-
-      const wrote = writeChallengeToDOM(item);
-
-      if (typeof window.renderCurrentChallenge === "function") {
-        try {
-          window.renderCurrentChallenge();
-        } catch (_) {}
-      }
-
-      await wait();
-
-      if (wrote && challengeSnapshot() !== before) return true;
-      if (challengeSnapshot() !== before) return true;
-    }
-
-    return false;
-  };
-
-  const tryEventFallback = async (before) => {
-    const events = [
-      "btm:next-challenge",
-      "btm:challenge-refresh",
-      "btm:current-challenge-refresh"
-    ];
-
-    for (const evtName of events) {
-      try {
-        window.dispatchEvent(new CustomEvent(evtName));
-        document.dispatchEvent(new CustomEvent(evtName));
-        await wait();
-        if (challengeSnapshot() !== before) return true;
-      } catch (_) {}
-    }
-
-    return false;
-  };
-
-  document.addEventListener(
-    "click",
-    async (evt) => {
-      const btn = evt.target.closest("button, a, [role='button'], .btn");
-      if (!btn) return;
-
-      const label = norm(btn.innerText || btn.textContent);
-      if (!/^next$/i.test(label) && !/\bnext\b/i.test(label)) return;
-
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (typeof evt.stopImmediatePropagation === "function") {
-        evt.stopImmediatePropagation();
-      }
-
-      if (window.__BTM_NEXT_FIX_BUSY__) return;
-      window.__BTM_NEXT_FIX_BUSY__ = true;
-
-      try {
-        const before = challengeSnapshot();
-
-        if (await tryKnownFunctions(before)) return;
-        if (await tryArrayFallback(before)) return;
-        if (await tryEventFallback(before)) return;
-
-        console.warn("[BTM Next Fix] Click intercepted, but no challenge change was detected.");
-      } finally {
-        setTimeout(() => {
-          window.__BTM_NEXT_FIX_BUSY__ = false;
-        }, 150);
-      }
-    },
-    true
-  );
-
-  console.log("[BTM Next Fix] Installed.");
-})();
-</script><body>
+<body>
   <div id="mq-root">
     <div class="mq-topbar">
       <div class="mq-topbar-title">
@@ -876,7 +617,7 @@
 
         <div class="mq-panel" style="margin-top:10px;">
           <div class="mq-panel-title">Badges</div>
-          <div class="mq-panel-sub">Earn badges for streaks, XP milestones, and returning to your Fix-It Queue.</div>
+          <div class="mq-panel-sub">Earn badges for streaks and XP milestones.</div>
           <div class="mq-badges-row" id="mq-badges"></div>
         </div>
 
@@ -942,6 +683,139 @@
           correctIndex:0,
           hint:"Rewrite both fractions with the same denominator.",
           insight:"Misconception: “add across.” Principle: fraction addition needs a common unit. Correct: 1/4 + 1/2 = 1/4 + 2/4 = 3/4."
+        },
+        {
+          id:"68-op-2",
+          gradeBand:"6-8",
+          track:"operations",
+          difficulty:"medium",
+          errorType:"distribution",
+          inattention:false,
+          prompt:"A student simplifies 3(x − 4) as 3x − 4.",
+          work:"Student work: 3(x − 4) = 3x − 4",
+          options:[
+            "They forgot to distribute 3 to both terms. Correct: 3(x − 4) = 3x − 12.",
+            "They should have added 3 and 4 first.",
+            "They multiplied x by 4 incorrectly.",
+            "They should have divided everything by 3."
+          ],
+          correctIndex:0,
+          hint:"Distribute the outside factor to every term inside the parentheses.",
+          insight:"Misconception: distribute to only one term. Principle: multiply every term in the group. Correct: 3x − 12."
+        },
+        {
+          id:"68-op-3",
+          gradeBand:"6-8",
+          track:"operations",
+          difficulty:"easy",
+          errorType:"integer-sign",
+          inattention:false,
+          prompt:"A student computes −3 + 8 = −11.",
+          work:"Student work: −3 + 8 = −11",
+          options:[
+            "They treated addition like subtraction of absolute values in the wrong direction. Correct: −3 + 8 = 5.",
+            "They multiplied −3 and 8.",
+            "They forgot that all answers with negatives stay negative.",
+            "They should have written 11 because negatives disappear when adding."
+          ],
+          correctIndex:0,
+          hint:"Compare the sizes of 8 and 3, then keep the sign of the larger value.",
+          insight:"Misconception: any negative makes the answer negative. Principle: for unlike signs, subtract absolute values and keep the sign of the larger number. Correct: 5."
+        },
+        {
+          id:"68-op-4",
+          gradeBand:"6-8",
+          track:"operations",
+          difficulty:"medium",
+          errorType:"combine-like-terms",
+          inattention:false,
+          prompt:"A student combines like terms and gets 2x + 5x² = 7x³.",
+          work:"Student work: 2x + 5x² = 7x³",
+          options:[
+            "They combined unlike terms. 2x and 5x² are not like terms, so the expression stays 2x + 5x².",
+            "They forgot to add the coefficients correctly.",
+            "They should always multiply x terms together.",
+            "They should divide by x first."
+          ],
+          correctIndex:0,
+          hint:"Like terms must have the same variable part and the same exponent.",
+          insight:"Misconception: all x-terms can combine. Principle: only like terms combine. Correct: 2x + 5x² stays as written."
+        },
+        {
+          id:"68-reason-1",
+          gradeBand:"6-8",
+          track:"reasoning",
+          difficulty:"medium",
+          errorType:"proportion",
+          inattention:false,
+          prompt:"A student solves 3/5 = x/20 and gets x = 25.",
+          work:"Student work: 3/5 = x/20, so x = 25",
+          options:[
+            "They added numbers instead of using equivalent ratios. Correct: cross multiply: 5x = 60, so x = 12.",
+            "They should subtract 5 from 20 first.",
+            "They should divide 20 by 5 and get x = 4.",
+            "They should multiply 3 × 5 and 20 × x."
+          ],
+          correctIndex:0,
+          hint:"Use equivalent fractions or cross multiplication.",
+          insight:"Misconception: combine the visible numbers loosely. Principle: preserve equal ratios. Correct: 3/5 = 12/20, so x = 12."
+        },
+        {
+          id:"68-reason-2",
+          gradeBand:"6-8",
+          track:"reasoning",
+          difficulty:"medium",
+          errorType:"equation-solving",
+          inattention:false,
+          prompt:"A student solves 5x − 7 = 18 and gets x = 25.",
+          work:"Student work: 5x − 7 = 18, so x = 25",
+          options:[
+            "They undid the subtraction but forgot to divide by 5. Correct: 5x = 25, so x = 5.",
+            "They should subtract 7 again and get x = 11.",
+            "They should multiply 18 by 5 first.",
+            "They should move the x to the other side."
+          ],
+          correctIndex:0,
+          hint:"Undo operations in reverse order.",
+          insight:"Misconception: stop after isolating the term with x. Principle: isolate x completely. Correct: x = 5."
+        },
+        {
+          id:"68-logic-1",
+          gradeBand:"6-8",
+          track:"logic",
+          difficulty:"easy",
+          errorType:"pattern",
+          inattention:false,
+          prompt:"A student says the next term after 2, 4, 8, 16 is 20.",
+          work:"Student work: 2, 4, 8, 16, 20",
+          options:[
+            "They switched from multiplying by 2 to adding 4. The pattern doubles each time, so the next term is 32.",
+            "They should add 2 each time, so the next term is 18.",
+            "They should subtract 4 each time, so the next term is 12.",
+            "They should square 16 and get 256."
+          ],
+          correctIndex:0,
+          hint:"Look for one rule that works every time.",
+          insight:"Misconception: use a new rule mid-pattern. Principle: keep the same pattern rule. Correct: doubling gives 32."
+        },
+        {
+          id:"68-logic-2",
+          gradeBand:"6-8",
+          track:"logic",
+          difficulty:"easy",
+          errorType:"pattern",
+          inattention:false,
+          prompt:"A student says the next term after 10, 7, 4, 1 is −1.",
+          work:"Student work: 10, 7, 4, 1, −1",
+          options:[
+            "They changed the pattern. The sequence subtracts 3 each time, so the next term is −2.",
+            "They should add 1 and get 2.",
+            "They should subtract 1 and get 0.",
+            "They should double 1 and get 2."
+          ],
+          correctIndex:0,
+          hint:"Compare each pair of consecutive terms.",
+          insight:"Misconception: drift away from the repeated step. Principle: preserve the constant change. Correct: subtract 3 again to get −2."
         }
       ];
 
@@ -967,7 +841,7 @@
         var title = studyCol.querySelector(".mq-panel-title");
         if (!title) return;
         title.classList.add("mq-study-title-highlight");
-        setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 12000);
+        setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 1200);
       }
 
       function csvEscape(v){
@@ -991,12 +865,16 @@
       function makeEmptyState(){
         return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"operations", missed:[], errorWeakness:{} };
       }
+
       var state = makeEmptyState();
-      var players = { p1: { name:"Player 1", state: state } };
+      var players = { p1: { name:"Player 1", state: makeEmptyState() } };
       var activePlayerId = "p1";
+      state = players[activePlayerId].state;
+
       var lastItemId = null;
       var currentItem = null;
       var answeredCurrent = false;
+      var customItems = [];
 
       var els = {
         player:$("mq-player"),
@@ -1103,6 +981,72 @@
         }
       });
 
+      function savePlayers(){
+        try{
+          localStorage.setItem("btm_players", JSON.stringify(players));
+          localStorage.setItem("btm_active_player", activePlayerId);
+        }catch(e){}
+      }
+
+      function loadPlayers(){
+        try{
+          var savedPlayers = JSON.parse(localStorage.getItem("btm_players") || "null");
+          var savedActive = localStorage.getItem("btm_active_player");
+          if (savedPlayers && typeof savedPlayers === "object" && Object.keys(savedPlayers).length){
+            players = savedPlayers;
+          }
+          if (savedActive && players[savedActive]){
+            activePlayerId = savedActive;
+          } else {
+            activePlayerId = Object.keys(players)[0];
+          }
+          if (!players[activePlayerId].state){
+            players[activePlayerId].state = makeEmptyState();
+          }
+          state = players[activePlayerId].state;
+        } catch(e){
+          players = { p1: { name:"Player 1", state: makeEmptyState() } };
+          activePlayerId = "p1";
+          state = players[activePlayerId].state;
+        }
+      }
+
+      function saveCustomItems(){
+        try{
+          localStorage.setItem("btm_custom_items", JSON.stringify(customItems));
+        }catch(e){}
+      }
+
+      function loadCustomItems(){
+        try{
+          var saved = JSON.parse(localStorage.getItem("btm_custom_items") || "[]");
+          if (Array.isArray(saved)) customItems = saved;
+        }catch(e){
+          customItems = [];
+        }
+      }
+
+      function renderBadges(){
+        if (!els.badges) return;
+
+        var defs = [
+          { label:"First Fix", earned:(state.played || 0) >= 1 },
+          { label:"Streak 3", earned:(state.streak || 0) >= 3 },
+          { label:"Streak 5", earned:(state.streak || 0) >= 5 },
+          { label:"XP 50", earned:(state.xp || 0) >= 50 },
+          { label:"XP 100", earned:(state.xp || 0) >= 100 }
+        ];
+
+        els.badges.innerHTML = "";
+
+        defs.forEach(function(b){
+          var chip = document.createElement("div");
+          chip.className = "mq-badge-chip" + (b.earned ? " mq-badge-earned" : "");
+          chip.textContent = b.label;
+          els.badges.appendChild(chip);
+        });
+      }
+
       function updateStats(){
         els.xp.textContent = String(state.xp || 0);
         els.coins.textContent = String(state.coins || 0);
@@ -1116,6 +1060,9 @@
           els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + trackName.charAt(0).toUpperCase() + trackName.slice(1);
         }
         if (els.miniType) els.miniType.textContent = "Focus: common errors & clean fixes";
+
+        renderBadges();
+        savePlayers();
       }
 
       function pushInsight(text){
@@ -1130,6 +1077,7 @@
         if (!els.player) return;
         els.player.innerHTML = "";
         Object.keys(players).forEach(function(pid){
+          if (!players[pid].state) players[pid].state = makeEmptyState();
           var opt = document.createElement("option");
           opt.value = pid;
           opt.textContent = players[pid].name;
@@ -1143,7 +1091,7 @@
           return {
             id: pid,
             name: players[pid].name,
-            xp: players[pid].state.xp || 0
+            xp: (players[pid].state && players[pid].state.xp) || 0
           };
         }).sort(function(a,b){ return b.xp - a.xp; });
 
@@ -1307,17 +1255,29 @@
 
       function refreshCustomList(){
         if (!els.customList) return;
+
         els.customList.innerHTML = "";
-        var opt = document.createElement("option");
-        opt.value = "";
-        opt.textContent = "No saved custom items yet.";
-        els.customList.appendChild(opt);
-        els.customList.disabled = true;
+        if (!customItems.length){
+          var emptyOpt = document.createElement("option");
+          emptyOpt.value = "";
+          emptyOpt.textContent = "No saved custom items yet.";
+          els.customList.appendChild(emptyOpt);
+          els.customList.disabled = true;
+          return;
+        }
+
+        els.customList.disabled = false;
+        customItems.forEach(function(item){
+          var opt = document.createElement("option");
+          opt.value = item.id;
+          opt.textContent = item.problem;
+          els.customList.appendChild(opt);
+        });
       }
 
       function renderCustomPractice(problem, work, fix){
         currentItem = null;
-        answeredCurrent = true;
+        answeredCurrent = false;
 
         if (els.question) els.question.textContent = "Custom study: " + problem;
         if (els.work) els.work.textContent = "Student work (incorrect): " + work;
@@ -1325,10 +1285,12 @@
 
         var opts = [
           fix,
-          "They made a sign/operation mistake (check the first wrong step).",
+          "They made a sign or operation mistake. Check the first wrong step.",
           "They used a rule that does not apply in this situation.",
           "They mixed steps from two different methods."
         ];
+
+        var correctIndex = 0;
 
         opts.forEach(function(t, i){
           var btn = document.createElement("button");
@@ -1337,19 +1299,41 @@
           btn.textContent = t;
 
           btn.addEventListener("click", function(){
-            if (i === 0){
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+
+            var buttons = els.options.querySelectorAll(".mq-option-btn");
+            buttons.forEach(function(b, idx){
+              b.disabled = true;
+              if (idx === correctIndex) b.classList.add("mq-correct");
+            });
+
+            state.played = (state.played || 0) + 1;
+
+            if (i === correctIndex){
               btn.classList.add("mq-correct");
+              state.xp = (state.xp || 0) + 10;
+              state.coins = (state.coins || 0) + 1;
+              state.streak = (state.streak || 0) + 1;
               if (els.feedback){
                 els.feedback.textContent = "Nice fix! " + fix;
                 els.feedback.className = "mq-feedback mq-feedback-correct";
               }
             } else {
               btn.classList.add("mq-incorrect");
+              state.streak = 0;
               if (els.feedback){
                 els.feedback.textContent = "Good attempt. Hint: compare the fix to the first wrong step.";
                 els.feedback.className = "mq-feedback mq-feedback-encouraging";
               }
             }
+
+            updateStats();
+            refreshScoreboard();
+            pushInsight("Custom practice: " + fix);
+
+            if (els.next) els.next.disabled = false;
+            if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
           });
 
           els.options.appendChild(btn);
@@ -1417,13 +1401,15 @@
 
       if (els.playerAdd){
         els.playerAdd.addEventListener("click", function(){
-          var id = "p" + (Object.keys(players).length + 1);
-          players[id] = { name: "Player " + Object.keys(players).length, state: makeEmptyState() };
+          var nextNum = Object.keys(players).length + 1;
+          var id = "p" + nextNum;
+          players[id] = { name: "Player " + nextNum, state: makeEmptyState() };
           activePlayerId = id;
           state = players[activePlayerId].state;
           refreshPlayerUI();
           refreshScoreboard();
           updateStats();
+          savePlayers();
           loadFirstChallenge();
         });
       }
@@ -1434,10 +1420,12 @@
           if (keys.length <= 1) return;
           delete players[activePlayerId];
           activePlayerId = Object.keys(players)[0];
+          if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
           state = players[activePlayerId].state;
           refreshPlayerUI();
           refreshScoreboard();
           updateStats();
+          savePlayers();
           loadFirstChallenge();
         });
       }
@@ -1445,9 +1433,11 @@
       if (els.player){
         els.player.addEventListener("change", function(){
           activePlayerId = els.player.value;
+          if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
           state = players[activePlayerId].state;
           updateStats();
           refreshScoreboard();
+          savePlayers();
           loadFirstChallenge();
         });
       }
@@ -1458,9 +1448,12 @@
           state.coins = 0;
           state.streak = 0;
           state.played = 0;
+          state.gradeBand = els.grade ? els.grade.value : "6-8";
+          state.track = els.track ? els.track.value : "operations";
           if (els.insightLog) els.insightLog.innerHTML = "";
           updateStats();
           refreshScoreboard();
+          savePlayers();
           loadFirstChallenge();
           if (els.autosave) els.autosave.textContent = "Progress reset.";
         });
@@ -1488,19 +1481,55 @@
 
       if (els.customAdd){
         els.customAdd.addEventListener("click", function(){
-          els.customStatus.textContent = "Saved custom items can be added next.";
+          var p = safeText(els.customProblem.value).trim();
+          var w = safeText(els.customWork.value).trim();
+          var f = safeText(els.customFix.value).trim();
+
+          if(!p || !w || !f){
+            els.customStatus.textContent = "Please fill in Problem, Student work, and Clean fix first.";
+            return;
+          }
+
+          var item = {
+            id: "custom-" + Date.now(),
+            problem: p,
+            work: w,
+            fix: f,
+            errorType: els.customErrorType ? els.customErrorType.value : "custom",
+            difficulty: els.customDifficulty ? els.customDifficulty.value : "medium"
+          };
+
+          customItems.unshift(item);
+          saveCustomItems();
+          refreshCustomList();
+          els.customStatus.textContent = "Custom item saved on this device.";
         });
       }
 
       if (els.customUse){
         els.customUse.addEventListener("click", function(){
-          els.customStatus.textContent = "No saved custom item selected yet.";
+          var selectedId = els.customList && els.customList.value;
+          var found = customItems.find(function(item){ return item.id === selectedId; });
+          if (!found){
+            els.customStatus.textContent = "No saved custom item selected yet.";
+            return;
+          }
+          els.customStatus.textContent = "Practicing saved custom item.";
+          renderCustomPractice(found.problem, found.work, found.fix);
         });
       }
 
       if (els.customDelete){
         els.customDelete.addEventListener("click", function(){
-          els.customStatus.textContent = "No saved custom item selected yet.";
+          var selectedId = els.customList && els.customList.value;
+          if (!selectedId){
+            els.customStatus.textContent = "No saved custom item selected yet.";
+            return;
+          }
+          customItems = customItems.filter(function(item){ return item.id !== selectedId; });
+          saveCustomItems();
+          refreshCustomList();
+          els.customStatus.textContent = "Saved custom item deleted.";
         });
       }
 
@@ -1513,6 +1542,8 @@
         });
       }
 
+      loadPlayers();
+      loadCustomItems();
       loadSettingsOnly();
       applyAccessibility();
       refreshPlayerUI();
@@ -1522,217 +1553,5 @@
       loadFirstChallenge();
     });
   </script>
-<script>
-(() => {
-  if (window.__BTM_SMOKE__) return;
-  window.__BTM_SMOKE__ = true;
-
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-  const visible = (el) => {
-    if (!el) return false;
-    const style = window.getComputedStyle(el);
-    const rect = el.getBoundingClientRect();
-    return style.display !== "none" &&
-           style.visibility !== "hidden" &&
-           rect.width > 0 &&
-           rect.height > 0;
-  };
-
-  const allButtons = () =>
-    [...document.querySelectorAll('button, a, [role="button"], .btn')]
-      .filter(visible);
-
-  const findButton = (regex) =>
-    allButtons().find((el) => regex.test((el.innerText || el.textContent || "").trim()));
-
-  const challengeRegion = () => {
-    const direct =
-      document.querySelector("#currentChallenge, #current-challenge, [data-current-challenge], .current-challenge, .challenge-card, [class*='challenge']");
-    if (direct) return direct;
-
-    return [...document.querySelectorAll("section, div, article, main")]
-      .find((el) => /Current Challenge/i.test((el.innerText || "").trim()));
-  };
-
-  const snapshotChallenge = () => {
-    const region = challengeRegion();
-    if (region) {
-      return (region.innerText || "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 240);
-    }
-    return (document.body.innerText || "")
-      .replace(/\s+/g, " ")
-      .match(/Current Challenge.{0,240}/i)?.[0] || "";
-  };
-
-  const panel = document.createElement("div");
-  panel.id = "btm-smoke-panel";
-  panel.style.cssText = `
-    position: fixed;
-    right: 14px;
-    bottom: 14px;
-    z-index: 999999;
-    width: 320px;
-    max-width: calc(100vw - 28px);
-    background: rgba(2, 6, 23, 0.96);
-    color: #e5e7eb;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    box-shadow: 0 12px 36px rgba(0,0,0,.35);
-    padding: 12px 12px 10px;
-    font: 13px/1.4 system-ui, -apple-system, Segoe UI, sans-serif;
-  `;
-  panel.innerHTML = `
-    <div style="font-weight:700; margin-bottom:8px;">BeTheMath Smoke Test</div>
-    <div id="btm-smoke-lines" style="display:grid; gap:6px;"></div>
-    <div style="margin-top:10px; opacity:.78; font-size:12px;">
-      Reload page after edits to rerun.
-    </div>
-  `;
-  document.body.appendChild(panel);
-
-  const lines = panel.querySelector("#btm-smoke-lines");
-
-  const addLine = (label, status, detail = "") => {
-    const color =
-      status === "PASS" ? "#22c55e" :
-      status === "FAIL" ? "#ef4444" :
-      "#facc15";
-
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <div style="display:flex; gap:8px; align-items:flex-start;">
-        <span style="
-          display:inline-block;
-          min-width:48px;
-          text-align:center;
-          font-weight:700;
-          color:#020617;
-          background:${color};
-          border-radius:999px;
-          padding:1px 8px;
-          font-size:11px;
-          margin-top:1px;
-        ">${status}</span>
-        <div>
-          <div style="font-weight:600;">${label}</div>
-          ${detail ? `<div style="opacity:.8; margin-top:1px;">${detail}</div>` : ""}
-        </div>
-      </div>
-    `;
-    lines.appendChild(row);
-  };
-
-  async function testCurrentChallengeBoot() {
-    await wait(500);
-    const region = challengeRegion();
-    const text = snapshotChallenge();
-    const ok = !!region || /Current Challenge/i.test(document.body.innerText || "");
-    addLine(
-      "Current Challenge boot",
-      ok ? "PASS" : "FAIL",
-      ok
-        ? (text ? `Found: ${text.slice(0, 110)}${text.length > 110 ? "…" : ""}` : "Challenge region detected.")
-        : "No Current Challenge area detected after boot."
-    );
-    return ok;
-  }
-
-  async function testNextButton() {
-    await wait(250);
-    const nextBtn = findButton(/^next$/i) || findButton(/\bnext\b/i);
-    if (!nextBtn) {
-      addLine("Next button", "FAIL", "Visible Next button not found.");
-      return false;
-    }
-
-    const before = snapshotChallenge();
-    nextBtn.click();
-    await wait(500);
-    const after = snapshotChallenge();
-
-    const ok = !!after && after !== before;
-    addLine(
-      "Next button",
-      ok ? "PASS" : "FAIL",
-      ok
-        ? "Challenge content changed after click."
-        : "Clicked Next, but challenge content did not change."
-    );
-    return ok;
-  }
-
-  async function testStudyToPracticeNow() {
-    await wait(250);
-    const studyBtn =
-      findButton(/^study$/i) ||
-      findButton(/\bstudy\b/i);
-
-    if (!studyBtn) {
-      addLine("Study → Practice Now", "FAIL", "Visible Study button not found.");
-      return false;
-    }
-
-    studyBtn.click();
-    await wait(500);
-
-    const practiceNowBtn =
-      findButton(/^practice now$/i) ||
-      findButton(/\bpractice now\b/i);
-
-    if (!practiceNowBtn) {
-      addLine("Study → Practice Now", "FAIL", "Study opened, but Practice Now button was not found.");
-      return false;
-    }
-
-    const before = {
-      snapshot: snapshotChallenge(),
-      practiceVisible: /practice/i.test(document.body.innerText || "")
-    };
-
-    practiceNowBtn.click();
-    await wait(600);
-
-    const answerInput =
-      document.querySelector('input[type="text"], textarea, input:not([type]), input[type="number"]');
-    const practiceNowStillVisible = !!findButton(/^practice now$/i) || !!findButton(/\bpractice now\b/i);
-    const afterSnapshot = snapshotChallenge();
-
-    const ok =
-      !!answerInput ||
-      !practiceNowStillVisible ||
-      afterSnapshot !== before.snapshot;
-
-    addLine(
-      "Study → Practice Now",
-      ok ? "PASS" : "FAIL",
-      ok
-        ? "Returned to an active practice state."
-        : "Practice Now click did not clearly return to practice."
-    );
-    return ok;
-  }
-
-  async function run() {
-    lines.innerHTML = "";
-    addLine("Smoke test", "WARN", "Running checks…");
-    await wait(150);
-
-    lines.innerHTML = "";
-    await testCurrentChallengeBoot();
-    await testNextButton();
-    await testStudyToPracticeNow();
-  }
-
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(run, 700);
-  } else {
-    window.addEventListener("DOMContentLoaded", () => setTimeout(run, 700), { once: true });
-  }
-})();
-</script>
 </body>
 </html>
