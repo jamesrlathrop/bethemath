@@ -370,10 +370,24 @@
 }
 
 /* Make Study buttons stand out */
-#mq-study-jump, #mq-dock-study {
-  border-color: rgba(250,204,21,.65) !important;
-  background: rgba(250,204,21,.12) !important;
-  color: #fde68a !important;
+
+/* Highlight the Study title (not the button) */
+.mq-study-title-highlight{
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: inline-block;
+  background: rgba(250, 204, 21, 0.16);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
+}
+
+@keyframes mqPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.mq-study-title-highlight{
+  animation: mqPulse 1.2s ease;
 }
  
  </style>
@@ -802,17 +816,31 @@
 
       function $(id){ return document.getElementById(id); }
 
-      // ---- Top/Study/CSV (Topbar + Dock) ----
-      function scrollTopNow(){
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }
+  // ---- Top/Study/CSV (Topbar + Dock) ----
+function scrollTopNow(){
+  try{
+    var se = document.scrollingElement || document.documentElement;
+    if (se && se.scrollTo) se.scrollTo({ top: 0, behavior: "smooth" });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
+    if (se) se.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }catch(e){}
+}
 
-      function scrollToStudy(){
-        var studyPanel = document.querySelector(".mq-column-study");
-        if (studyPanel) studyPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+function scrollToStudy(){
+  var studyCol = document.querySelector(".mq-column-study");
+  if (!studyCol) return;
+
+  studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  var title = studyCol.querySelector(".mq-panel-title");
+  if (!title) return;
+
+  title.classList.add("mq-study-title-highlight");
+  setTimeout(function(){
+    title.classList.remove("mq-study-title-highlight");
+  }, 1600);
+}
 
       function csvEscape(v){
         v = (v === null || v === undefined) ? "" : String(v);
