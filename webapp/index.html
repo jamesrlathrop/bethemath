@@ -1184,49 +1184,76 @@
         }
         if (els.options) els.options.innerHTML = "";
 
-        (item.options || []).forEach(function(optText, i){
-          var btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "mq-option-btn";
-          btn.textContent = optText;
+var choices = (item.options || []).map(function(optText, idx){
+  return {
+    text: optText,
+    isCorrect: idx === item.correctIndex
+  };
+});
 
-          btn.addEventListener("click", function(){
-            if (answeredCurrent) return;
-            answeredCurrent = true;
+for (var i = choices.length - 1; i > 0; i--) {
+  var j = Math.floor(Math.random() * (i + 1));
+  var temp = choices[i];
+  choices[i] = choices[j];
+  choices[j] = temp;
+}
 
-            var correct = i === item.correctIndex;
-            var buttons = els.options.querySelectorAll(".mq-option-btn");
+var correctText = "";
+choices.forEach(function(choice){
+  if (choice.isCorrect) correctText = choice.text;
+});
 
-            buttons.forEach(function(b, idx){
-              b.disabled = true;
-              if (idx === item.correctIndex) b.classList.add("mq-correct");
-            });
+choices.forEach(function(choice){
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "mq-option-btn";
+  btn.textContent = choice.text;
 
-            state.played = (state.played || 0) + 1;
+  btn.addEventListener("click", function(){
+    if (answeredCurrent) return;
+    answeredCurrent = true;
 
-            if (correct){
-              btn.classList.add("mq-correct");
-              state.xp = (state.xp || 0) + 10;
-              state.coins = (state.coins || 0) + 1;
-              state.streak = (state.streak || 0) + 1;
+    var buttons = els.options.querySelectorAll(".mq-option-btn");
 
-              if (els.feedback){
-                els.feedback.textContent = "Correct. " + (item.insight || "");
-                els.feedback.className = "mq-feedback mq-feedback-correct";
-              }
-            } else {
-              btn.classList.add("mq-incorrect");
-              state.streak = 0;
+    buttons.forEach(function(b, idx){
+      b.disabled = true;
+      if (choices[idx] && choices[idx].isCorrect) b.classList.add("mq-correct");
+    });
 
-              if (els.feedback){
-                els.feedback.textContent =
-                  (item.hint || "Try again by checking the first wrong step.") +
-                  " Correct fix: " +
-                  ((item.options && item.options[item.correctIndex]) || "");
-                els.feedback.className = "mq-feedback mq-feedback-encouraging";
-              }
-            }
+    state.played = (state.played || 0) + 1;
 
+    if (choice.isCorrect){
+      btn.classList.add("mq-correct");
+      state.xp = (state.xp || 0) + 10;
+      state.coins = (state.coins || 0) + 1;
+      state.streak = (state.streak || 0) + 1;
+
+      if (els.feedback){
+        els.feedback.textContent = "Correct. " + (item.insight || "");
+        els.feedback.className = "mq-feedback mq-feedback-correct";
+      }
+    } else {
+      btn.classList.add("mq-incorrect");
+      state.streak = 0;
+
+      if (els.feedback){
+        els.feedback.textContent =
+          (item.hint || "Try again by checking the first wrong step.") +
+          " Correct fix: " + correctText;
+        els.feedback.className = "mq-feedback mq-feedback-encouraging";
+      }
+    }
+
+    updateStats();
+    refreshScoreboard();
+    pushInsight(item.insight);
+
+    if (els.next) els.next.disabled = false;
+    if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+  });
+
+  els.options.appendChild(btn);
+});
             updateStats();
             refreshScoreboard();
             pushInsight(item.insight);
