@@ -17,27 +17,67 @@ st.markdown(
 )
 
 def fallback_clean_fix(problem: str, work: str, variant: str = "step") -> str:
+    import math
+
     problem = (problem or "").strip()
     work = (work or "").strip()
 
     if not work and not problem:
         return ""
 
-    text = work or problem
-    text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text).strip()
-
     if variant == "alt":
         lead = "Another clear way to think about it:"
     else:
         lead = "My corrected thinking:"
 
-    if text and text[-1] not in ".!?":
-        text += "."
+    source = f"{problem} {work}".strip()
+
+    # Handle simple fraction simplification like "simplify 3/27"
+    m = re.search(r"simplify\s+(-?\d+)\s*/\s*(-?\d+)", source, re.IGNORECASE)
+    if not m:
+        m = re.search(r"(-?\d+)\s*/\s*(-?\d+)", source)
+
+    if m:
+        num = int(m.group(1))
+        den = int(m.group(2))
+
+        if den == 0:
+            return f"{lead} A fraction cannot have a denominator of 0."
+
+        g = math.gcd(abs(num), abs(den))
+        simp_num = num // g
+        simp_den = den // g
+
+        if g == 1:
+            return (
+                f"{lead} The fraction {num}/{den} is already in simplest form because "
+                f"the numerator and denominator do not share a common factor greater than 1."
+            )
+
+        return (
+            f"{lead} To simplify {num}/{den}, divide both the numerator and denominator by {g}. "
+            f"{num} ÷ {g} = {simp_num}. {den} ÷ {g} = {simp_den}. "
+            f"So {num}/{den} = {simp_num}/{simp_den}."
+        )
+
+    # Safer generic fallback: do not repeat incorrect work as if it were correct
+    if problem and work:
+        return (
+            f"{lead} The student's work is incorrect. Start again from the original problem and "
+            f"correct the mistake step by step. Problem: {problem}. "
+            f"Incorrect work: {work}. Explain what went wrong, then show the corrected steps clearly."
+        )
 
     if problem:
-        return f"{lead} For {problem}, the mistake in the work should be corrected step by step. {text}"
-    return f"{lead} {text}"
+        return (
+            f"{lead} Start from the original problem and work it out step by step. "
+            f"Problem: {problem}."
+        )
+
+    return (
+        f"{lead} The student's work needs to be corrected step by step. "
+        f"Incorrect work: {work}."
+    )
 
 def generate_clean_fix(problem: str, work: str, variant: str = "step") -> str:
     try:
