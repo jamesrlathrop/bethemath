@@ -1170,104 +1170,93 @@
       }
 
       function renderItem(item){
-        currentItem = item;
-        answeredCurrent = false;
-        lastItemId = item.id;
+  currentItem = item;
+  answeredCurrent = false;
+  lastItemId = item.id;
 
-        if (els.next) els.next.disabled = true;
-        if (els.queueNote) els.queueNote.textContent = "Ready";
-        if (els.question) els.question.textContent = item.prompt || "Solve the item.";
-        if (els.work) els.work.textContent = item.work || "Student work will appear here.";
-        if (els.feedback){
-          els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
-          els.feedback.className = "mq-feedback";
-        }
-        if (els.options) els.options.innerHTML = "";
+  if (els.next) els.next.disabled = true;
+  if (els.queueNote) els.queueNote.textContent = "Ready";
+  if (els.question) els.question.textContent = item.prompt || "Solve the item.";
+  if (els.work) els.work.textContent = item.work || "Student work will appear here.";
+  if (els.feedback){
+    els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
+    els.feedback.className = "mq-feedback";
+  }
+  if (els.options) els.options.innerHTML = "";
 
-var choices = (item.options || []).map(function(optText, idx){
-  return {
-    text: optText,
-    isCorrect: idx === item.correctIndex
-  };
-});
-
-for (var i = choices.length - 1; i > 0; i--) {
-  var j = Math.floor(Math.random() * (i + 1));
-  var temp = choices[i];
-  choices[i] = choices[j];
-  choices[j] = temp;
-}
-
-var correctText = "";
-choices.forEach(function(choice){
-  if (choice.isCorrect) correctText = choice.text;
-});
-
-choices.forEach(function(choice){
-  var btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "mq-option-btn";
-  btn.textContent = choice.text;
-
-  btn.addEventListener("click", function(){
-    if (answeredCurrent) return;
-    answeredCurrent = true;
-
-    var buttons = els.options.querySelectorAll(".mq-option-btn");
-
-    buttons.forEach(function(b, idx){
-      b.disabled = true;
-      if (choices[idx] && choices[idx].isCorrect) b.classList.add("mq-correct");
-    });
-
-    state.played = (state.played || 0) + 1;
-
-    if (choice.isCorrect){
-      btn.classList.add("mq-correct");
-      state.xp = (state.xp || 0) + 10;
-      state.coins = (state.coins || 0) + 1;
-      state.streak = (state.streak || 0) + 1;
-
-      if (els.feedback){
-        els.feedback.textContent = "Correct. " + (item.insight || "");
-        els.feedback.className = "mq-feedback mq-feedback-correct";
-      }
-    } else {
-      btn.classList.add("mq-incorrect");
-      state.streak = 0;
-
-      if (els.feedback){
-        els.feedback.textContent =
-          (item.hint || "Try again by checking the first wrong step.") +
-          " Correct fix: " + correctText;
-        els.feedback.className = "mq-feedback mq-feedback-encouraging";
-      }
-    }
-
-    updateStats();
-    refreshScoreboard();
-    pushInsight(item.insight);
-
-    if (els.next) els.next.disabled = false;
-    if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+  var choices = (item.options || []).map(function(optText, idx){
+    return {
+      text: optText,
+      isCorrect: idx === item.correctIndex
+    };
   });
 
-  els.options.appendChild(btn);
-});
-            updateStats();
-            refreshScoreboard();
-            pushInsight(item.insight);
+  for (var i = choices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = choices[i];
+    choices[i] = choices[j];
+    choices[j] = temp;
+  }
 
-            if (els.next) els.next.disabled = false;
-            if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
-          });
+  var correctText = "";
+  choices.forEach(function(choice){
+    if (choice.isCorrect) correctText = choice.text;
+  });
 
-          els.options.appendChild(btn);
-        });
+  choices.forEach(function(choice){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mq-option-btn";
+    btn.textContent = choice.text;
 
-        updateStats();
+    btn.addEventListener("click", function(){
+      if (answeredCurrent) return;
+      answeredCurrent = true;
+
+      var buttons = els.options.querySelectorAll(".mq-option-btn");
+
+      buttons.forEach(function(b, idx){
+        b.disabled = true;
+        if (choices[idx] && choices[idx].isCorrect) b.classList.add("mq-correct");
+      });
+
+      state.played = (state.played || 0) + 1;
+
+      if (choice.isCorrect){
+        btn.classList.add("mq-correct");
+        state.xp = (state.xp || 0) + 10;
+        state.coins = (state.coins || 0) + 1;
+        state.streak = (state.streak || 0) + 1;
+
+        if (els.feedback){
+          els.feedback.textContent = "Correct. " + (item.insight || "");
+          els.feedback.className = "mq-feedback mq-feedback-correct";
+        }
+      } else {
+        btn.classList.add("mq-incorrect");
+        state.streak = 0;
+
+        if (els.feedback){
+          els.feedback.textContent =
+            (item.hint || "Try again by checking the first wrong step.") +
+            " Correct fix: " + correctText;
+          els.feedback.className = "mq-feedback mq-feedback-encouraging";
+        }
       }
 
+      updateStats();
+      refreshScoreboard();
+      pushInsight(item.insight);
+
+      if (els.next) els.next.disabled = false;
+      if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+    });
+
+    els.options.appendChild(btn);
+  });
+
+  updateStats();
+}
       function loadFirstChallenge(){
         var item = chooseNextItem();
         if (!item){
