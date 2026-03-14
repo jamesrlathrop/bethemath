@@ -1290,81 +1290,86 @@
           els.customList.appendChild(opt);
         });
       }
+      
+function renderCustomPractice(problem, work, fix){
+  currentItem = null;
+  answeredCurrent = false;
 
-      function renderCustomPractice(problem, work, fix){
-        currentItem = null;
-        answeredCurrent = false;
+  if (els.question) els.question.textContent = "Custom study: " + problem;
+  if (els.work) els.work.textContent = "Student work (incorrect): " + work;
+  if (els.options) els.options.innerHTML = "";
 
-        if (els.question) els.question.textContent = "Custom study: " + problem;
-        if (els.work) els.work.textContent = "Student work (incorrect): " + work;
-        if (els.options) els.options.innerHTML = "";
+  var opts = [
+    { text: "Use this clean fix: " + fix, isCorrect: true },
+    { text: "Keep the student's original work: " + work, isCorrect: false },
+    { text: "Only change the final answer. The method is already correct.", isCorrect: false },
+    { text: "The student’s work is acceptable as written.", isCorrect: false }
+  ];
 
-        var opts = [
-          fix,
-          "They made a sign or operation mistake. Check the first wrong step.",
-          "They used a rule that does not apply in this situation.",
-          "They mixed steps from two different methods."
-        ];
+  for (var k = opts.length - 1; k > 0; k--) {
+    var m = Math.floor(Math.random() * (k + 1));
+    var tempOpt = opts[k];
+    opts[k] = opts[m];
+    opts[m] = tempOpt;
+  }
 
-        var correctIndex = 0;
+  opts.forEach(function(choice){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mq-option-btn";
+    btn.textContent = choice.text;
 
-        opts.forEach(function(t, i){
-          var btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "mq-option-btn";
-          btn.textContent = t;
+    btn.addEventListener("click", function(){
+      if (answeredCurrent) return;
+      answeredCurrent = true;
 
-          btn.addEventListener("click", function(){
-            if (answeredCurrent) return;
-            answeredCurrent = true;
+      var buttons = els.options.querySelectorAll(".mq-option-btn");
+      buttons.forEach(function(b, idx){
+        b.disabled = true;
+        if (opts[idx] && opts[idx].isCorrect) b.classList.add("mq-correct");
+      });
 
-            var buttons = els.options.querySelectorAll(".mq-option-btn");
-            buttons.forEach(function(b, idx){
-              b.disabled = true;
-              if (idx === correctIndex) b.classList.add("mq-correct");
-            });
+      state.played = (state.played || 0) + 1;
 
-            state.played = (state.played || 0) + 1;
-
-            if (i === correctIndex){
-              btn.classList.add("mq-correct");
-              state.xp = (state.xp || 0) + 10;
-              state.coins = (state.coins || 0) + 1;
-              state.streak = (state.streak || 0) + 1;
-              if (els.feedback){
-                els.feedback.textContent = "Nice fix! " + fix;
-                els.feedback.className = "mq-feedback mq-feedback-correct";
-              }
-            } else {
-              btn.classList.add("mq-incorrect");
-              state.streak = 0;
-              if (els.feedback){
-                els.feedback.textContent = "Good attempt. Hint: compare the fix to the first wrong step.";
-                els.feedback.className = "mq-feedback mq-feedback-encouraging";
-              }
-            }
-
-            updateStats();
-            refreshScoreboard();
-            pushInsight("Custom practice: " + fix);
-
-            if (els.next) els.next.disabled = false;
-            if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
-          });
-
-          els.options.appendChild(btn);
-        });
-
+      if (choice.isCorrect){
+        btn.classList.add("mq-correct");
+        state.xp = (state.xp || 0) + 10;
+        state.coins = (state.coins || 0) + 1;
+        state.streak = (state.streak || 0) + 1;
         if (els.feedback){
-          els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
-          els.feedback.className = "mq-feedback";
+          els.feedback.textContent = "Correct. Step-by-step clean fix: " + fix;
+          els.feedback.className = "mq-feedback mq-feedback-correct";
         }
-        if (els.queueNote) els.queueNote.textContent = "Custom practice item";
-        if (els.next) els.next.disabled = true;
-
-        scrollTopNow();
+      } else {
+        btn.classList.add("mq-incorrect");
+        state.streak = 0;
+        if (els.feedback){
+          els.feedback.textContent =
+            "Not quite. Compare the student's incorrect work to this clean fix: " + fix;
+          els.feedback.className = "mq-feedback mq-feedback-encouraging";
+        }
       }
 
+      updateStats();
+      refreshScoreboard();
+      pushInsight("Custom practice: " + fix);
+
+      if (els.next) els.next.disabled = false;
+      if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+    });
+
+    els.options.appendChild(btn);
+  });
+
+  if (els.feedback){
+    els.feedback.textContent = "Which option best corrects the student's work?";
+    els.feedback.className = "mq-feedback";
+  }
+  if (els.queueNote) els.queueNote.textContent = "Custom practice item";
+  if (els.next) els.next.disabled = true;
+
+  scrollTopNow();
+}
       if (els.next){
         els.next.addEventListener("click", function(){
           var item = chooseNextItem();
