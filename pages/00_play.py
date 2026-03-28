@@ -18,9 +18,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# IMPORTANT: run access gate BEFORE forcing dark background (prevents unreadable black gate)
-if not require_access_code(label="Access code"):
-    st.stop()
+# IMPORTANT: run access gate BEFORE forcing dark background
+LOCAL_DEV_BYPASS = os.getenv("BTM_LOCAL_DEV_BYPASS", "").strip() == "1"
+
+if not LOCAL_DEV_BYPASS:
+    if not require_access_code(label="Access code"):
+        st.stop()
 
 # After unlock, make it feel like an app
 st.markdown(
@@ -36,17 +39,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Build a short-lived signed token so the in-game AI modal can open /ai_tutor
-# even though it starts a new Streamlit session.
 APP_URL = os.getenv("APP_URL", "https://bethemath.matesuite.ai").rstrip("/")
-SECRET = (os.getenv("BTM_AI_TUTOR_SECRET") or os.getenv("ADMIN_CODE") or "").encode("utf-8")
+SECRET = (os.getenv("BTM_AI_TUTOR_SECRET") or "").encode("utf-8")
 
-ts = int(time.time())
-payload = f"{ts}"
-sig = hmac.new(SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
-UNLOCK_TOKEN = f"{ts}.{sig}"
+UNLOCK_TOKEN = ""
+if SECRET:
+    ts = int(time.time())
+    payload = f"{ts}"
+    sig = hmac.new(SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()[:32]
+    UNLOCK_TOKEN = f"{ts}.{sig}"
 
-# Load the game
 WEB_DIR = Path("webapp")
 INDEX = WEB_DIR / "index.html"
 if not INDEX.exists():
@@ -55,12 +57,15 @@ if not INDEX.exists():
 
 html = INDEX.read_text(encoding="utf-8", errors="ignore")
 
+
 def _is_local(p: str) -> bool:
     p = (p or "").strip()
     return p and not p.startswith(("http://", "https://", "data:", "mailto:", "#"))
 
+
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
+
 
 def _data_uri(path: Path) -> str:
     mime, _ = mimetypes.guess_type(str(path))
@@ -68,10 +73,11 @@ def _data_uri(path: Path) -> str:
     b64 = base64.b64encode(path.read_bytes()).decode("utf-8")
     return f"data:{mime};base64,{b64}"
 
-def _resolve(p: str) -> Path:
-    return WEB_DIR / p.lstrip("/")
 
-# Inline CSS
+def _resolve(p: str) -> Path:
+    clean = (p or "").split("?", 1)[0].split("#", 1)[0]
+    return WEB_DIR / clean.lstrip("/")
+
 def repl_css(m):
     href = m.group(1)
     if not _is_local(href):
@@ -81,9 +87,10 @@ def repl_css(m):
         return f"<style>\n{_read_text(f)}\n</style>"
     return m.group(0)
 
+
 html = re.sub(r'<link[^>]+href="([^"]+\.css[^"]*)"[^>]*>', repl_css, html, flags=re.IGNORECASE)
 
-# Inline JS
+
 def repl_js(m):
     src = m.group(1)
     attrs = m.group(2) or ""
@@ -95,9 +102,10 @@ def repl_js(m):
         return f"<script{type_attr}>\n{_read_text(f)}\n</script>"
     return m.group(0)
 
+
 html = re.sub(r'<script[^>]+src="([^"]+\.js[^"]*)"([^>]*)>\s*</script>', repl_js, html, flags=re.IGNORECASE)
 
-# Inline images
+
 def repl_img(m):
     src = m.group(1)
     if not _is_local(src):
@@ -107,9 +115,9 @@ def repl_img(m):
         return m.group(0).replace(src, _data_uri(f))
     return m.group(0)
 
+
 html = re.sub(r'<img[^>]+src="([^"]+)"[^>]*>', repl_img, html, flags=re.IGNORECASE)
 
-# Inject host + token into the game (so the modal can open AI Tutor safely)
 inject = f"""
 <script>
   window.__BTM_HOST = {APP_URL!r};

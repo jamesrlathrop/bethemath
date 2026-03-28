@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>BeTheMath — Error Detective</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     :root{
       --mq-bg:#020617;
@@ -18,386 +17,136 @@
       --mq-scale:1;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
+    html,body{
+      margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       background:radial-gradient(circle at top,var(--mq-bg) 0,var(--mq-bg) 55%,#000 100%);
       color:var(--mq-text);
-      overflow-x:hidden;
     }
-
     body.mq-high-contrast{background:#000!important;color:#fff!important}
     body.mq-high-contrast .mq-topbar,
     body.mq-high-contrast .mq-shell{background:#000!important}
     body.mq-high-contrast .mq-panel,
     body.mq-high-contrast .mq-game-card{background:#000!important;border-color:#fff!important;box-shadow:none!important}
-    body.mq-high-contrast .mq-question-text,
-    body.mq-high-contrast .mq-work,
-    body.mq-high-contrast .mq-panel-title,
-    body.mq-high-contrast .mq-panel-sub,
-    body.mq-high-contrast .mq-stat-pill,
-    body.mq-high-contrast .mq-stat-value,
-    body.mq-high-contrast .mq-badge-chip,
-    body.mq-high-contrast .mq-footer-note,
-    body.mq-high-contrast #mq-scoreboard,
-    body.mq-high-contrast #mq-about{color:#fff!important;border-color:#fff!important}
     body.mq-high-contrast .mq-option-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
     body.mq-high-contrast .mq-option-btn.mq-correct{background:#00ff00!important;color:#000!important;border-color:#00ff00!important}
     body.mq-high-contrast .mq-option-btn.mq-incorrect{background:#ff0033!important;color:#fff!important;border-color:#ff0033!important}
-    body.mq-high-contrast .mq-small-btn,
-    body.mq-high-contrast .mq-reset-btn{background:#000!important;color:#fff!important;border-color:#fff!important}
-    body.mq-high-contrast .mq-modebar{border-color:#fff!important}
-    body.mq-high-contrast .mq-mode-btn{color:#fff!important}
-    body.mq-high-contrast .mq-mode-btn-active{background:#fff!important;color:#000!important}
-
     body.mq-dyslexic{
-      font-family:"OpenDyslexic","Comic Sans MS","Arial Rounded MT Bold",
-        system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-family:"OpenDyslexic","Comic Sans MS","Arial Rounded MT Bold",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       line-height:1.5;
     }
-    body.mq-dyslexic #mq-root{letter-spacing:.02em}
-
     #mq-root{
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      transform-origin:top center;
-      transform:scale(var(--mq-scale));
-      width: calc(100% / var(--mq-scale));
-      margin: 0 auto;
+      min-height:100vh;display:flex;flex-direction:column;transform-origin:top center;
+      transform:scale(var(--mq-scale));width:calc(100% / var(--mq-scale));margin:0 auto;max-width:100%;overflow-x:hidden;
     }
-
     .mq-topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:6px 12px;
-      border-bottom:1px solid var(--mq-border);
-      background:var(--mq-bg);
-      position:sticky;top:0;z-index:20;
-      gap:10px;
-      flex-wrap:wrap;
+      display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid var(--mq-border);
+      background:var(--mq-bg);position:sticky;top:0;z-index:20;gap:10px;flex-wrap:wrap;
     }
-    .mq-topbar-title{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width:0;
-      flex:1 1 260px;
-    }
-    .mq-topbar-title strong{
-      font-size:15px;
-      letter-spacing:.04em;
-      font-weight:700;
-      color:var(--mq-text);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .mq-topbar-title span{
-      font-size:11px;
-      color:var(--mq-muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
+    .mq-topbar-title{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 260px}
+    .mq-topbar-title strong{font-size:15px;letter-spacing:.04em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mq-topbar-title span{font-size:11px;color:var(--mq-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .mq-buy-btn{
-      text-decoration:none;
-      border-radius:999px;
-      border:1px solid rgba(34,197,94,.45);
-      padding:7px 12px;
-      background:rgba(34,197,94,.12);
-      color:#bbf7d0;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.06em;
-      cursor:pointer;
-      appearance:none;
-      -webkit-appearance:none;
-      font-family:inherit;
-      flex:0 0 auto;
+      text-decoration:none;border-radius:999px;border:1px solid rgba(34,197,94,.45);padding:7px 12px;
+      background:rgba(34,197,94,.12);color:#bbf7d0;font-size:12px;font-weight:800;letter-spacing:.06em;cursor:pointer;
+      appearance:none;-webkit-appearance:none;font-family:inherit;flex:0 0 auto;
     }
     .mq-buy-btn:hover{background:rgba(34,197,94,.18)}
-
-    .mq-modebar{
-      display:inline-flex;
-      gap:4px;
-      border-radius:999px;
-      padding:2px;
-      background:var(--mq-bg);
-      border:1px solid var(--mq-border);
-      flex:0 0 auto;
-    }
-    .mq-mode-btn{
-      border:none;
-      background:transparent;
-      color:var(--mq-muted);
-      font-size:12px;
-      padding:5px 12px;
-      border-radius:999px;
-      cursor:default;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .mq-mode-btn-active{
-      background:var(--mq-accent-soft);
-      color:#bbf7d0;
-      font-weight:700;
-    }
-
-    .mq-dock{
-      position: fixed;
-      right: 12px;
-      bottom: 12px;
-      z-index: 3000;
-      display: flex;
-      gap: 8px;
-    }
-
+    .mq-modebar{display:inline-flex;gap:4px;border-radius:999px;padding:2px;background:var(--mq-bg);border:1px solid var(--mq-border);flex:0 0 auto}
+    .mq-mode-btn{border:none;background:transparent;color:var(--mq-muted);font-size:12px;padding:5px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .mq-mode-btn-active{background:var(--mq-accent-soft);color:#bbf7d0;font-weight:700}
+    .mq-dock{position:fixed;right:12px;bottom:12px;z-index:3000;display:flex;gap:8px}
     .mq-shell{
-      display:grid;
-      flex:1;
-      padding:6px;
-      gap:12px;
-      align-items:start;
-      grid-template-columns: 270px minmax(360px, 1fr) 320px 270px;
-      grid-template-areas: "left center study right";
+      display:grid;flex:1;padding:6px;gap:12px;align-items:start;
+      grid-template-columns:270px minmax(360px, 1fr) 320px 270px;
+      grid-template-areas:"left center study right";width:100%;min-width:0;
     }
     .mq-column{display:flex;flex-direction:column;gap:12px;min-width:0}
-    .mq-column-left{grid-area:left}
-    .mq-column-center{grid-area:center}
-    .mq-column-study{grid-area:study; scroll-margin-top:72px;}
-    .mq-column-right{grid-area:right}
-
+    .mq-column-left{grid-area:left}.mq-column-center{grid-area:center}.mq-column-study{grid-area:study;scroll-margin-top:72px}.mq-column-right{grid-area:right}
     @media(max-width:1500px){
-      .mq-shell{
-        grid-template-columns: 270px 1fr 270px;
-        grid-template-areas:
-          "left center right"
-          "study study study";
-      }
+      .mq-shell{grid-template-columns:270px 1fr 270px;grid-template-areas:"left center right" "study study study";}
     }
     @media(max-width:900px){
-      .mq-shell{
-        grid-template-columns: 1fr;
-        grid-template-areas:
-          "left"
-          "center"
-          "study"
-          "right";
-      }
+      .mq-shell{grid-template-columns:1fr;grid-template-areas:"left" "center" "study" "right";}
       .mq-dock{display:none}
     }
-
-    .mq-panel{
-      background:rgba(15,23,42,.92);
-      border-radius:16px;
-      border:1px solid rgba(148,163,184,.22);
-      padding:10px 12px;
-      box-shadow:0 18px 40px rgba(15,23,42,.7);
+    .mq-panel,.mq-game-card{
+      background:rgba(15,23,42,.92);border-radius:16px;border:1px solid rgba(148,163,184,.22);padding:10px 12px;box-shadow:0 18px 40px rgba(15,23,42,.7);min-width:0;
     }
-    .mq-panel-title{
-      font-size:12px;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--mq-muted);
-      margin-bottom:6px;
-    }
-    .mq-panel-sub{
-      font-size:11px;
-      color:#6b7280;
-      margin-bottom:8px;
-      line-height:1.35;
-    }
-
-    .mq-field{margin-bottom:8px;display:flex;flex-direction:column;gap:3px}
-    .mq-label{
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--mq-muted);
-    }
+    .mq-game-card{border-radius:20px;border-color:rgba(148,163,184,.25);padding:14px 16px 16px;box-shadow:0 22px 50px rgba(15,23,42,.8)}
+    .mq-study-card{min-height:520px}
+    .mq-panel-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--mq-muted);margin-bottom:6px}
+    .mq-panel-sub{font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.35}
+    .mq-field{margin-bottom:8px;display:flex;flex-direction:column;gap:3px;min-width:0}
+    .mq-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--mq-muted)}
     .mq-player-row{display:flex;gap:6px;align-items:center}
-    .mq-player-row select{flex:1}
-
-    select,input[type="range"], textarea, input[type="text"]{
-      width:100%;
-      padding:6px 8px;
-      border-radius:10px;
-      border:1px solid var(--mq-border);
-      background:var(--mq-bg);
-      color:var(--mq-text);
-      font-size:13px;
+    .mq-player-row select{flex:1;min-width:0}
+    select,input[type="range"],textarea,input[type="text"]{
+      width:100%;max-width:100%;padding:6px 8px;border-radius:10px;border:1px solid var(--mq-border);background:var(--mq-bg);color:var(--mq-text);font-size:13px;min-width:0;
     }
     textarea{min-height:76px;resize:vertical;line-height:1.35}
-
-    .mq-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .mq-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px}
     .mq-toggle-row label{font-size:12px;color:var(--mq-muted)}
     .mq-toggle-row input[type="checkbox"]{transform:scale(1.1)}
-
-    .mq-game-card{
-      background:rgba(15,23,42,.92);
-      border-radius:20px;
-      border:1px solid rgba(148,163,184,.25);
-      padding:14px 16px 16px;
-      box-shadow:0 22px 50px rgba(15,23,42,.8);
-    }
-    .mq-study-card{min-height:520px;}
     .mq-game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px}
-    .mq-game-title{
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.16em;
-      text-transform:uppercase;
-      color:var(--mq-muted);
-    }
+    .mq-game-title{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mq-muted)}
     #game-container{
-      width:100%;
-      height:70px;
-      border-radius:16px;
-      border:1px solid var(--mq-border);
+      width:100%;max-width:100%;height:70px;border-radius:16px;border:1px solid var(--mq-border);
       background:linear-gradient(135deg, rgba(34,197,94,.10), rgba(2,6,23,.9));
-      margin-bottom:10px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:12px 14px;
-      gap:10px;
+      margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;gap:10px;min-width:0;
     }
     #game-container .mq-mini-stat{display:flex;flex-direction:column;gap:2px;min-width:0}
-    #game-container .mq-mini-stat strong{font-size:12px;color:var(--mq-text)}
+    #game-container .mq-mini-stat strong{font-size:12px}
     #game-container .mq-mini-stat span{font-size:10px;color:var(--mq-muted)}
-
-    .mq-question-text{font-size:14px;margin-bottom:6px;color:var(--mq-text)}
+    .mq-question-text{font-size:14px;margin-bottom:6px}
     .mq-work{
       font-family:"SF Mono",ui-monospace,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:13px;
-      padding:8px 10px;
-      border-radius:10px;
-      background:var(--mq-bg);
-      border:1px solid #111827;
-      color:var(--mq-text);
-      margin-bottom:6px;
-      white-space:pre-wrap;
+      font-size:13px;padding:8px 10px;border-radius:10px;background:var(--mq-bg);border:1px solid #111827;margin-bottom:6px;white-space:pre-wrap;width:100%;max-width:100%;
     }
-    .mq-options{display:flex;flex-direction:column;gap:8px;margin-top:8px;margin-bottom:8px}
+    .mq-options{display:flex;flex-direction:column;gap:8px;margin-top:8px;margin-bottom:8px;min-width:0}
     .mq-option-btn{
-      text-align:left;
-      border-radius:12px;
-      border:1px solid var(--mq-border);
-      padding:10px 12px;
-      background:var(--mq-bg);
-      color:var(--mq-text);
-      font-size:13px;
-      cursor:pointer;
-      transition:transform .07s ease, border-color .14s ease;
+      text-align:left;border-radius:12px;border:1px solid var(--mq-border);padding:10px 12px;background:var(--mq-bg);color:var(--mq-text);font-size:13px;cursor:pointer;
+      transition:transform .07s ease, border-color .14s ease;width:100%;max-width:100%;
     }
     .mq-option-btn:hover:not(:disabled){border-color:#334155;transform:translateY(-1px)}
     .mq-option-btn:disabled{opacity:.86;cursor:default}
     .mq-option-btn.mq-correct{background:rgba(34,197,94,.12);border-color:var(--mq-accent)}
     .mq-option-btn.mq-incorrect{background:rgba(239,68,68,.12);border-color:#f97373}
-
     .mq-feedback{font-size:12px;color:var(--mq-muted);min-height:18px;line-height:1.35}
     .mq-feedback-correct{color:#bbf7d0}
     .mq-feedback-encouraging{color:var(--mq-warn)}
-
+    .mq-review{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--mq-border);background:rgba(34,197,94,.06);width:100%;max-width:100%}
+    .mq-review-line{font-size:12px;line-height:1.45;color:var(--mq-muted);margin-bottom:6px;overflow-wrap:anywhere}
+    .mq-review-line:last-child{margin-bottom:0}
+    .mq-review-label{color:var(--mq-text);font-weight:700;margin-right:6px}
     .mq-insight-log{font-size:11px;color:var(--mq-muted);max-height:160px;overflow-y:auto;padding-right:4px;line-height:1.35}
     .mq-badges-row{display:flex;flex-wrap:wrap;gap:6px}
-    .mq-badge-chip{
-      font-size:10px;
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid var(--mq-border);
-      color:var(--mq-muted);
-      background:var(--mq-bg);
-      white-space:nowrap;
-    }
+    .mq-badge-chip{font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--mq-border);color:var(--mq-muted);background:var(--mq-bg);white-space:nowrap}
     .mq-badge-earned{background:rgba(34,197,94,.16);color:#bbf7d0;border-color:var(--mq-accent)}
-
     .mq-stat-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
-    .mq-stat-pill{
-      font-size:11px;
-      padding:4px 10px;
-      border-radius:999px;
-      background:var(--mq-bg);
-      border:1px solid var(--mq-border);
-      color:var(--mq-muted);
-    }
+    .mq-stat-pill{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--mq-bg);border:1px solid var(--mq-border);color:var(--mq-muted)}
     .mq-stat-value{color:var(--mq-text);font-weight:700;margin-left:6px}
-
     .mq-reset-btn,.mq-small-btn{
-      border-radius:999px;
-      border:1px solid var(--mq-border);
-      padding:6px 10px;
-      background:var(--mq-bg);
-      color:var(--mq-text);
-      font-size:11px;
-      cursor:pointer;
+      border-radius:999px;border:1px solid var(--mq-border);padding:6px 10px;background:var(--mq-bg);color:var(--mq-text);font-size:11px;cursor:pointer;max-width:100%;
     }
     .mq-reset-btn:hover,.mq-small-btn:hover{background:#111827}
     .mq-reset-btn{border-color:#f97373;color:#fecaca}
     .mq-sfx-on{border-color:var(--mq-accent);color:#bbf7d0}
-
     .mq-footer-note{font-size:10px;color:#6b7280;margin-top:6px;line-height:1.35}
     #mq-about{font-size:11px;color:var(--mq-muted);line-height:1.45}
     #mq-about ul{margin:6px 0 0;padding-left:18px}
-
     .mq-divider{height:1px;background:rgba(148,163,184,.18);margin:10px 0}
-    .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap}
-    .mq-inline-row > *{flex:1}
-    .mq-note{font-size:11px;color:#9ca3af;line-height:1.4}
-
+    .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap;min-width:0}
+    .mq-inline-row > *{flex:1;min-width:0}
+    .mq-note{font-size:11px;color:#9ca3af;line-height:1.4;overflow-wrap:anywhere}
     .mq-study-title-highlight{
-      border-radius: 10px;
-      padding: 6px 10px;
-      display: inline-block;
-      background: rgba(250, 204, 21, 0.16);
-      border: 1px solid rgba(250, 204, 21, 0.55);
-      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
-      animation: mqPulse 1.2s ease;
+      border-radius:10px;padding:6px 10px;display:inline-block;background:rgba(250, 204, 21, 0.16);border:1px solid rgba(250, 204, 21, 0.55);box-shadow:0 0 0 4px rgba(250, 204, 21, 0.10);animation:mqPulse 1.2s ease;
     }
-    @keyframes mqPulse {
-      0%   { transform: scale(1); }
-      35%  { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-
-    .mq-ai-overlay{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.65);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:5000;
-    }
-    .mq-ai-modal{
-      width:min(920px,96vw);
-      height:min(720px,92vh);
-      background:rgba(15,23,42,.98);
-      border:1px solid rgba(148,163,184,.25);
-      border-radius:18px;
-      overflow:hidden;
-      box-shadow:0 30px 80px rgba(0,0,0,.6);
-    }
-    .mq-ai-head{
-      height:46px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:8px 10px;
-      border-bottom:1px solid rgba(148,163,184,.18);
-    }
-    .mq-ai-frame{
-      width:100%;
-      height:calc(100% - 46px);
-      border:0;
-      background:#020617;
-    }
+    @keyframes mqPulse {0%{transform:scale(1)}35%{transform:scale(1.02)}100%{transform:scale(1)}}
+    .mq-ai-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:5000}
+    .mq-ai-modal{width:min(920px,96vw);height:min(720px,92vh);background:rgba(15,23,42,.98);border:1px solid rgba(148,163,184,.25);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+    .mq-ai-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid rgba(148,163,184,.18)}
+    .mq-ai-frame{width:100%;height:calc(100% - 46px);border:0;background:#020617}
   </style>
 </head>
 <body>
@@ -450,7 +199,8 @@
           <div class="mq-field">
             <span class="mq-label">Track</span>
             <select id="mq-track">
-              <option value="operations" selected>Operations</option>
+              <option value="all" selected>All Tracks</option>
+              <option value="operations">Operations</option>
               <option value="reasoning">Reasoning</option>
               <option value="logic">Logic &amp; Patterns</option>
             </select>
@@ -470,14 +220,13 @@
           <div class="mq-toggle-row">
             <label for="mq-high-contrast">High contrast</label>
             <input id="mq-high-contrast" type="checkbox" />
-          </div>
-          <div class="mq-toggle-row">
+          </div>          <div class="mq-toggle-row">
             <label for="mq-dyslexic">Dyslexic-friendly font</label>
             <input id="mq-dyslexic" type="checkbox" />
           </div>
 
           <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="mq-sfx-toggle" type="button" class="mq-small-btn">SFX: ON</button>
+            <button id="mq-sfx-toggle" type="button" class="mq-small-btn mq-sfx-on">SFX: ON</button>
             <button id="mq-reset" type="button" class="mq-reset-btn">Reset Progress</button>
           </div>
 
@@ -509,8 +258,8 @@
 
           <div id="game-container">
             <div class="mq-mini-stat">
-              <strong id="mq-mini-focus">6–8 • Operations</strong>
-              <span id="mq-mini-type">Focus: common errors &amp; clean fixes</span>
+              <strong id="mq-mini-focus">6–8 • All Tracks</strong>
+              <span id="mq-mini-type">Focus: mixed practice across tracks</span>
             </div>
             <div class="mq-mini-stat" style="text-align:right;">
               <strong>XP <span id="mq-mini-xp">0</span></strong>
@@ -522,6 +271,12 @@
           <div class="mq-work" id="mq-work">Student work will appear here.</div>
           <div class="mq-options" id="mq-options"></div>
           <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix for the student's work.</div>
+
+          <div class="mq-review" id="mq-review">
+            <div class="mq-review-line" id="mq-review-result"></div>
+            <div class="mq-review-line" id="mq-review-fix"></div>
+            <div class="mq-review-line" id="mq-review-alt"></div>
+          </div>
 
           <div style="margin-top:6px; display:flex; justify-content:flex-end;">
             <button id="mq-next" type="button" class="mq-small-btn" disabled>Next ▶</button>
@@ -613,9 +368,7 @@
             <div class="mq-stat-pill">Streak <span class="mq-stat-value" id="mq-streak">0</span></div>
             <div class="mq-stat-pill">Played <span class="mq-stat-value" id="mq-played">0</span></div>
           </div>
-        </div>
-
-        <div class="mq-panel" style="margin-top:10px;">
+        </div>        <div class="mq-panel" style="margin-top:10px;">
           <div class="mq-panel-title">Badges</div>
           <div class="mq-panel-sub">Earn badges for streaks and XP milestones.</div>
           <div class="mq-badges-row" id="mq-badges"></div>
@@ -636,7 +389,7 @@
               <li>Use 5–10 minutes as a warm-up (same band + track).</li>
               <li>Ask: “What mistaken idea caused this?” then “What’s the clean fix?”</li>
               <li>If a learner misses an item, read the hint together before the next one.</li>
-              <li>Rotate tracks: Operations → Reasoning → Logic &amp; Patterns.</li>
+              <li>Rotate tracks or use All Tracks for mixed practice.</li>
             </ul>
           </div>
         </div>
@@ -653,926 +406,786 @@
   <div class="mq-ai-overlay" id="mq-ai-overlay">
     <div class="mq-ai-modal">
       <div class="mq-ai-head">
-        <div style="font-weight:800; letter-spacing:.06em; font-size:12px; color:#9ca3af; text-transform:uppercase;">
-          AI Tutor
-        </div>
+        <div style="font-weight:800; letter-spacing:.06em; font-size:12px; color:#9ca3af; text-transform:uppercase;">AI Tutor</div>
         <button id="mq-ai-close" type="button" class="mq-small-btn">Close</button>
       </div>
       <iframe id="mq-ai-frame" class="mq-ai-frame" src="about:blank"></iframe>
     </div>
   </div>
 
+  <script src="btm_items.js?v=120fix1"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var ITEMS = [
-        {
-          id:"68-op-1",
-          gradeBand:"6-8",
-          track:"operations",
-          difficulty:"medium",
-          errorType:"fraction-addition",
-          inattention:false,
-          prompt:"A student adds fractions and gets 1/4 + 1/2 = 2/6.",
-          work:"Student work: 1/4 + 1/2 = 2/6",
-          options:[
-            "They added numerators and denominators straight across. Use a common denominator: 1/4 + 2/4 = 3/4.",
-            "They multiplied instead of adding.",
-            "They subtracted one fraction from the other.",
-            "They simplified using the wrong numbers."
-          ],
-          correctIndex:0,
-          hint:"Rewrite both fractions with the same denominator.",
-          insight:"Misconception: “add across.” Principle: fraction addition needs a common unit. Correct: 1/4 + 1/2 = 1/4 + 2/4 = 3/4."
-        },
-        {
-          id:"68-op-2",
-          gradeBand:"6-8",
-          track:"operations",
-          difficulty:"medium",
-          errorType:"distribution",
-          inattention:false,
-          prompt:"A student simplifies 3(x − 4) as 3x − 4.",
-          work:"Student work: 3(x − 4) = 3x − 4",
-          options:[
-            "They forgot to distribute 3 to both terms. Correct: 3(x − 4) = 3x − 12.",
-            "They should have added 3 and 4 first.",
-            "They multiplied x by 4 incorrectly.",
-            "They should have divided everything by 3."
-          ],
-          correctIndex:0,
-          hint:"Distribute the outside factor to every term inside the parentheses.",
-          insight:"Misconception: distribute to only one term. Principle: multiply every term in the group. Correct: 3x − 12."
-        },
-        {
-          id:"68-op-3",
-          gradeBand:"6-8",
-          track:"operations",
-          difficulty:"easy",
-          errorType:"integer-sign",
-          inattention:false,
-          prompt:"A student computes −3 + 8 = −11.",
-          work:"Student work: −3 + 8 = −11",
-          options:[
-            "They treated addition like subtraction of absolute values in the wrong direction. Correct: −3 + 8 = 5.",
-            "They multiplied −3 and 8.",
-            "They forgot that all answers with negatives stay negative.",
-            "They should have written 11 because negatives disappear when adding."
-          ],
-          correctIndex:0,
-          hint:"Compare the sizes of 8 and 3, then keep the sign of the larger value.",
-          insight:"Misconception: any negative makes the answer negative. Principle: for unlike signs, subtract absolute values and keep the sign of the larger number. Correct: 5."
-        },
-        {
-          id:"68-op-4",
-          gradeBand:"6-8",
-          track:"operations",
-          difficulty:"medium",
-          errorType:"combine-like-terms",
-          inattention:false,
-          prompt:"A student combines like terms and gets 2x + 5x² = 7x³.",
-          work:"Student work: 2x + 5x² = 7x³",
-          options:[
-            "They combined unlike terms. 2x and 5x² are not like terms, so the expression stays 2x + 5x².",
-            "They forgot to add the coefficients correctly.",
-            "They should always multiply x terms together.",
-            "They should divide by x first."
-          ],
-          correctIndex:0,
-          hint:"Like terms must have the same variable part and the same exponent.",
-          insight:"Misconception: all x-terms can combine. Principle: only like terms combine. Correct: 2x + 5x² stays as written."
-        },
-        {
-          id:"68-reason-1",
-          gradeBand:"6-8",
-          track:"reasoning",
-          difficulty:"medium",
-          errorType:"proportion",
-          inattention:false,
-          prompt:"A student solves 3/5 = x/20 and gets x = 25.",
-          work:"Student work: 3/5 = x/20, so x = 25",
-          options:[
-            "They added numbers instead of using equivalent ratios. Correct: cross multiply: 5x = 60, so x = 12.",
-            "They should subtract 5 from 20 first.",
-            "They should divide 20 by 5 and get x = 4.",
-            "They should multiply 3 × 5 and 20 × x."
-          ],
-          correctIndex:0,
-          hint:"Use equivalent fractions or cross multiplication.",
-          insight:"Misconception: combine the visible numbers loosely. Principle: preserve equal ratios. Correct: 3/5 = 12/20, so x = 12."
-        },
-        {
-          id:"68-reason-2",
-          gradeBand:"6-8",
-          track:"reasoning",
-          difficulty:"medium",
-          errorType:"equation-solving",
-          inattention:false,
-          prompt:"A student solves 5x − 7 = 18 and gets x = 25.",
-          work:"Student work: 5x − 7 = 18, so x = 25",
-          options:[
-            "They undid the subtraction but forgot to divide by 5. Correct: 5x = 25, so x = 5.",
-            "They should subtract 7 again and get x = 11.",
-            "They should multiply 18 by 5 first.",
-            "They should move the x to the other side."
-          ],
-          correctIndex:0,
-          hint:"Undo operations in reverse order.",
-          insight:"Misconception: stop after isolating the term with x. Principle: isolate x completely. Correct: x = 5."
-        },
-        {
-          id:"68-logic-1",
-          gradeBand:"6-8",
-          track:"logic",
-          difficulty:"easy",
-          errorType:"pattern",
-          inattention:false,
-          prompt:"A student says the next term after 2, 4, 8, 16 is 20.",
-          work:"Student work: 2, 4, 8, 16, 20",
-          options:[
-            "They switched from multiplying by 2 to adding 4. The pattern doubles each time, so the next term is 32.",
-            "They should add 2 each time, so the next term is 18.",
-            "They should subtract 4 each time, so the next term is 12.",
-            "They should square 16 and get 256."
-          ],
-          correctIndex:0,
-          hint:"Look for one rule that works every time.",
-          insight:"Misconception: use a new rule mid-pattern. Principle: keep the same pattern rule. Correct: doubling gives 32."
-        },
-        {
-          id:"68-logic-2",
-          gradeBand:"6-8",
-          track:"logic",
-          difficulty:"easy",
-          errorType:"pattern",
-          inattention:false,
-          prompt:"A student says the next term after 10, 7, 4, 1 is −1.",
-          work:"Student work: 10, 7, 4, 1, −1",
-          options:[
-            "They changed the pattern. The sequence subtracts 3 each time, so the next term is −2.",
-            "They should add 1 and get 2.",
-            "They should subtract 1 and get 0.",
-            "They should double 1 and get 2."
-          ],
-          correctIndex:0,
-          hint:"Compare each pair of consecutive terms.",
-          insight:"Misconception: drift away from the repeated step. Principle: preserve the constant change. Correct: subtract 3 again to get −2."
+  document.addEventListener("DOMContentLoaded", function () {
+    var ITEMS = Array.isArray(window.BTM_ITEMS) ? window.BTM_ITEMS.slice() : [];
+
+    function safeText(s){ return (s == null) ? "" : String(s).replace(/\r\n/g, "\n"); }
+    function escapeHtml(s){
+      return safeText(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    }
+    function $(id){ return document.getElementById(id); }
+
+    function scrollTopNow(){
+      try{
+        var se = document.scrollingElement || document.documentElement;
+        if (se && se.scrollTo) se.scrollTo({ top: 0, behavior: "smooth" });
+        else window.scrollTo({ top: 0, behavior: "smooth" });
+      }catch(e){}
+    }
+
+    function scrollToStudy(){
+      var studyCol = document.querySelector(".mq-column-study");
+      if (!studyCol) return;
+      studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
+      var title = studyCol.querySelector(".mq-panel-title");
+      if (!title) return;
+      title.classList.add("mq-study-title-highlight");
+      setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 1200);
+    }
+
+    function csvEscape(v){
+      v = (v === null || v === undefined) ? "" : String(v);
+      if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
+      return v;
+    }
+
+    function downloadCSV(filename, rows){
+      var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
+      var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function makeEmptyState(){
+      return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"all", missed:[], errorWeakness:{} };
+    }
+
+    function makeUniquePlayerId(){
+      var n = 1;
+      while (players["p" + n]) n += 1;
+      return "p" + n;
+    }
+
+    function shuffleArray(arr){
+      var out = arr.slice();
+      for (var i = out.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = out[i]; out[i] = out[j]; out[j] = temp;
+      }
+      return out;
+    }
+
+    function getTrackLabel(track){
+      var map = { all:"All Tracks", operations:"Operations", reasoning:"Reasoning", logic:"Logic & Patterns" };
+      return map[track] || "All Tracks";
+    }
+
+    var state = makeEmptyState();
+    var players = { p1: { name:"Player 1", state: makeEmptyState() } };
+    var activePlayerId = "p1";
+    state = players[activePlayerId].state;
+
+    var currentItem = null;
+    var answeredCurrent = false;
+    var customItems = [];
+    var currentDeck = [];
+    var currentDeckKey = "";
+    var lastServedItemId = null;
+
+    var els = {
+      player:$("mq-player"), playerAdd:$("mq-player-add"), playerDelete:$("mq-player-delete"),
+      grade:$("mq-grade"), track:$("mq-track"), delay:$("mq-delay"), scale:$("mq-scale"),
+      question:$("mq-question"), work:$("mq-work"), options:$("mq-options"), feedback:$("mq-feedback"),
+      review:$("mq-review"), reviewResult:$("mq-review-result"), reviewFix:$("mq-review-fix"), reviewAlt:$("mq-review-alt"),
+      queueNote:$("mq-queue-note"), xp:$("mq-xp"), coins:$("mq-coins"), streak:$("mq-streak"), played:$("mq-played"),
+      badges:$("mq-badges"), autosave:$("mq-autosave"), highContrast:$("mq-high-contrast"), dyslexic:$("mq-dyslexic"),
+      reset:$("mq-reset"), insightLog:$("mq-insight-log"), scoreboard:$("mq-scoreboard"), miniXP:$("mq-mini-xp"),
+      miniStreak:$("mq-mini-streak"), miniFocus:$("mq-mini-focus"), miniType:$("mq-mini-type"), next:$("mq-next"),
+      sfxToggle:$("mq-sfx-toggle"), customProblem:$("mq-custom-problem"), customWork:$("mq-custom-work"),
+      customFix:$("mq-custom-fix"), customErrorType:$("mq-custom-errortype"), customDifficulty:$("mq-custom-difficulty"),
+      customAdd:$("mq-custom-add"), customPracticeNow:$("mq-custom-practice-now"), customClear:$("mq-custom-clear"),
+      customStatus:$("mq-custom-status"), customList:$("mq-custom-list"), customUse:$("mq-custom-use"),
+      customDelete:$("mq-custom-delete")
+    };
+
+    function savePlayers(){
+      try{
+        localStorage.setItem("btm_players", JSON.stringify(players));
+        localStorage.setItem("btm_active_player", activePlayerId);
+      }catch(e){}
+    }
+
+    function loadPlayers(){
+      try{
+        var savedPlayers = JSON.parse(localStorage.getItem("btm_players") || "null");
+        var savedActive = localStorage.getItem("btm_active_player");
+        if (savedPlayers && typeof savedPlayers === "object" && Object.keys(savedPlayers).length){
+          players = savedPlayers;
         }
-      ];
-
-      function safeText(s){
-        return (s == null) ? "" : String(s).replace(/\r\n/g,"\n");
-      }
-      function $(id){ return document.getElementById(id); }
-
-      function scrollTopNow(){
-        try{
-          var se = document.scrollingElement || document.documentElement;
-          if (se && se.scrollTo) se.scrollTo({ top: 0, behavior: "smooth" });
-          else window.scrollTo({ top: 0, behavior: "smooth" });
-          if (se) se.scrollTop = 0;
-          document.body.scrollTop = 0;
-        }catch(e){}
-      }
-
-      function scrollToStudy(){
-        var studyCol = document.querySelector(".mq-column-study");
-        if (!studyCol) return;
-        studyCol.scrollIntoView({ behavior: "smooth", block: "start" });
-        var title = studyCol.querySelector(".mq-panel-title");
-        if (!title) return;
-        title.classList.add("mq-study-title-highlight");
-        setTimeout(function(){ title.classList.remove("mq-study-title-highlight"); }, 1200);
-      }
-
-      function csvEscape(v){
-        v = (v === null || v === undefined) ? "" : String(v);
-        if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"';
-        return v;
-      }
-      function downloadCSV(filename, rows){
-        var csv = rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
-        var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-
-      function makeEmptyState(){
-        return { xp:0, coins:0, streak:0, played:0, gradeBand:"6-8", track:"operations", missed:[], errorWeakness:{} };
-      }
-
-      var state = makeEmptyState();
-      var players = { p1: { name:"Player 1", state: makeEmptyState() } };
-      var activePlayerId = "p1";
-      state = players[activePlayerId].state;
-
-      var lastItemId = null;
-      var currentItem = null;
-      var answeredCurrent = false;
-      var customItems = [];
-
-      var els = {
-        player:$("mq-player"),
-        playerAdd:$("mq-player-add"),
-        playerDelete:$("mq-player-delete"),
-        grade:$("mq-grade"),
-        track:$("mq-track"),
-        delay:$("mq-delay"),
-        scale:$("mq-scale"),
-        question:$("mq-question"),
-        work:$("mq-work"),
-        options:$("mq-options"),
-        feedback:$("mq-feedback"),
-        queueNote:$("mq-queue-note"),
-        xp:$("mq-xp"),
-        coins:$("mq-coins"),
-        streak:$("mq-streak"),
-        played:$("mq-played"),
-        badges:$("mq-badges"),
-        autosave:$("mq-autosave"),
-        highContrast:$("mq-high-contrast"),
-        dyslexic:$("mq-dyslexic"),
-        reset:$("mq-reset"),
-        insightLog:$("mq-insight-log"),
-        scoreboard:$("mq-scoreboard"),
-        miniXP:$("mq-mini-xp"),
-        miniStreak:$("mq-mini-streak"),
-        miniFocus:$("mq-mini-focus"),
-        miniType:$("mq-mini-type"),
-        next:$("mq-next"),
-        sfxToggle:$("mq-sfx-toggle"),
-        customProblem:$("mq-custom-problem"),
-        customWork:$("mq-custom-work"),
-        customFix:$("mq-custom-fix"),
-        customErrorType:$("mq-custom-errortype"),
-        customDifficulty:$("mq-custom-difficulty"),
-        customAdd:$("mq-custom-add"),
-        customPracticeNow:$("mq-custom-practice-now"),
-        customClear:$("mq-custom-clear"),
-        customStatus:$("mq-custom-status"),
-        customList:$("mq-custom-list"),
-        customUse:$("mq-custom-use"),
-        customDelete:$("mq-custom-delete")
-      };
-
-      $("mq-top").addEventListener("click", scrollTopNow);
-      $("mq-dock-top").addEventListener("click", scrollTopNow);
-      $("mq-study-jump").addEventListener("click", scrollToStudy);
-      $("mq-dock-study").addEventListener("click", scrollToStudy);
-
-      function doDownloadCSV(){
-        var now = new Date();
-        var iso = now.toISOString();
-        var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
-        var rows = [
-          ["timestamp_iso","player","grade_band","track","xp","coins","streak","played"],
-          [iso, playerName, state.gradeBand, state.track, state.xp, state.coins, state.streak, state.played]
-        ];
-        downloadCSV("bethemath_session_report.csv", rows);
-      }
-      $("mq-download-csv").addEventListener("click", doDownloadCSV);
-      $("mq-dock-download").addEventListener("click", doDownloadCSV);
-
-      var MQ_HOST = "https://bethemath.matesuite.ai";
-      var aiOverlay = $("mq-ai-overlay");
-      var aiFrame = $("mq-ai-frame");
-      var aiClose = $("mq-ai-close");
-      var aiBtn = $("mq-ai-generate");
-      var aiAltBtn = $("mq-ai-alt");
-
-      function closeAi(){
-        if(aiOverlay) aiOverlay.style.display = "none";
-        if(aiFrame) aiFrame.src = "about:blank";
-      }
-      function openAi(variant){
-        var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
-        var work = safeText(els.customWork ? els.customWork.value : "").trim();
-        if(!problem || !work){
-          if(els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
-          return;
-        }
-        var url = MQ_HOST + "/ai_tutor"
-          + "?variant=" + encodeURIComponent(variant || "step")
-          + "&problem=" + encodeURIComponent(problem)
-          + "&work=" + encodeURIComponent(work);
-
-        if(aiFrame) aiFrame.src = url;
-        if(aiOverlay) aiOverlay.style.display = "flex";
-      }
-      aiClose.addEventListener("click", closeAi);
-      aiOverlay.addEventListener("click", function(e){ if(e.target === aiOverlay) closeAi(); });
-      aiBtn.addEventListener("click", function(){ openAi("step"); });
-      aiAltBtn.addEventListener("click", function(){ openAi("alt"); });
-
-      window.addEventListener("message", function(event){
-        if(event.origin !== MQ_HOST) return;
-        var data = event.data || {};
-        if(data.type === "btm_clean_fix"){
-          if(els.customFix) els.customFix.value = String(data.text || "");
-          if(els.customStatus) els.customStatus.textContent = "AI fix inserted. Now click Practice Now.";
-        }
-        if(data.type === "btm_close_ai"){
-          closeAi();
-        }
-      });
-
-      function savePlayers(){
-        try{
-          localStorage.setItem("btm_players", JSON.stringify(players));
-          localStorage.setItem("btm_active_player", activePlayerId);
-        }catch(e){}
-      }
-
-      function loadPlayers(){
-        try{
-          var savedPlayers = JSON.parse(localStorage.getItem("btm_players") || "null");
-          var savedActive = localStorage.getItem("btm_active_player");
-          if (savedPlayers && typeof savedPlayers === "object" && Object.keys(savedPlayers).length){
-            players = savedPlayers;
-          }
-          if (savedActive && players[savedActive]){
-            activePlayerId = savedActive;
-          } else {
-            activePlayerId = Object.keys(players)[0];
-          }
-          if (!players[activePlayerId].state){
-            players[activePlayerId].state = makeEmptyState();
-          }
-          state = players[activePlayerId].state;
-        } catch(e){
-          players = { p1: { name:"Player 1", state: makeEmptyState() } };
-          activePlayerId = "p1";
-          state = players[activePlayerId].state;
-        }
-      }
-
-      function saveCustomItems(){
-        try{
-          localStorage.setItem("btm_custom_items", JSON.stringify(customItems));
-        }catch(e){}
-      }
-
-      function loadCustomItems(){
-        try{
-          var saved = JSON.parse(localStorage.getItem("btm_custom_items") || "[]");
-          if (Array.isArray(saved)) customItems = saved;
-        }catch(e){
-          customItems = [];
-        }
-      }
-
-      function renderBadges(){
-        if (!els.badges) return;
-
-        var defs = [
-          { label:"First Fix", earned:(state.played || 0) >= 1 },
-          { label:"Streak 3", earned:(state.streak || 0) >= 3 },
-          { label:"Streak 5", earned:(state.streak || 0) >= 5 },
-          { label:"XP 50", earned:(state.xp || 0) >= 50 },
-          { label:"XP 100", earned:(state.xp || 0) >= 100 }
-        ];
-
-        els.badges.innerHTML = "";
-
-        defs.forEach(function(b){
-          var chip = document.createElement("div");
-          chip.className = "mq-badge-chip" + (b.earned ? " mq-badge-earned" : "");
-          chip.textContent = b.label;
-          els.badges.appendChild(chip);
-        });
-      }
-
-      function updateStats(){
-        els.xp.textContent = String(state.xp || 0);
-        els.coins.textContent = String(state.coins || 0);
-        els.streak.textContent = String(state.streak || 0);
-        els.played.textContent = String(state.played || 0);
-
-        if (els.miniXP) els.miniXP.textContent = String(state.xp || 0);
-        if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
-        if (els.miniFocus) {
-          var trackName = state.track || "operations";
-          els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + trackName.charAt(0).toUpperCase() + trackName.slice(1);
-        }
-        if (els.miniType) els.miniType.textContent = "Focus: common errors & clean fixes";
-
-        renderBadges();
-        savePlayers();
-      }
-
-      function pushInsight(text){
-        if (!els.insightLog || !text) return;
-        var div = document.createElement("div");
-        div.style.marginBottom = "8px";
-        div.textContent = "• " + text;
-        els.insightLog.prepend(div);
-      }
-
-      function refreshPlayerUI(){
-        if (!els.player) return;
-        els.player.innerHTML = "";
         Object.keys(players).forEach(function(pid){
           if (!players[pid].state) players[pid].state = makeEmptyState();
-          var opt = document.createElement("option");
-          opt.value = pid;
-          opt.textContent = players[pid].name;
-          if (pid === activePlayerId) opt.selected = true;
-          els.player.appendChild(opt);
+          if (!players[pid].state.track) players[pid].state.track = "all";
+          if (!players[pid].state.gradeBand) players[pid].state.gradeBand = "6-8";
         });
+        if (savedActive && players[savedActive]) activePlayerId = savedActive;
+        else activePlayerId = Object.keys(players)[0];
+        if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
+        state = players[activePlayerId].state;
+      }catch(e){
+        players = { p1: { name:"Player 1", state: makeEmptyState() } };
+        activePlayerId = "p1";
+        state = players[activePlayerId].state;
       }
+    }
 
-      function refreshScoreboard(){
-        var arr = Object.keys(players).map(function(pid){
-          return {
-            id: pid,
-            name: players[pid].name,
-            xp: (players[pid].state && players[pid].state.xp) || 0
-          };
-        }).sort(function(a,b){ return b.xp - a.xp; });
+    function saveCustomItems(){
+      try{ localStorage.setItem("btm_custom_items", JSON.stringify(customItems)); }catch(e){}
+    }
 
-        if (!arr.length){
-          els.scoreboard.textContent = "No players yet.";
-          return;
-        }
-
-        els.scoreboard.innerHTML = arr.map(function(p, idx){
-          return (idx + 1) + ". " + p.name + " — XP " + p.xp;
-        }).join("<br>");
-      }
-
-      function saveSettingsOnly(){
-        try{
-          localStorage.setItem("btm_ui_scale", String(els.scale ? els.scale.value : "100"));
-          localStorage.setItem("btm_high_contrast", els.highContrast && els.highContrast.checked ? "1" : "0");
-          localStorage.setItem("btm_dyslexic", els.dyslexic && els.dyslexic.checked ? "1" : "0");
-          localStorage.setItem("btm_grade_band", els.grade ? els.grade.value : "6-8");
-          localStorage.setItem("btm_track", els.track ? els.track.value : "operations");
-          if (els.autosave) els.autosave.textContent = "Saved.";
-        } catch(e) {}
-      }
-
-      function loadSettingsOnly(){
-        try{
-          var uiScale = localStorage.getItem("btm_ui_scale");
-          var hc = localStorage.getItem("btm_high_contrast");
-          var dys = localStorage.getItem("btm_dyslexic");
-          var grade = localStorage.getItem("btm_grade_band");
-          var track = localStorage.getItem("btm_track");
-
-          if (els.scale && uiScale) els.scale.value = uiScale;
-          if (els.highContrast) els.highContrast.checked = hc === "1";
-          if (els.dyslexic) els.dyslexic.checked = dys === "1";
-          if (els.grade && grade) els.grade.value = grade;
-          if (els.track && track) els.track.value = track;
-        } catch(e) {}
-      }
-
-      function applyAccessibility(){
-        document.body.classList.toggle("mq-high-contrast", !!(els.highContrast && els.highContrast.checked));
-        document.body.classList.toggle("mq-dyslexic", !!(els.dyslexic && els.dyslexic.checked));
-        if (els.scale){
-          document.documentElement.style.setProperty("--mq-scale", String((Number(els.scale.value || 100) / 100)));
-        }
-      }
-
-      function getFilteredItems(){
-        var grade = els.grade ? els.grade.value : "6-8";
-        var track = els.track ? els.track.value : "operations";
-
-        state.gradeBand = grade;
-        state.track = track;
-
-        var filtered = ITEMS.filter(function(item){
-          var okGrade = !item.gradeBand || item.gradeBand === grade;
-          var okTrack = !item.track || item.track === track;
-          return okGrade && okTrack;
-        });
-
-        if (!filtered.length) filtered = ITEMS.slice();
-        return filtered;
-      }
-
-      function chooseNextItem(){
-        var pool = getFilteredItems();
-        if (!pool.length) return null;
-
-        var choices = pool.filter(function(item){
-          return item.id !== lastItemId;
-        });
-        if (!choices.length) choices = pool.slice();
-
-        return choices[Math.floor(Math.random() * choices.length)];
-      }
-
-      function renderItem(item){
-  currentItem = item;
-  answeredCurrent = false;
-  lastItemId = item.id;
-
-  if (els.next) els.next.disabled = true;
-  if (els.queueNote) els.queueNote.textContent = "Ready";
-  if (els.question) els.question.textContent = item.prompt || "Solve the item.";
-  if (els.work) els.work.textContent = item.work || "Student work will appear here.";
-  if (els.feedback){
-    els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
-    els.feedback.className = "mq-feedback";
-  }
-  if (els.options) els.options.innerHTML = "";
-
-  var choices = (item.options || []).map(function(optText, idx){
-    return {
-      text: optText,
-      isCorrect: idx === item.correctIndex
-    };
-  });
-
-  for (var i = choices.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = choices[i];
-    choices[i] = choices[j];
-    choices[j] = temp;
-  }
-
-  var correctText = "";
-  choices.forEach(function(choice){
-    if (choice.isCorrect) correctText = choice.text;
-  });
-
-  choices.forEach(function(choice){
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "mq-option-btn";
-    btn.textContent = choice.text;
-
-    btn.addEventListener("click", function(){
-      if (answeredCurrent) return;
-      answeredCurrent = true;
-
-      var buttons = els.options.querySelectorAll(".mq-option-btn");
-
-      buttons.forEach(function(b, idx){
-        b.disabled = true;
-        if (choices[idx] && choices[idx].isCorrect) b.classList.add("mq-correct");
+    function loadCustomItems(){
+      try{
+        var saved = JSON.parse(localStorage.getItem("btm_custom_items") || "[]");
+        if (Array.isArray(saved)) customItems = saved;
+      }catch(e){ customItems = []; }
+    }    function refreshPlayerUI(){
+      if (!els.player) return;
+      els.player.innerHTML = "";
+      Object.keys(players).forEach(function(pid){
+        if (!players[pid].state) players[pid].state = makeEmptyState();
+        var opt = document.createElement("option");
+        opt.value = pid;
+        opt.textContent = players[pid].name;
+        if (pid === activePlayerId) opt.selected = true;
+        els.player.appendChild(opt);
       });
+    }
 
-      state.played = (state.played || 0) + 1;
+    function refreshScoreboard(){
+      var arr = Object.keys(players).map(function(pid){
+        return { id: pid, name: players[pid].name, xp: (players[pid].state && players[pid].state.xp) || 0 };
+      }).sort(function(a,b){ return b.xp - a.xp; });
+      if (!arr.length){ els.scoreboard.textContent = "No players yet."; return; }
+      els.scoreboard.innerHTML = arr.map(function(p, idx){ return (idx+1) + ". " + escapeHtml(p.name) + " — XP " + p.xp; }).join("<br>");
+    }
 
-      if (choice.isCorrect){
-        btn.classList.add("mq-correct");
-        state.xp = (state.xp || 0) + 10;
-        state.coins = (state.coins || 0) + 1;
-        state.streak = (state.streak || 0) + 1;
-
-        if (els.feedback){
-          els.feedback.textContent = "Correct. " + (item.insight || "");
-          els.feedback.className = "mq-feedback mq-feedback-correct";
-        }
-      } else {
-        btn.classList.add("mq-incorrect");
-        state.streak = 0;
-
-        if (els.feedback){
-          els.feedback.textContent =
-            (item.hint || "Try again by checking the first wrong step.") +
-            " Correct fix: " + correctText;
-          els.feedback.className = "mq-feedback mq-feedback-encouraging";
-        }
-      }
-
-      updateStats();
-      refreshScoreboard();
-      pushInsight(item.insight);
-
-      if (els.next) els.next.disabled = false;
-      if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
-    });
-
-    els.options.appendChild(btn);
-  });
-
-  updateStats();
-}
-      function loadFirstChallenge(){
-        var item = chooseNextItem();
-        if (!item){
-          if (els.question) els.question.textContent = "No challenge items available yet.";
-          if (els.work) els.work.textContent = "Add items to the main pool.";
-          if (els.feedback) els.feedback.textContent = "Current Challenge is empty.";
-          if (els.queueNote) els.queueNote.textContent = "No items";
-          return;
-        }
-        renderItem(item);
-      }
-
-      function refreshCustomList(){
-        if (!els.customList) return;
-
-        els.customList.innerHTML = "";
-        if (!customItems.length){
-          var emptyOpt = document.createElement("option");
-          emptyOpt.value = "";
-          emptyOpt.textContent = "No saved custom items yet.";
-          els.customList.appendChild(emptyOpt);
-          els.customList.disabled = true;
-          return;
-        }
-
-        els.customList.disabled = false;
-        customItems.forEach(function(item){
-          var opt = document.createElement("option");
-          opt.value = item.id;
-          opt.textContent = item.problem;
-          els.customList.appendChild(opt);
-        });
-      }
-      
-function renderCustomPractice(problem, work, fix){
-  currentItem = null;
-  answeredCurrent = false;
-
-  if (els.question) els.question.textContent = "Custom study: " + problem;
-  if (els.work) els.work.textContent = "Student work (incorrect): " + work;
-  if (els.options) els.options.innerHTML = "";
-
-  var opts = [
-    { text: "Use this clean fix: " + fix, isCorrect: true },
-    { text: "Keep the student's original work: " + work, isCorrect: false },
-    { text: "Only change the final answer. The method is already correct.", isCorrect: false },
-    { text: "The student’s work is acceptable as written.", isCorrect: false }
-  ];
-
-  for (var k = opts.length - 1; k > 0; k--) {
-    var m = Math.floor(Math.random() * (k + 1));
-    var tempOpt = opts[k];
-    opts[k] = opts[m];
-    opts[m] = tempOpt;
-  }
-
-  opts.forEach(function(choice){
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "mq-option-btn";
-    btn.textContent = choice.text;
-
-    btn.addEventListener("click", function(){
-      if (answeredCurrent) return;
-      answeredCurrent = true;
-
-      var buttons = els.options.querySelectorAll(".mq-option-btn");
-      buttons.forEach(function(b, idx){
-        b.disabled = true;
-        if (opts[idx] && opts[idx].isCorrect) b.classList.add("mq-correct");
+    function renderBadges(){
+      if (!els.badges) return;
+      var defs = [
+        { label:"First Fix", earned:(state.played || 0) >= 1 },
+        { label:"Streak 3", earned:(state.streak || 0) >= 3 },
+        { label:"Streak 5", earned:(state.streak || 0) >= 5 },
+        { label:"XP 50", earned:(state.xp || 0) >= 50 },
+        { label:"XP 100", earned:(state.xp || 0) >= 100 }
+      ];
+      els.badges.innerHTML = "";
+      defs.forEach(function(b){
+        var chip = document.createElement("div");
+        chip.className = "mq-badge-chip" + (b.earned ? " mq-badge-earned" : "");
+        chip.textContent = b.label;
+        els.badges.appendChild(chip);
       });
+    }
 
-      state.played = (state.played || 0) + 1;
+    function updateStats(){
+      els.xp.textContent = String(state.xp || 0);
+      els.coins.textContent = String(state.coins || 0);
+      els.streak.textContent = String(state.streak || 0);
+      els.played.textContent = String(state.played || 0);
+      if (els.miniXP) els.miniXP.textContent = String(state.xp || 0);
+      if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
+      if (els.miniFocus) els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + getTrackLabel(state.track || "all");
+      if (els.miniType) els.miniType.textContent = (state.track === "all") ? "Focus: mixed practice across tracks" : "Focus: common errors & clean fixes";
+      renderBadges();
+      savePlayers();
+    }
 
-      if (choice.isCorrect){
-        btn.classList.add("mq-correct");
-        state.xp = (state.xp || 0) + 10;
-        state.coins = (state.coins || 0) + 1;
-        state.streak = (state.streak || 0) + 1;
-        if (els.feedback){
-          els.feedback.textContent = "Correct. Step-by-step clean fix: " + fix;
-          els.feedback.className = "mq-feedback mq-feedback-correct";
+    function pushInsight(text){
+      if (!els.insightLog || !text) return;
+      var div = document.createElement("div");
+      div.style.marginBottom = "8px";
+      div.textContent = "• " + text;
+      els.insightLog.prepend(div);
+    }
+
+    function hideReview(){
+      if (els.review) els.review.style.display = "none";
+      if (els.reviewResult) els.reviewResult.innerHTML = "";
+      if (els.reviewFix) els.reviewFix.innerHTML = "";
+      if (els.reviewAlt) els.reviewAlt.innerHTML = "";
+    }
+
+    function getCleanFixText(item, correctText){
+      if (correctText) return correctText;
+      if (item && item.insight) return item.insight;
+      return "Review the correct reasoning step by step.";
+    }
+
+    function getAnotherWayText(item){
+      if (item && item.hint) return item.hint;
+      return "Look for the first step where the rule changed, then rebuild the reasoning from that point.";
+    }
+
+    function showReview(isCorrect, cleanFixText, anotherWayText){
+      if (!els.review) return;
+      els.review.style.display = "block";
+      if (els.reviewResult){
+        els.reviewResult.innerHTML = isCorrect
+          ? '<span class="mq-review-label">Result:</span> Correct.'
+          : '<span class="mq-review-label">Result:</span> Not quite — here is the fix.';
+      }
+      if (els.reviewFix){
+        els.reviewFix.innerHTML = '<span class="mq-review-label">Clean fix:</span>' + escapeHtml(cleanFixText || "Review the correct reasoning step by step.");
+      }
+      if (els.reviewAlt){
+        els.reviewAlt.innerHTML = '<span class="mq-review-label">Another way:</span>' + escapeHtml(anotherWayText || "Look for the first step where the rule changed, then rebuild the reasoning from that point.");
+      }
+    }
+
+    function saveSettingsOnly(){
+      try{
+        localStorage.setItem("btm_ui_scale", String(els.scale ? els.scale.value : "100"));
+        localStorage.setItem("btm_high_contrast", els.highContrast && els.highContrast.checked ? "1" : "0");
+        localStorage.setItem("btm_dyslexic", els.dyslexic && els.dyslexic.checked ? "1" : "0");
+        localStorage.setItem("btm_grade_band", els.grade ? els.grade.value : "6-8");
+        localStorage.setItem("btm_track", els.track ? els.track.value : "all");
+        if (els.autosave) els.autosave.textContent = "Saved.";
+      }catch(e){}
+    }
+
+    function loadSettingsOnly(){
+      try{
+        var uiScale = localStorage.getItem("btm_ui_scale");
+        var hc = localStorage.getItem("btm_high_contrast");
+        var dys = localStorage.getItem("btm_dyslexic");
+        var grade = localStorage.getItem("btm_grade_band");
+        var track = localStorage.getItem("btm_track");
+        var migrated = localStorage.getItem("btm_track_default_migrated_v4");
+
+        if (els.scale && uiScale) els.scale.value = uiScale;
+        if (els.highContrast) els.highContrast.checked = hc === "1";
+        if (els.dyslexic) els.dyslexic.checked = dys === "1";
+        if (els.grade && grade) els.grade.value = grade;
+
+        if (!track) track = "all";
+        if (!migrated){
+          if (!track || track === "operations"){
+            track = "all";
+            localStorage.setItem("btm_track", "all");
+          }
+          localStorage.setItem("btm_track_default_migrated_v4", "1");
         }
-      } else {
-        btn.classList.add("mq-incorrect");
-        state.streak = 0;
-        if (els.feedback){
-          els.feedback.textContent =
-            "Not quite. Compare the student's incorrect work to this clean fix: " + fix;
-          els.feedback.className = "mq-feedback mq-feedback-encouraging";
-        }
-      }
 
-      updateStats();
-      refreshScoreboard();
-      pushInsight("Custom practice: " + fix);
+        if (els.track) els.track.value = track;
+        state.gradeBand = els.grade ? els.grade.value : "6-8";
+        state.track = els.track ? els.track.value : "all";
+      }catch(e){}
+    }
 
-      if (els.next) els.next.disabled = false;
-      if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
-    });
-
-    els.options.appendChild(btn);
-  });
-
-  if (els.feedback){
-    els.feedback.textContent = "Which option best corrects the student's work?";
-    els.feedback.className = "mq-feedback";
-  }
-  if (els.queueNote) els.queueNote.textContent = "Custom practice item";
-  if (els.next) els.next.disabled = true;
-
-  scrollTopNow();
-}
-      if (els.next){
-        els.next.addEventListener("click", function(){
-          var item = chooseNextItem();
-          if (item) renderItem(item);
-        });
-      }
-
-      if (els.grade){
-        els.grade.addEventListener("change", function(){
-          saveSettingsOnly();
-          applyAccessibility();
-          loadFirstChallenge();
-        });
-      }
-
-      if (els.track){
-        els.track.addEventListener("change", function(){
-          saveSettingsOnly();
-          loadFirstChallenge();
-        });
-      }
-
+    function applyAccessibility(){
+      document.body.classList.toggle("mq-high-contrast", !!(els.highContrast && els.highContrast.checked));
+      document.body.classList.toggle("mq-dyslexic", !!(els.dyslexic && els.dyslexic.checked));
       if (els.scale){
-        els.scale.addEventListener("input", function(){
-          applyAccessibility();
-          saveSettingsOnly();
-        });
+        document.documentElement.style.setProperty("--mq-scale", String((Number(els.scale.value || 100) / 100)));
       }
+    }
 
-      if (els.highContrast){
-        els.highContrast.addEventListener("change", function(){
-          applyAccessibility();
-          saveSettingsOnly();
-        });
+    function getFilteredItems(){
+      var grade = els.grade ? els.grade.value : "6-8";
+      var track = els.track ? els.track.value : "all";
+      state.gradeBand = grade;
+      state.track = track;
+
+      var filtered = ITEMS.filter(function(item){
+        var okGrade = !item.gradeBand || item.gradeBand === grade;
+        var okTrack = (track === "all") ? true : (!item.track || item.track === track);
+        return okGrade && okTrack;
+      });
+
+      return filtered;
+    }
+
+    function getDeckKey(){
+      return (els.grade ? els.grade.value : "6-8") + "||" + (els.track ? els.track.value : "all");
+    }
+
+    function rebuildDeck(force){
+      var nextKey = getDeckKey();
+      if (!force && currentDeckKey === nextKey && currentDeck.length) return;
+      var pool = getFilteredItems();
+      var freshDeck = shuffleArray(pool);
+      if (freshDeck.length > 1 && lastServedItemId && freshDeck[0].id === lastServedItemId){
+        var swapIndex = 1 + Math.floor(Math.random() * (freshDeck.length - 1));
+        var temp = freshDeck[0]; freshDeck[0] = freshDeck[swapIndex]; freshDeck[swapIndex] = temp;
       }
+      currentDeck = freshDeck;
+      currentDeckKey = nextKey;
+    }
 
-      if (els.dyslexic){
-        els.dyslexic.addEventListener("change", function(){
-          applyAccessibility();
-          saveSettingsOnly();
-        });
+    function chooseNextItem(){
+      var nextKey = getDeckKey();
+      if (currentDeckKey !== nextKey || !currentDeck.length){
+        rebuildDeck(true);
       }
+      if (!currentDeck.length) return null;
+      var item = currentDeck.shift();
+      lastServedItemId = item ? item.id : null;
+      return item;
+    }
 
-      if (els.sfxToggle){
-        els.sfxToggle.addEventListener("click", function(){
-          els.sfxToggle.classList.toggle("mq-sfx-on");
-          els.sfxToggle.textContent = els.sfxToggle.classList.contains("mq-sfx-on") ? "SFX: ON" : "SFX: OFF";
-        });
+    function renderItem(item){
+      currentItem = item;
+      answeredCurrent = false;
+      hideReview();
+
+      if (els.next) els.next.disabled = true;
+      if (els.queueNote) els.queueNote.textContent = "Ready";
+      if (els.question) els.question.textContent = item.prompt || "Solve the item.";
+      if (els.work) els.work.textContent = item.work || "Student work will appear here.";
+      if (els.feedback){
+        els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
+        els.feedback.className = "mq-feedback";
       }
+      if (els.options) els.options.innerHTML = "";
 
-      if (els.playerAdd){
-        els.playerAdd.addEventListener("click", function(){
-          var nextNum = Object.keys(players).length + 1;
-          var id = "p" + nextNum;
-          players[id] = { name: "Player " + nextNum, state: makeEmptyState() };
-          activePlayerId = id;
-          state = players[activePlayerId].state;
-          refreshPlayerUI();
-          refreshScoreboard();
+      var choices = shuffleArray((item.options || []).map(function(optText, idx){
+        return { text: optText, isCorrect: idx === item.correctIndex };
+      }));      var correctText = "";
+      choices.forEach(function(choice){ if (choice.isCorrect) correctText = choice.text; });
+
+      choices.forEach(function(choice){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mq-option-btn";
+        btn.textContent = choice.text;
+
+        btn.addEventListener("click", function(){
+          if (answeredCurrent) return;
+          answeredCurrent = true;
+          var buttons = els.options.querySelectorAll(".mq-option-btn");
+          buttons.forEach(function(b, idx2){
+            b.disabled = true;
+            if (choices[idx2] && choices[idx2].isCorrect) b.classList.add("mq-correct");
+          });
+
+          state.played = (state.played || 0) + 1;
+          var cleanFixText = getCleanFixText(item, correctText);
+          var anotherWayText = getAnotherWayText(item);
+
+          if (choice.isCorrect){
+            btn.classList.add("mq-correct");
+            state.xp = (state.xp || 0) + 10;
+            state.coins = (state.coins || 0) + 1;
+            state.streak = (state.streak || 0) + 1;
+            if (els.feedback){
+              els.feedback.textContent = "Correct.";
+              els.feedback.className = "mq-feedback mq-feedback-correct";
+            }
+            showReview(true, cleanFixText, anotherWayText);
+          } else {
+            btn.classList.add("mq-incorrect");
+            state.streak = 0;
+            if (els.feedback){
+              els.feedback.textContent = item.hint || "Check the first wrong step, then compare it to the correct fix.";
+              els.feedback.className = "mq-feedback mq-feedback-encouraging";
+            }
+            showReview(false, cleanFixText, anotherWayText);
+          }
+
           updateStats();
-          savePlayers();
-          loadFirstChallenge();
-        });
-      }
-
-      if (els.playerDelete){
-        els.playerDelete.addEventListener("click", function(){
-          var keys = Object.keys(players);
-          if (keys.length <= 1) return;
-          delete players[activePlayerId];
-          activePlayerId = Object.keys(players)[0];
-          if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
-          state = players[activePlayerId].state;
-          refreshPlayerUI();
           refreshScoreboard();
-          updateStats();
-          savePlayers();
-          loadFirstChallenge();
+          pushInsight(item.insight);
+          if (els.next) els.next.disabled = false;
+          if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
         });
-      }
 
-      if (els.player){
-        els.player.addEventListener("change", function(){
-          activePlayerId = els.player.value;
-          if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
-          state = players[activePlayerId].state;
-          updateStats();
-          refreshScoreboard();
-          savePlayers();
-          loadFirstChallenge();
-        });
-      }
+        els.options.appendChild(btn);
+      });
 
-      if (els.reset){
-        els.reset.addEventListener("click", function(){
-          state.xp = 0;
-          state.coins = 0;
-          state.streak = 0;
-          state.played = 0;
-          state.gradeBand = els.grade ? els.grade.value : "6-8";
-          state.track = els.track ? els.track.value : "operations";
-          if (els.insightLog) els.insightLog.innerHTML = "";
-          updateStats();
-          refreshScoreboard();
-          savePlayers();
-          loadFirstChallenge();
-          if (els.autosave) els.autosave.textContent = "Progress reset.";
-        });
-      }
-
-      if (els.customPracticeNow){
-        els.customPracticeNow.addEventListener("click", function(){
-          var p = safeText(els.customProblem.value).trim();
-          var w = safeText(els.customWork.value).trim();
-          var f = safeText(els.customFix.value).trim();
-
-          if(!p || !w){
-            els.customStatus.textContent = "Please fill in Problem + Student work first.";
-            return;
-          }
-          if(!f){
-            els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
-            return;
-          }
-
-          els.customStatus.textContent = "Practicing now.";
-          renderCustomPractice(p, w, f);
-        });
-      }
-
-      if (els.customAdd){
-        els.customAdd.addEventListener("click", function(){
-          var p = safeText(els.customProblem.value).trim();
-          var w = safeText(els.customWork.value).trim();
-          var f = safeText(els.customFix.value).trim();
-
-          if(!p || !w || !f){
-            els.customStatus.textContent = "Please fill in Problem, Student work, and Clean fix first.";
-            return;
-          }
-
-          var item = {
-            id: "custom-" + Date.now(),
-            problem: p,
-            work: w,
-            fix: f,
-            errorType: els.customErrorType ? els.customErrorType.value : "custom",
-            difficulty: els.customDifficulty ? els.customDifficulty.value : "medium"
-          };
-
-          customItems.unshift(item);
-          saveCustomItems();
-          refreshCustomList();
-          els.customStatus.textContent = "Custom item saved on this device.";
-        });
-      }
-
-      if (els.customUse){
-        els.customUse.addEventListener("click", function(){
-          var selectedId = els.customList && els.customList.value;
-          var found = customItems.find(function(item){ return item.id === selectedId; });
-          if (!found){
-            els.customStatus.textContent = "No saved custom item selected yet.";
-            return;
-          }
-          els.customStatus.textContent = "Practicing saved custom item.";
-          renderCustomPractice(found.problem, found.work, found.fix);
-        });
-      }
-
-      if (els.customDelete){
-        els.customDelete.addEventListener("click", function(){
-          var selectedId = els.customList && els.customList.value;
-          if (!selectedId){
-            els.customStatus.textContent = "No saved custom item selected yet.";
-            return;
-          }
-          customItems = customItems.filter(function(item){ return item.id !== selectedId; });
-          saveCustomItems();
-          refreshCustomList();
-          els.customStatus.textContent = "Saved custom item deleted.";
-        });
-      }
-
-      if (els.customClear){
-        els.customClear.addEventListener("click", function(){
-          els.customProblem.value = "";
-          els.customWork.value = "";
-          els.customFix.value = "";
-          els.customStatus.textContent = "Cleared.";
-        });
-      }
-
-      loadPlayers();
-      loadCustomItems();
-      loadSettingsOnly();
-      applyAccessibility();
-      refreshPlayerUI();
-      refreshScoreboard();
-      refreshCustomList();
       updateStats();
-      loadFirstChallenge();
+    }
+
+    function loadFirstChallenge(){
+      var item = chooseNextItem();
+      if (!item){
+        if (els.question) els.question.textContent = "No challenge items available yet.";
+        if (els.work) els.work.textContent = "Add items to the main pool.";
+        if (els.feedback) els.feedback.textContent = "Current Challenge is empty.";
+        if (els.queueNote) els.queueNote.textContent = "No items";
+        return;
+      }
+      renderItem(item);
+    }
+
+    function refreshCustomList(){
+      if (!els.customList) return;
+      els.customList.innerHTML = "";
+      if (!customItems.length){
+        var emptyOpt = document.createElement("option");
+        emptyOpt.value = "";
+        emptyOpt.textContent = "No saved custom items yet.";
+        els.customList.appendChild(emptyOpt);
+        els.customList.disabled = true;
+        return;
+      }
+      els.customList.disabled = false;
+      customItems.forEach(function(item){
+        var opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.problem;
+        els.customList.appendChild(opt);
+      });
+    }
+
+    function renderCustomPractice(problem, work, fix){
+      currentItem = null;
+      answeredCurrent = false;
+      hideReview();
+
+      if (els.question) els.question.textContent = "Custom study: " + problem;
+      if (els.work) els.work.textContent = "Student work (incorrect): " + work;
+      if (els.options) els.options.innerHTML = "";
+
+      var opts = shuffleArray([
+        { text: "Use this clean fix: " + fix, isCorrect: true },
+        { text: "Keep the student's original work: " + work, isCorrect: false },
+        { text: "Only change the final answer. The method is already correct.", isCorrect: false },
+        { text: "The student’s work is acceptable as written.", isCorrect: false }
+      ]);
+
+      opts.forEach(function(choice){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mq-option-btn";
+        btn.textContent = choice.text;
+
+        btn.addEventListener("click", function(){
+          if (answeredCurrent) return;
+          answeredCurrent = true;
+
+          var buttons = els.options.querySelectorAll(".mq-option-btn");
+          buttons.forEach(function(b, idx2){
+            b.disabled = true;
+            if (opts[idx2] && opts[idx2].isCorrect) b.classList.add("mq-correct");
+          });
+
+          state.played = (state.played || 0) + 1;
+          var anotherWayText = "Compare the student's incorrect work to the clean fix step by step, and identify the first place the rule changed.";
+
+          if (choice.isCorrect){
+            btn.classList.add("mq-correct");
+            state.xp = (state.xp || 0) + 10;
+            state.coins = (state.coins || 0) + 1;
+            state.streak = (state.streak || 0) + 1;
+            if (els.feedback){
+              els.feedback.textContent = "Correct.";
+              els.feedback.className = "mq-feedback mq-feedback-correct";
+            }
+            showReview(true, fix, anotherWayText);
+          } else {
+            btn.classList.add("mq-incorrect");
+            state.streak = 0;
+            if (els.feedback){
+              els.feedback.textContent = "Not quite. Compare the student's incorrect work to the clean fix.";
+              els.feedback.className = "mq-feedback mq-feedback-encouraging";
+            }
+            showReview(false, fix, anotherWayText);
+          }
+
+          updateStats();
+          refreshScoreboard();
+          pushInsight("Custom practice: " + fix);
+          if (els.next) els.next.disabled = false;
+          if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
+        });
+
+        els.options.appendChild(btn);
+      });
+
+      if (els.feedback){
+        els.feedback.textContent = "Which option best corrects the student's work?";
+        els.feedback.className = "mq-feedback";
+      }
+      if (els.queueNote) els.queueNote.textContent = "Custom practice item";
+      if (els.next) els.next.disabled = true;
+
+      scrollTopNow();
+    }
+
+    $("mq-top").addEventListener("click", scrollTopNow);
+    $("mq-dock-top").addEventListener("click", scrollTopNow);
+    $("mq-study-jump").addEventListener("click", scrollToStudy);
+    $("mq-dock-study").addEventListener("click", scrollToStudy);
+
+    function doDownloadCSV(){
+      var now = new Date();
+      var iso = now.toISOString();
+      var playerName = (players && activePlayerId && players[activePlayerId]) ? (players[activePlayerId].name || activePlayerId) : "";
+      var rows = [["timestamp_iso","player","grade_band","track","xp","coins","streak","played"], [iso, playerName, state.gradeBand, state.track, state.xp, state.coins, state.streak, state.played]];
+      downloadCSV("bethemath_session_report.csv", rows);
+    }
+
+    $("mq-download-csv").addEventListener("click", doDownloadCSV);
+    $("mq-dock-download").addEventListener("click", doDownloadCSV);
+
+    var CURRENT_ORIGIN = (window.location && window.location.origin && window.location.origin !== "null") ? window.location.origin : "";
+    var MQ_HOST = CURRENT_ORIGIN || "https://bethemath.matesuite.ai";
+    var MQ_ALLOWED_ORIGINS = {};
+    MQ_ALLOWED_ORIGINS[MQ_HOST] = true;
+    MQ_ALLOWED_ORIGINS["https://bethemath.matesuite.ai"] = true;
+    MQ_ALLOWED_ORIGINS["http://localhost:8501"] = true;
+    MQ_ALLOWED_ORIGINS["http://127.0.0.1:8501"] = true;
+
+    var aiOverlay = $("mq-ai-overlay");
+    var aiFrame = $("mq-ai-frame");
+    var aiClose = $("mq-ai-close");
+    var aiBtn = $("mq-ai-generate");
+    var aiAltBtn = $("mq-ai-alt");
+
+    function closeAi(){
+      if (aiOverlay) aiOverlay.style.display = "none";
+      if (aiFrame) aiFrame.src = "about:blank";
+    }
+
+    function openAi(variant){
+      var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
+      var work = safeText(els.customWork ? els.customWork.value : "").trim();
+      if (!problem || !work){
+        if (els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
+        return;
+      }
+      var url = MQ_HOST + "/ai_tutor" + "?variant=" + encodeURIComponent(variant || "step") + "&problem=" + encodeURIComponent(problem) + "&work=" + encodeURIComponent(work);
+      if (aiFrame) aiFrame.src = url;
+      if (aiOverlay) aiOverlay.style.display = "flex";
+    }
+
+    aiClose.addEventListener("click", closeAi);
+    aiOverlay.addEventListener("click", function(e){ if (e.target === aiOverlay) closeAi(); });
+    aiBtn.addEventListener("click", function(){ openAi("step"); });
+    aiAltBtn.addEventListener("click", function(){ openAi("alt"); });    window.addEventListener("message", function(event){
+      if (!MQ_ALLOWED_ORIGINS[event.origin]) return;
+      var data = event.data || {};
+      if (data.type === "btm_clean_fix"){
+        if (els.customFix) els.customFix.value = String(data.text || "");
+        if (els.customStatus) els.customStatus.textContent = "AI fix inserted. Now click Practice Now.";
+      }
+      if (data.type === "btm_close_ai"){ closeAi(); }
     });
+
+    if (els.next){
+      els.next.addEventListener("click", function(){
+        var item = chooseNextItem();
+        if (item) renderItem(item);
+      });
+    }
+
+    if (els.grade){
+      els.grade.addEventListener("change", function(){
+        state.gradeBand = els.grade.value;
+        saveSettingsOnly();
+        rebuildDeck(true);
+        applyAccessibility();
+        loadFirstChallenge();
+      });
+    }
+
+    if (els.track){
+      els.track.addEventListener("change", function(){
+        state.track = els.track.value;
+        saveSettingsOnly();
+        rebuildDeck(true);
+        loadFirstChallenge();
+      });
+    }
+
+    if (els.scale){
+      els.scale.addEventListener("input", function(){
+        applyAccessibility();
+        saveSettingsOnly();
+      });
+    }
+
+    if (els.highContrast){
+      els.highContrast.addEventListener("change", function(){
+        applyAccessibility();
+        saveSettingsOnly();
+      });
+    }
+
+    if (els.dyslexic){
+      els.dyslexic.addEventListener("change", function(){
+        applyAccessibility();
+        saveSettingsOnly();
+      });
+    }
+
+    if (els.sfxToggle){
+      els.sfxToggle.addEventListener("click", function(){
+        var isOn = els.sfxToggle.classList.contains("mq-sfx-on");
+        if (isOn){ els.sfxToggle.classList.remove("mq-sfx-on"); els.sfxToggle.textContent = "SFX: OFF"; }
+        else { els.sfxToggle.classList.add("mq-sfx-on"); els.sfxToggle.textContent = "SFX: ON"; }
+      });
+    }
+
+    if (els.playerAdd){
+      els.playerAdd.addEventListener("click", function(){
+        var id = makeUniquePlayerId();
+        var nextNum = Object.keys(players).length + 1;
+        players[id] = { name: "Player " + nextNum, state: makeEmptyState() };
+        activePlayerId = id;
+        state = players[activePlayerId].state;
+        if (els.grade) els.grade.value = state.gradeBand || "6-8";
+        if (els.track) els.track.value = state.track || "all";
+        refreshPlayerUI();
+        refreshScoreboard();
+        rebuildDeck(true);
+        updateStats();
+        savePlayers();
+        loadFirstChallenge();
+      });
+    }
+
+    if (els.playerDelete){
+      els.playerDelete.addEventListener("click", function(){
+        var keys = Object.keys(players);
+        if (keys.length <= 1) return;
+        delete players[activePlayerId];
+        activePlayerId = Object.keys(players)[0];
+        if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
+        state = players[activePlayerId].state;
+        if (els.grade) els.grade.value = state.gradeBand || "6-8";
+        if (els.track) els.track.value = state.track || "all";
+        refreshPlayerUI();
+        refreshScoreboard();
+        rebuildDeck(true);
+        updateStats();
+        savePlayers();
+        loadFirstChallenge();
+      });
+    }
+
+    if (els.player){
+      els.player.addEventListener("change", function(){
+        activePlayerId = els.player.value;
+        if (!players[activePlayerId].state) players[activePlayerId].state = makeEmptyState();
+        state = players[activePlayerId].state;
+        if (els.grade) els.grade.value = state.gradeBand || "6-8";
+        if (els.track) els.track.value = state.track || "all";
+        rebuildDeck(true);
+        updateStats();
+        refreshScoreboard();
+        savePlayers();
+        loadFirstChallenge();
+      });
+    }
+
+    if (els.reset){
+      els.reset.addEventListener("click", function(){
+        state.xp = 0; state.coins = 0; state.streak = 0; state.played = 0;
+        state.gradeBand = els.grade ? els.grade.value : "6-8";
+        state.track = els.track ? els.track.value : "all";
+        if (els.insightLog) els.insightLog.innerHTML = "";
+        hideReview();
+        rebuildDeck(true);
+        updateStats();
+        refreshScoreboard();
+        savePlayers();
+        loadFirstChallenge();
+        if (els.autosave) els.autosave.textContent = "Progress reset.";
+      });
+    }
+
+    if (els.customPracticeNow){
+      els.customPracticeNow.addEventListener("click", function(){
+        var p = safeText(els.customProblem.value).trim();
+        var w = safeText(els.customWork.value).trim();
+        var f = safeText(els.customFix.value).trim();
+        if (!p || !w){
+          els.customStatus.textContent = "Please fill in Problem + Student work first.";
+          return;
+        }
+        if (!f){
+          els.customStatus.textContent = "Clean fix is empty. Click AI Generate Fix (or type a fix), then Practice Now.";
+          return;
+        }
+        els.customStatus.textContent = "Practicing now.";
+        renderCustomPractice(p, w, f);
+      });
+    }
+
+    if (els.customAdd){
+      els.customAdd.addEventListener("click", function(){
+        var p = safeText(els.customProblem.value).trim();
+        var w = safeText(els.customWork.value).trim();
+        var f = safeText(els.customFix.value).trim();
+        if (!p || !w || !f){
+          els.customStatus.textContent = "Please fill in Problem, Student work, and Clean fix first.";
+          return;
+        }
+        var item = {
+          id:"custom-" + Date.now(),
+          problem:p, work:w, fix:f,
+          errorType:els.customErrorType ? els.customErrorType.value : "custom",
+          difficulty:els.customDifficulty ? els.customDifficulty.value : "medium"
+        };
+        customItems.unshift(item);
+        saveCustomItems();
+        refreshCustomList();
+        els.customStatus.textContent = "Custom item saved on this device.";
+      });
+    }
+
+    if (els.customUse){
+      els.customUse.addEventListener("click", function(){
+        var selectedId = els.customList && els.customList.value;
+        var found = customItems.find(function(item){ return item.id === selectedId; });
+        if (!found){
+          els.customStatus.textContent = "No saved custom item selected yet.";
+          return;
+        }
+        els.customStatus.textContent = "Practicing saved custom item.";
+        renderCustomPractice(found.problem, found.work, found.fix);
+      });
+    }
+
+    if (els.customDelete){
+      els.customDelete.addEventListener("click", function(){
+        var selectedId = els.customList && els.customList.value;
+        if (!selectedId){
+          els.customStatus.textContent = "No saved custom item selected yet.";
+          return;
+        }
+        customItems = customItems.filter(function(item){ return item.id !== selectedId; });
+        saveCustomItems();
+        refreshCustomList();
+        els.customStatus.textContent = "Saved custom item deleted.";
+      });
+    }
+
+    if (els.customClear){
+      els.customClear.addEventListener("click", function(){
+        els.customProblem.value = "";
+        els.customWork.value = "";
+        els.customFix.value = "";
+        els.customStatus.textContent = "Cleared.";
+      });
+    }
+
+    loadPlayers();
+    loadCustomItems();
+    loadSettingsOnly();
+    applyAccessibility();
+    refreshPlayerUI();
+    refreshScoreboard();
+    refreshCustomList();
+    updateStats();
+    rebuildDeck(true);
+    loadFirstChallenge();
+  });
   </script>
 </body>
 </html>

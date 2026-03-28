@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from btm_access import require_access_code
 
@@ -9,8 +10,11 @@ st.set_page_config(
 )
 
 # Gate renders only when locked
-if not require_access_code(label="Access code"):
-    st.stop()
+LOCAL_DEV_BYPASS = os.getenv("BTM_LOCAL_DEV_BYPASS", "").strip() == "1"
+
+if not LOCAL_DEV_BYPASS:
+    if not require_access_code(label="Access code"):
+        st.stop()
 
 # --- If a Stripe purchase just happened, show the lifetime code clearly ---
 lifetime_code = st.session_state.get("lifetime_code")
