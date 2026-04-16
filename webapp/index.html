@@ -133,7 +133,7 @@
     .mq-reset-btn{border-color:#f97373;color:#fecaca}
     .mq-sfx-on{border-color:var(--mq-accent);color:#bbf7d0}
     .mq-footer-note{font-size:10px;color:#6b7280;margin-top:6px;line-height:1.35}
-    #mq-about{font-size:11px;color:var(--mq-muted);line-height:1.45}
+    #mq-about{display:none}
     #mq-about ul{margin:6px 0 0;padding-left:18px}
     .mq-divider{height:1px;background:rgba(148,163,184,.18);margin:10px 0}
     .mq-inline-row{display:flex;gap:8px;flex-wrap:wrap;min-width:0}
@@ -147,7 +147,43 @@
     .mq-ai-modal{width:min(920px,96vw);height:min(720px,92vh);background:rgba(15,23,42,.98);border:1px solid rgba(148,163,184,.25);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
     .mq-ai-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid rgba(148,163,184,.18)}
     .mq-ai-frame{width:100%;height:calc(100% - 46px);border:0;background:#020617}
-  </style>
+  
+    /* BTM GRAPH MVP CSS */
+    .mq-graph-mvp-panel{
+      margin:18px 0 0;
+      background:#0f172a;
+      border:1px solid #1e293b;
+      border-radius:16px;
+      padding:16px;
+    }
+    .mq-graph-mvp-title{
+      font-size:14px;
+      font-weight:700;
+      color:#e2e8f0;
+      margin-bottom:6px;
+    }
+    .mq-graph-mvp-sub{
+      font-size:12px;
+      color:#94a3b8;
+      margin-bottom:12px;
+      line-height:1.45;
+    }
+    .mq-graph-wrap{
+      width:100%;
+      max-width:420px;
+      background:#ffffff;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #cbd5e1;
+    }
+    .mq-graph-svg{
+      display:block;
+      width:100%;
+      height:auto;
+      background:#ffffff;
+    }
+
+    </style>
 </head>
 <body>
   <div id="mq-root">
@@ -158,8 +194,7 @@
       </div>
 
       <button class="mq-buy-btn" type="button" id="mq-study-jump" title="Jump to Study A Specific Problem">Study</button>
-      <button class="mq-buy-btn" type="button" id="mq-top" title="Back to top">Top</button>
-      <button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
+<button class="mq-buy-btn" type="button" id="mq-top" title="Back to top">Top</button>      <button class="mq-buy-btn" type="button" id="mq-download-csv" title="Download a CSV session report">Download CSV</button>
 
       <div class="mq-modebar" aria-label="Mode">
         <div class="mq-mode-btn mq-mode-btn-active" title="Math mode (more modes later)">🧠 Math Mode</div>
@@ -170,7 +205,7 @@
       <div class="mq-column mq-column-left">
         <div class="mq-game-card mq-study-card">
           <div class="mq-panel-title">Session Settings</div>
-          <div class="mq-panel-sub">Choose player, level, track, and accessibility options.</div>
+          <div class="mq-panel-sub">Choose player, track, and accessibility options. Current Edition: Grades 6–8.</div>
 
           <div class="mq-field">
             <span class="mq-label">Player</span>
@@ -184,15 +219,7 @@
           <div class="mq-field">
             <span class="mq-label">Grade Band</span>
             <select id="mq-grade">
-              <option value="K-2">K–2</option>
-              <option value="3-5">3–5</option>
               <option value="6-8" selected>6–8</option>
-              <option value="Alg1">Algebra I</option>
-              <option value="Geo">Geometry</option>
-              <option value="Alg2">Algebra II</option>
-              <option value="Trig">Trigonometry</option>
-              <option value="PreCalc">Pre-Calculus</option>
-              <option value="Calc">Calculus</option>
             </select>
           </div>
 
@@ -236,7 +263,7 @@
 
         <div class="mq-panel">
           <div class="mq-panel-title">About</div>
-          <div class="mq-panel-sub">Customer-first, calm, and private by design.</div>
+
           <div id="mq-about">
             <strong>BeTheMath</strong> helps learners become “error detectives”: spot the mistaken idea, then apply the clean fix.
             <ul>
@@ -269,17 +296,22 @@
 
           <div class="mq-question-text" id="mq-question">Loading…</div>
           <div class="mq-work" id="mq-work">Student work will appear here.</div>
+          <div id="mq-graph-slot" style="display:none;margin:12px 0 0;"></div>
           <div class="mq-options" id="mq-options"></div>
           <div class="mq-feedback" id="mq-feedback">Pick the best explanation or fix for the student's work.</div>
 
           <div class="mq-review" id="mq-review">
-            <div class="mq-review-line" id="mq-review-result"></div>
-            <div class="mq-review-line" id="mq-review-fix"></div>
-            <div class="mq-review-line" id="mq-review-alt"></div>
-          </div>
+  <div class="mq-review-line" id="mq-review-result"></div>
+  <div class="mq-review-line" id="mq-review-fix"></div>
+  <div class="mq-review-line" id="mq-review-alt"></div>
+  <div class="mq-review-line" id="mq-review-actions" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+    <button id="mq-review-copy" type="button" class="mq-small-btn" disabled>Copy Solution</button>
+    <button id="mq-review-print" type="button" class="mq-small-btn" disabled>Print Solution</button>
+  </div>
+</div>
 
           <div style="margin-top:6px; display:flex; justify-content:flex-end;">
-            <button id="mq-next" type="button" class="mq-small-btn" disabled>Next ▶</button>
+            <button id="mq-next" type="button" class="mq-small-btn">Skip ▶</button>
           </div>
         </div>
 
@@ -293,7 +325,7 @@
       <div class="mq-column mq-column-study">
         <div class="mq-panel">
           <div class="mq-panel-title" id="mq-study-title">Study A Specific Problem</div>
-          <div class="mq-panel-sub">Teacher/parent/student: create a custom practice item from a real mistake.</div>
+          <div class="mq-panel-sub">Create a custom practice item from a real mistake.</div>
 
           <div class="mq-field">
             <span class="mq-label">Problem (what was asked?)</span>
@@ -368,7 +400,15 @@
             <div class="mq-stat-pill">Streak <span class="mq-stat-value" id="mq-streak">0</span></div>
             <div class="mq-stat-pill">Played <span class="mq-stat-value" id="mq-played">0</span></div>
           </div>
-        </div>        <div class="mq-panel" style="margin-top:10px;">
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
+          <div class="mq-panel-title">Missions</div>
+          <div class="mq-panel-sub">Small goals that update as the player practices.</div>
+          <div id="mq-missions" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <div class="mq-panel" style="margin-top:10px;">
           <div class="mq-panel-title">Badges</div>
           <div class="mq-panel-sub">Earn badges for streaks and XP milestones.</div>
           <div class="mq-badges-row" id="mq-badges"></div>
@@ -415,7 +455,11 @@
 
   <script src="btm_items.js?v=120fix1"></script>
   <script>
-  document.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("error", function(e){
+  alert("BTM JS ERROR: " + (e.message || "unknown error") + "\nline: " + (e.lineno || "?"));
+});
+
+function initBeTheMath(){
     var ITEMS = Array.isArray(window.BTM_ITEMS) ? window.BTM_ITEMS.slice() : [];
 
     function safeText(s){ return (s == null) ? "" : String(s).replace(/\r\n/g, "\n"); }
@@ -500,8 +544,8 @@
     var els = {
       player:$("mq-player"), playerAdd:$("mq-player-add"), playerDelete:$("mq-player-delete"),
       grade:$("mq-grade"), track:$("mq-track"), delay:$("mq-delay"), scale:$("mq-scale"),
-      question:$("mq-question"), work:$("mq-work"), options:$("mq-options"), feedback:$("mq-feedback"),
-      review:$("mq-review"), reviewResult:$("mq-review-result"), reviewFix:$("mq-review-fix"), reviewAlt:$("mq-review-alt"),
+      question:$("mq-question"), work:$("mq-work"), graphSlot:$("mq-graph-slot"), options:$("mq-options"), feedback:$("mq-feedback"),
+      review:$("mq-review"), reviewResult:$("mq-review-result"), reviewFix:$("mq-review-fix"), reviewAlt:$("mq-review-alt"), reviewCopy:$("mq-review-copy"), reviewPrint:$("mq-review-print"),
       queueNote:$("mq-queue-note"), xp:$("mq-xp"), coins:$("mq-coins"), streak:$("mq-streak"), played:$("mq-played"),
       badges:$("mq-badges"), autosave:$("mq-autosave"), highContrast:$("mq-high-contrast"), dyslexic:$("mq-dyslexic"),
       reset:$("mq-reset"), insightLog:$("mq-insight-log"), scoreboard:$("mq-scoreboard"), miniXP:$("mq-mini-xp"),
@@ -530,7 +574,7 @@
         Object.keys(players).forEach(function(pid){
           if (!players[pid].state) players[pid].state = makeEmptyState();
           if (!players[pid].state.track) players[pid].state.track = "all";
-          if (!players[pid].state.gradeBand) players[pid].state.gradeBand = "6-8";
+          players[pid].state.gradeBand = "6-8";
         });
         if (savedActive && players[savedActive]) activePlayerId = savedActive;
         else activePlayerId = Object.keys(players)[0];
@@ -591,6 +635,65 @@
       });
     }
 
+    function renderMissions(){
+      var box = document.getElementById("mq-missions");
+      if (!box) return;
+
+      var defs = [
+        { label:"Warm-Up", sub:"Complete 3 problems", value:(state.played || 0), goal:3 },
+        { label:"Streak Builder", sub:"Reach streak 3", value:(state.streak || 0), goal:3 },
+        { label:"XP Builder", sub:"Reach 50 XP", value:(state.xp || 0), goal:50 }
+      ];
+
+      box.innerHTML = "";
+
+      defs.forEach(function(m){
+        var value = Math.min(m.value, m.goal);
+        var pct = Math.max(0, Math.min(100, Math.round((value / m.goal) * 100)));
+
+        var row = document.createElement("div");
+        row.style.border = "1px solid var(--mq-border)";
+        row.style.borderRadius = "12px";
+        row.style.padding = "8px 10px";
+        row.style.background = "rgba(15,23,42,.55)";
+
+        var top = document.createElement("div");
+        top.style.display = "flex";
+        top.style.justifyContent = "space-between";
+        top.style.gap = "8px";
+        top.style.alignItems = "center";
+        top.style.marginBottom = "6px";
+
+        var left = document.createElement("div");
+        left.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--mq-text);">' + m.label + '</div>' +
+                         '<div style="font-size:10px;color:var(--mq-muted);">' + m.sub + '</div>';
+
+        var right = document.createElement("div");
+        right.style.fontSize = "10px";
+        right.style.color = "var(--mq-muted)";
+        right.textContent = value + "/" + m.goal;
+
+        var bar = document.createElement("div");
+        bar.style.height = "8px";
+        bar.style.borderRadius = "999px";
+        bar.style.background = "rgba(148,163,184,.18)";
+        bar.style.overflow = "hidden";
+
+        var fill = document.createElement("div");
+        fill.style.height = "100%";
+        fill.style.width = pct + "%";
+        fill.style.borderRadius = "999px";
+        fill.style.background = "linear-gradient(90deg, rgba(34,197,94,.9), rgba(59,130,246,.9))";
+
+        bar.appendChild(fill);
+        top.appendChild(left);
+        top.appendChild(right);
+        row.appendChild(top);
+        row.appendChild(bar);
+        box.appendChild(row);
+      });
+    }
+
     function updateStats(){
       els.xp.textContent = String(state.xp || 0);
       els.coins.textContent = String(state.coins || 0);
@@ -600,6 +703,7 @@
       if (els.miniStreak) els.miniStreak.textContent = String(state.streak || 0);
       if (els.miniFocus) els.miniFocus.textContent = (state.gradeBand || "6-8") + " • " + getTrackLabel(state.track || "all");
       if (els.miniType) els.miniType.textContent = (state.track === "all") ? "Focus: mixed practice across tracks" : "Focus: common errors & clean fixes";
+      renderMissions();
       renderBadges();
       savePlayers();
     }
@@ -613,11 +717,13 @@
     }
 
     function hideReview(){
-      if (els.review) els.review.style.display = "none";
-      if (els.reviewResult) els.reviewResult.innerHTML = "";
-      if (els.reviewFix) els.reviewFix.innerHTML = "";
-      if (els.reviewAlt) els.reviewAlt.innerHTML = "";
-    }
+  if (els.review) els.review.style.display = "none";
+  if (els.reviewResult) els.reviewResult.innerHTML = "";
+  if (els.reviewFix) els.reviewFix.innerHTML = "";
+  if (els.reviewAlt) els.reviewAlt.innerHTML = "";
+  if (els.reviewCopy) els.reviewCopy.disabled = true;
+  if (els.reviewPrint) els.reviewPrint.disabled = true;
+}
 
     function getCleanFixText(item, correctText){
       if (correctText) return correctText;
@@ -630,28 +736,260 @@
       return "Look for the first step where the rule changed, then rebuild the reasoning from that point.";
     }
 
-    function showReview(isCorrect, cleanFixText, anotherWayText){
+function stripHtmlToText(html){
+  var div = document.createElement("div");
+  div.innerHTML = String(html || "");
+  return (div.textContent || div.innerText || "").trim();
+}
+
+function buildReviewPlainText(){
+  var lines = [];
+  var q = els.question ? String(els.question.textContent || "").trim() : "";
+  var w = els.work ? String(els.work.textContent || "").trim() : "";
+  var result = els.reviewResult ? stripHtmlToText(els.reviewResult.innerHTML) : "";
+  var fix = els.reviewFix ? stripHtmlToText(els.reviewFix.innerHTML) : "";
+  var alt = els.reviewAlt ? stripHtmlToText(els.reviewAlt.innerHTML) : "";
+
+  if (q) lines.push("Problem:\n" + q);
+  if (w) lines.push("Student work:\n" + w);
+  if (result) lines.push(result);
+  if (fix) lines.push(fix);
+  if (alt) lines.push(alt);
+
+  return lines.join("\n\n");
+}
+
+function showCopySolutionModal(text){
+  var overlay = document.getElementById("mq-copy-modal-dyn");
+
+  if (!overlay){
+    overlay = document.createElement("div");
+    overlay.id = "mq-copy-modal-dyn";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "rgba(2,6,23,.72)";
+    overlay.style.display = "none";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "7000";
+    overlay.style.padding = "24px";
+
+    var box = document.createElement("div");
+    box.style.width = "min(900px,96vw)";
+    box.style.background = "rgba(15,23,42,.98)";
+    box.style.border = "1px solid rgba(148,163,184,.22)";
+    box.style.borderRadius = "16px";
+    box.style.boxShadow = "0 24px 60px rgba(0,0,0,.45)";
+    box.style.padding = "16px";
+
+    var title = document.createElement("div");
+    title.textContent = "Copy this solution";
+    title.style.fontSize = "14px";
+    title.style.fontWeight = "700";
+    title.style.color = "#e5eefc";
+    title.style.marginBottom = "8px";
+
+    var sub = document.createElement("div");
+    sub.textContent = "Your browser blocked direct clipboard copy. The full text is below.";
+    sub.style.fontSize = "12px";
+    sub.style.color = "#94a3b8";
+    sub.style.marginBottom = "10px";
+
+    var ta = document.createElement("textarea");
+    ta.id = "mq-copy-modal-text-dyn";
+    ta.readOnly = true;
+    ta.style.width = "100%";
+    ta.style.minHeight = "320px";
+    ta.style.resize = "vertical";
+    ta.style.borderRadius = "12px";
+    ta.style.border = "1px solid rgba(148,163,184,.22)";
+    ta.style.background = "#020617";
+    ta.style.color = "#e5eefc";
+    ta.style.padding = "12px";
+    ta.style.font = "12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace";
+    ta.style.boxSizing = "border-box";
+
+    var actions = document.createElement("div");
+    actions.style.display = "flex";
+    actions.style.justifyContent = "flex-end";
+    actions.style.gap = "8px";
+    actions.style.marginTop = "12px";
+
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "Close";
+    closeBtn.className = "mq-small-btn";
+
+    closeBtn.addEventListener("click", function(){
+      overlay.style.display = "none";
+    });
+
+    overlay.addEventListener("click", function(e){
+      if (e.target === overlay){
+        overlay.style.display = "none";
+      }
+    });
+
+    actions.appendChild(closeBtn);
+    box.appendChild(title);
+    box.appendChild(sub);
+    box.appendChild(ta);
+    box.appendChild(actions);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    overlay._ta = ta;
+  }
+
+  overlay._ta.value = text || "";
+  overlay.style.display = "flex";
+
+  setTimeout(function(){
+    overlay._ta.focus();
+    overlay._ta.select();
+  }, 0);
+}
+
+function copyReviewSolution(){
+  var text = buildReviewPlainText();
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      if (els.feedback){
+        els.feedback.textContent = "Solution copied.";
+        els.feedback.className = "mq-feedback mq-feedback-correct";
+      }
+    }).catch(function(){
+      showCopySolutionModal(text);
+    });
+  } else {
+    showCopySolutionModal(text);
+  }
+}
+
+function printReviewSolution(){
+  var text = buildReviewPlainText();
+  if (!text) return;
+
+  var printWin = window.open("", "_blank", "width=800,height=900");
+  if (!printWin) return;
+
+  var escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  printWin.document.open();
+  printWin.document.write(
+    '<!doctype html><html><head><title>BeTheMath Solution</title>' +
+    '<style>body{font-family:Arial,Helvetica,sans-serif;padding:32px;color:#111827;line-height:1.55} h1{font-size:22px;margin:0 0 16px} pre{white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif;font-size:15px}</style>' +
+    '</head><body>' +
+    '<h1>BeTheMath Solution</h1>' +
+    '<pre>' + escaped + '</pre>' +
+    '</body></html>'
+  );
+  printWin.document.close();
+  printWin.focus();
+  printWin.print();
+}
+
+
+
+    function ensureReviewActionButtons(){
       if (!els.review) return;
-      els.review.style.display = "block";
-      if (els.reviewResult){
-        els.reviewResult.innerHTML = isCorrect
-          ? '<span class="mq-review-label">Result:</span> Correct.'
-          : '<span class="mq-review-label">Result:</span> Not quite — here is the fix.';
+
+      var actions = document.getElementById("mq-review-actions");
+      var copyBtn = document.getElementById("mq-review-copy");
+      var printBtn = document.getElementById("mq-review-print");
+
+      if (!actions){
+        actions = document.createElement("div");
+        actions.id = "mq-review-actions";
+        actions.className = "mq-review-line";
+        actions.style.marginTop = "10px";
+        actions.style.display = "flex";
+        actions.style.gap = "8px";
+        actions.style.flexWrap = "wrap";
+        els.review.appendChild(actions);
+      } else {
+        actions.style.marginTop = "10px";
+        actions.style.display = "flex";
+        actions.style.gap = "8px";
+        actions.style.flexWrap = "wrap";
       }
-      if (els.reviewFix){
-        els.reviewFix.innerHTML = '<span class="mq-review-label">Clean fix:</span>' + escapeHtml(cleanFixText || "Review the correct reasoning step by step.");
+
+      if (!copyBtn){
+        copyBtn = document.createElement("button");
+        copyBtn.id = "mq-review-copy";
+        copyBtn.type = "button";
+        copyBtn.className = "mq-small-btn";
+        copyBtn.textContent = "Copy Solution";
+        copyBtn.addEventListener("click", copyReviewSolution);
+        actions.appendChild(copyBtn);
       }
-      if (els.reviewAlt){
-        els.reviewAlt.innerHTML = '<span class="mq-review-label">Another way:</span>' + escapeHtml(anotherWayText || "Look for the first step where the rule changed, then rebuild the reasoning from that point.");
+
+      if (!printBtn){
+        printBtn = document.createElement("button");
+        printBtn.id = "mq-review-print";
+        printBtn.type = "button";
+        printBtn.className = "mq-small-btn";
+        printBtn.textContent = "Print Solution";
+        printBtn.addEventListener("click", printReviewSolution);
+        actions.appendChild(printBtn);
       }
+
+      copyBtn.style.display = "inline-flex";
+      printBtn.style.display = "inline-flex";
+      copyBtn.style.visibility = "visible";
+      printBtn.style.visibility = "visible";
+
+      els.reviewCopy = copyBtn;
+      els.reviewPrint = printBtn;
     }
+
+ function showReview(isCorrect, cleanFixText, anotherWayText){
+  if (!els.review) return;
+
+  ensureReviewActionButtons();
+  els.review.style.display = "block";
+
+  if (els.reviewResult){
+    els.reviewResult.innerHTML = isCorrect
+      ? '<span class="mq-review-label">Result:</span> Correct.'
+      : '<span class="mq-review-label">Result:</span> Not quite — here is the fix.';
+  }
+
+  if (els.reviewFix){
+    els.reviewFix.innerHTML =
+      '<span class="mq-review-label">Clean fix:</span>' +
+      escapeHtml(cleanFixText || "Review the correct reasoning step by step.");
+  }
+
+  if (els.reviewAlt){
+    els.reviewAlt.innerHTML =
+      '<span class="mq-review-label">Another way:</span>' +
+      escapeHtml(anotherWayText || "Look for the first step where the rule changed, then rebuild the reasoning from that point.");
+  }
+
+  if (els.reviewCopy){
+    els.reviewCopy.disabled = false;
+    els.reviewCopy.style.display = "inline-flex";
+    els.reviewCopy.style.visibility = "visible";
+  }
+
+  if (els.reviewPrint){
+    els.reviewPrint.disabled = false;
+    els.reviewPrint.style.display = "inline-flex";
+    els.reviewPrint.style.visibility = "visible";
+  }
+}
 
     function saveSettingsOnly(){
       try{
         localStorage.setItem("btm_ui_scale", String(els.scale ? els.scale.value : "100"));
         localStorage.setItem("btm_high_contrast", els.highContrast && els.highContrast.checked ? "1" : "0");
         localStorage.setItem("btm_dyslexic", els.dyslexic && els.dyslexic.checked ? "1" : "0");
-        localStorage.setItem("btm_grade_band", els.grade ? els.grade.value : "6-8");
+        localStorage.setItem("btm_grade_band", "6-8");
         localStorage.setItem("btm_track", els.track ? els.track.value : "all");
         if (els.autosave) els.autosave.textContent = "Saved.";
       }catch(e){}
@@ -662,7 +1000,7 @@
         var uiScale = localStorage.getItem("btm_ui_scale");
         var hc = localStorage.getItem("btm_high_contrast");
         var dys = localStorage.getItem("btm_dyslexic");
-        var grade = localStorage.getItem("btm_grade_band");
+        var grade = "6-8"; localStorage.setItem("btm_grade_band", "6-8");
         var track = localStorage.getItem("btm_track");
         var migrated = localStorage.getItem("btm_track_default_migrated_v4");
 
@@ -681,7 +1019,7 @@
         }
 
         if (els.track) els.track.value = track;
-        state.gradeBand = els.grade ? els.grade.value : "6-8";
+        state.gradeBand = "6-8";
         state.track = els.track ? els.track.value : "all";
       }catch(e){}
     }
@@ -695,9 +1033,9 @@
     }
 
     function getFilteredItems(){
-      var grade = els.grade ? els.grade.value : "6-8";
+      var grade = "6-8";
       var track = els.track ? els.track.value : "all";
-      state.gradeBand = grade;
+      state.gradeBand = "6-8";
       state.track = track;
 
       var filtered = ITEMS.filter(function(item){
@@ -737,15 +1075,40 @@
       return item;
     }
 
+
+    function renderGraphForItem(item){
+      if (!els.graphSlot) return;
+      els.graphSlot.innerHTML = "";
+      els.graphSlot.style.display = "none";
+
+      if (!item || !item.graph || !btmGraphSvg) return;
+
+      var panel = document.createElement("div");
+      panel.className = "mq-graph-mvp-panel";
+      panel.style.marginTop = "10px";
+      panel.style.border = "2px solid #2563eb";
+      panel.innerHTML =
+        '<div class="mq-graph-mvp-title">Study Graph</div>' +
+        '<div class="mq-graph-mvp-sub">This graph belongs to the current Study problem.</div>' +
+        '<div class="mq-graph-wrap">' + btmGraphSvg(item.graph) + '</div>';
+
+      els.graphSlot.appendChild(panel);
+      els.graphSlot.style.display = "block";
+    }
+
     function renderItem(item){
       currentItem = item;
       answeredCurrent = false;
       hideReview();
 
-      if (els.next) els.next.disabled = true;
+      if (els.next){ els.next.disabled = false; els.next.textContent = "Skip ▶"; }
       if (els.queueNote) els.queueNote.textContent = "Ready";
       if (els.question) els.question.textContent = item.prompt || "Solve the item.";
       if (els.work) els.work.textContent = item.work || "Student work will appear here.";
+      if (els.graphSlot){
+        els.graphSlot.innerHTML = "";
+        els.graphSlot.style.display = "none";
+      }
       if (els.feedback){
         els.feedback.textContent = "Pick the best explanation or fix for the student's work.";
         els.feedback.className = "mq-feedback";
@@ -799,7 +1162,7 @@
           updateStats();
           refreshScoreboard();
           pushInsight(item.insight);
-          if (els.next) els.next.disabled = false;
+          if (els.next){ els.next.disabled = false; els.next.textContent = "Next ▶"; }
           if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
         });
 
@@ -816,6 +1179,7 @@
         if (els.work) els.work.textContent = "Add items to the main pool.";
         if (els.feedback) els.feedback.textContent = "Current Challenge is empty.";
         if (els.queueNote) els.queueNote.textContent = "No items";
+        if (els.next){ els.next.disabled = true; els.next.textContent = "Skip ▶"; }
         return;
       }
       renderItem(item);
@@ -841,6 +1205,36 @@
       });
     }
 
+
+    function buildAutoGraphFromText(problem, work){
+      var text = String(problem || "") + " " + String(work || "");
+      var matches = Array.from(text.matchAll(/\((-?\d+)\s*,\s*(-?\d+)\)/g));
+      if (matches.length < 2) return null;
+
+      var p1 = { x:Number(matches[0][1]), y:Number(matches[0][2]) };
+      var p2 = { x:Number(matches[1][1]), y:Number(matches[1][2]) };
+
+      var xMin = Math.min(p1.x, p2.x) - 1;
+      var xMax = Math.max(p1.x, p2.x) + 1;
+      var yMin = Math.min(p1.y, p2.y) - 1;
+      var yMax = Math.max(p1.y, p2.y) + 1;
+
+      if (xMin === xMax){ xMin -= 1; xMax += 1; }
+      if (yMin === yMax){ yMin -= 1; yMax += 1; }
+
+      return {
+        xMin:xMin,
+        xMax:xMax,
+        yMin:yMin,
+        yMax:yMax,
+        objects:[
+          { type:"point", x:p1.x, y:p1.y, label:"A" },
+          { type:"point", x:p2.x, y:p2.y, label:"B" },
+          { type:"segment", x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y, label:"AB" }
+        ]
+      };
+    }
+
     function renderCustomPractice(problem, work, fix){
       currentItem = null;
       answeredCurrent = false;
@@ -848,13 +1242,22 @@
 
       if (els.question) els.question.textContent = "Custom study: " + problem;
       if (els.work) els.work.textContent = "Student work (incorrect): " + work;
+
+      var autoGraph = buildAutoGraphFromText(problem, work);
+      if (autoGraph){
+        renderGraphForItem({ graph:autoGraph });
+      } else if (els.graphSlot){
+        els.graphSlot.innerHTML = "";
+        els.graphSlot.style.display = "none";
+      }
+
       if (els.options) els.options.innerHTML = "";
 
       var opts = shuffleArray([
-        { text: "Use this clean fix: " + fix, isCorrect: true },
-        { text: "Keep the student's original work: " + work, isCorrect: false },
-        { text: "Only change the final answer. The method is already correct.", isCorrect: false },
-        { text: "The student’s work is acceptable as written.", isCorrect: false }
+        { text: "Find the first wrong step, then rebuild the work using the correct rule.", isCorrect: true },
+        { text: "Keep the student's method and only change the final answer.", isCorrect: false },
+        { text: "The student’s work is acceptable as written.", isCorrect: false },
+        { text: "Do not change the method; just simplify what is already there.", isCorrect: false }
       ]);
 
       opts.forEach(function(choice){
@@ -899,7 +1302,7 @@
           updateStats();
           refreshScoreboard();
           pushInsight("Custom practice: " + fix);
-          if (els.next) els.next.disabled = false;
+          if (els.next){ els.next.disabled = false; els.next.textContent = "Next ▶"; }
           if (els.queueNote) els.queueNote.textContent = "Answer recorded.";
         });
 
@@ -911,7 +1314,7 @@
         els.feedback.className = "mq-feedback";
       }
       if (els.queueNote) els.queueNote.textContent = "Custom practice item";
-      if (els.next) els.next.disabled = true;
+      if (els.next){ els.next.disabled = false; els.next.textContent = "Skip ▶"; }
 
       scrollTopNow();
     }
@@ -932,41 +1335,31 @@
     $("mq-download-csv").addEventListener("click", doDownloadCSV);
     $("mq-dock-download").addEventListener("click", doDownloadCSV);
 
-    var CURRENT_ORIGIN = (window.location && window.location.origin && window.location.origin !== "null") ? window.location.origin : "";
-    var MQ_HOST = CURRENT_ORIGIN || "https://bethemath.matesuite.ai";
-    var MQ_ALLOWED_ORIGINS = {};
-    MQ_ALLOWED_ORIGINS[MQ_HOST] = true;
-    MQ_ALLOWED_ORIGINS["https://bethemath.matesuite.ai"] = true;
-    MQ_ALLOWED_ORIGINS["http://localhost:8501"] = true;
-    MQ_ALLOWED_ORIGINS["http://127.0.0.1:8501"] = true;
+if (els.reviewCopy){
+  els.reviewCopy.addEventListener("click", copyReviewSolution);
+}
+if (els.reviewPrint){
+  els.reviewPrint.addEventListener("click", printReviewSolution);
+}
+    var CURRENT_ORIGIN = (window.location && window.location.origin && window.location.origin !== "null")
+  ? window.location.origin
+  : "";
+var INJECTED_HOST = (window.__BTM_HOST && String(window.__BTM_HOST).trim())
+  ? String(window.__BTM_HOST).trim()
+  : "";
+var MQ_HOST = CURRENT_ORIGIN || INJECTED_HOST || "https://bethemath.matesuite.ai";
 
-    var aiOverlay = $("mq-ai-overlay");
-    var aiFrame = $("mq-ai-frame");
-    var aiClose = $("mq-ai-close");
-    var aiBtn = $("mq-ai-generate");
-    var aiAltBtn = $("mq-ai-alt");
+window.MQ_ALLOWED_ORIGINS = window.MQ_ALLOWED_ORIGINS || {};
+var MQ_ALLOWED_ORIGINS = window.MQ_ALLOWED_ORIGINS;
 
-    function closeAi(){
-      if (aiOverlay) aiOverlay.style.display = "none";
-      if (aiFrame) aiFrame.src = "about:blank";
-    }
+MQ_ALLOWED_ORIGINS[MQ_HOST] = true;
+MQ_ALLOWED_ORIGINS["https://bethemath.matesuite.ai"] = true;
+MQ_ALLOWED_ORIGINS["http://localhost:8501"] = true;
+MQ_ALLOWED_ORIGINS["http://127.0.0.1:8501"] = true;
+MQ_ALLOWED_ORIGINS["http://localhost:8502"] = true;
+MQ_ALLOWED_ORIGINS["http://127.0.0.1:8502"] = true;
 
-    function openAi(variant){
-      var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
-      var work = safeText(els.customWork ? els.customWork.value : "").trim();
-      if (!problem || !work){
-        if (els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
-        return;
-      }
-      var url = MQ_HOST + "/ai_tutor" + "?variant=" + encodeURIComponent(variant || "step") + "&problem=" + encodeURIComponent(problem) + "&work=" + encodeURIComponent(work);
-      if (aiFrame) aiFrame.src = url;
-      if (aiOverlay) aiOverlay.style.display = "flex";
-    }
-
-    aiClose.addEventListener("click", closeAi);
-    aiOverlay.addEventListener("click", function(e){ if (e.target === aiOverlay) closeAi(); });
-    aiBtn.addEventListener("click", function(){ openAi("step"); });
-    aiAltBtn.addEventListener("click", function(){ openAi("alt"); });    window.addEventListener("message", function(event){
+window.addEventListener("message", function(event){
       if (!MQ_ALLOWED_ORIGINS[event.origin]) return;
       var data = event.data || {};
       if (data.type === "btm_clean_fix"){
@@ -975,6 +1368,88 @@
       }
       if (data.type === "btm_close_ai"){ closeAi(); }
     });
+
+
+    function buildLocalCleanFix(problem, work, variant){
+      var p = safeText(problem).trim();
+      var w = safeText(work).trim();
+      var pl = p.toLowerCase();
+      var wl = w.toLowerCase();
+
+      function gcd(a, b){
+        a = Math.abs(a || 0);
+        b = Math.abs(b || 0);
+        while (b){
+          var r = a % b;
+          a = b;
+          b = r;
+        }
+        return a || 1;
+      }
+
+      var frac = w.match(/(\d+)\s*\/\s*(\d+)/);
+      if (pl.indexOf("simplify") !== -1 && frac){
+        var a = parseInt(frac[1], 10);
+        var b = parseInt(frac[2], 10);
+        if (Number.isFinite(a) && Number.isFinite(b) && b !== 0){
+          var g = gcd(a, b);
+          if ((variant || "step") === "alt"){
+            if (g === 1){
+              return a + "/" + b + " is already simplified because " + a + " and " + b + " share no common factor greater than 1.";
+            }
+            return "Divide both the numerator and denominator by " + g + " to reduce the fraction: " + a + "/" + b + " = " + (a / g) + "/" + (b / g) + ".";
+          }
+          if (g === 1){
+            return a + "/" + b + " is already in simplest form because " + a + " and " + b + " have no common factor greater than 1. Do not divide " + a + " by " + b + " to force a whole number. The simplified result stays " + a + "/" + b + ".";
+          }
+          return "Simplify by dividing the numerator and denominator by their greatest common factor, " + g + ". That gives " + a + "/" + b + " = " + (a / g) + "/" + (b / g) + ".";
+        }
+      }
+
+      if (pl.indexOf("%") !== -1 || wl.indexOf("%") !== -1 || pl.indexOf("percent") !== -1 || wl.indexOf("percent") !== -1){
+        if ((variant || "step") === "alt"){
+          return "Percent means 'out of 100.' Convert the percent to a decimal or fraction before computing.";
+        }
+        return "Percent does not mean combine the visible numbers. Convert the percent to a decimal or fraction, apply it to the quantity, and then answer the original question.";
+      }
+
+      if (w.indexOf("(") !== -1 && w.indexOf(")") !== -1){
+        if ((variant || "step") === "alt"){
+          return "Check whether the factor outside the parentheses was applied to every term inside.";
+        }
+        return "Check distribution carefully. A factor outside parentheses must be applied to every term inside, not just the first one.";
+      }
+
+      if ((variant || "step") === "alt"){
+        return "Look for the first step where the rule changed, then rebuild the work from that point.";
+      }
+
+      return "Find the first wrong step. Return to the original problem, apply the correct rule carefully, and continue step by step until the result matches the question being asked.";
+    }
+
+    function runLocalAiFix(variant){
+      var problem = safeText(els.customProblem ? els.customProblem.value : "").trim();
+      var work = safeText(els.customWork ? els.customWork.value : "").trim();
+
+      if (!problem || !work){
+        if (els.customStatus) els.customStatus.textContent = "Type Problem + Student work first, then click AI Generate Fix.";
+        return;
+      }
+
+      var fix = buildLocalCleanFix(problem, work, variant || "step");
+      if (els.customFix) els.customFix.value = fix;
+
+      if (els.customStatus){
+        els.customStatus.textContent = ((variant || "step") === "alt")
+          ? "Local alternate explanation generated. Review it, edit if needed, then click Practice Now."
+          : "Local fix generated. Review it, edit if needed, then click Practice Now.";
+      }
+    }
+
+    var aiBtn = $("mq-ai-generate");
+    var aiAltBtn = $("mq-ai-alt");
+    if (aiBtn) aiBtn.addEventListener("click", function(){ runLocalAiFix("step"); });
+    if (aiAltBtn) aiAltBtn.addEventListener("click", function(){ runLocalAiFix("alt"); });
 
     if (els.next){
       els.next.addEventListener("click", function(){
@@ -985,7 +1460,7 @@
 
     if (els.grade){
       els.grade.addEventListener("change", function(){
-        state.gradeBand = els.grade.value;
+        state.gradeBand = "6-8";
         saveSettingsOnly();
         rebuildDeck(true);
         applyAccessibility();
@@ -1086,7 +1561,7 @@
     if (els.reset){
       els.reset.addEventListener("click", function(){
         state.xp = 0; state.coins = 0; state.streak = 0; state.played = 0;
-        state.gradeBand = els.grade ? els.grade.value : "6-8";
+        state.gradeBand = "6-8";
         state.track = els.track ? els.track.value : "all";
         if (els.insightLog) els.insightLog.innerHTML = "";
         hideReview();
@@ -1185,7 +1660,24 @@
     updateStats();
     rebuildDeck(true);
     loadFirstChallenge();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBeTheMath, { once: true });
+  } else {
+    initBeTheMath();
+  }
   </script>
+
+<script id="mq-hide-about-panel">
+document.addEventListener("DOMContentLoaded", function () {
+  var about = document.getElementById("mq-about");
+  if (about) {
+    var panel = about.closest(".mq-panel");
+    if (panel) panel.style.display = "none";
+  }
+});
+</script>
+
 </body>
 </html>
